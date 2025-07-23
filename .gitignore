@@ -1,0 +1,62 @@
+## Ignore Visual Studio temporary files, build results, and
+## user-specific files
+.vs/
+.vscode/
+*.user
+*.suo
+
+## Ignore build results
+bin/
+obj/
+out/
+
+## Ignore Rider IDE files
+.idea/
+*.sln.iml
+
+## ASP.NET Core
+wwwroot/dist/
+wwwroot/node_modules/
+wwwroot/lib/
+node_modules/
+dist/
+bower_components/
+
+## Logs
+*.log
+logs/
+*.tlog
+
+## Dependency caches
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## Coverage results
+TestResults/
+*.coverage
+*.coveragexml
+coverage*.json
+lcov.info
+
+## Others
+*.db
+*.sqlite
+*.pdb
+*.mdb
+*.opendb
+
+## Environment and config
+.env
+*.secrets.json
+
+## OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Resharper
+_ReSharper*/
+*.DotSettings.user
