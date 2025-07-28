@@ -1,222 +1,340 @@
 using GoogleDrive.GoogleDriveService;
-using GoogleDrive.GooglrDriveInterface;
+using GoogleDrive.GoogleDriveInterface;
+using GoogleDrive.GoogleDriveModel;
+using GoogleDrive.Repositories;
 
 namespace GoogleDrive
 {
     [TestClass]
     public class GoogleDrive_test
     {
-        private IUserService _userService;
+        private IGoogleDriveRepository _repository;
+        private IAccountService _accountService;
         private IFolderService _folderService;
-        private IFileService _fileService;
+        private IUserFileService _userFileService;
+        private IShareService _shareService;
+        private ISharedUserService _sharedUserService;
 
         [TestInitialize]
         public void Setup()
         {
-            _userService = new UserService();
-            _folderService = new FolderService();
-            _fileService = new FileService();
+            _repository = new InMemoryRepository();
+            _accountService = new AccountService(_repository);
+            _folderService = new FolderService(_repository);
+            _userFileService = new UserFileService(_repository);
+            _shareService = new ShareService(_repository);
+            _sharedUserService = new SharedUserService(_repository);
+
+            _accountService.CreateAccount(new Account
+            {
+                UserName = "testuser",
+                Email = "test@example.com",
+                PasswordHash = "hashedpassword",
+                UsedCapacity = 100,
+                Capacity = 1000
+            });
+
+            _accountService.CreateAccount(new Account
+            {
+                UserName = "shareduser",
+                Email = "shareduser@example.com",
+                PasswordHash = "sharedpassword",
+                UsedCapacity = 0,
+                Capacity = 500
+            });
+
+            _repository.AddFileType(new FileType
+            {
+                FileTypeName = "PDF",
+                Icon = "pdf_icon.png"
+            });
+
+            _repository.AddObjectType(new ObjectType
+            {
+                ObjectTypeName = "File"
+            });
         }
 
         [TestMethod]
-        public async Task UserService_CreateUserAsync_Should_Create_And_Return_User()
+        public void AccountService_CreateAccount_ShouldAddAccount()
         {
-            var email = $"test{Guid.NewGuid()}@example.com";
-            var name = "Test User";
-            var passwordHash = "hashed_password";
+            var account = new Account
+            {
+                UserName = "newuser",
+                Email = "newuser@example.com",
+                PasswordHash = "newhashedpassword",
+                UsedCapacity = 50,
+                Capacity = 500
+            };
 
-            var result = await _userService.CreateUserAsync(name, email, passwordHash);
+            _accountService.CreateAccount(account);
 
-            Assert.IsNotNull(result, "Created user should not be null");
-            Assert.AreEqual(1, result.UserId, "UserId should be 1");
-            Assert.AreEqual(name, result.Name, "Name should match input");
-            Assert.AreEqual(email, result.Email, "Email should match input");
-            Assert.AreEqual(passwordHash, result.PasswordHash, "PasswordHash should match input");
-            Assert.IsTrue(result.CreatedAt <= DateTime.UtcNow, "CreatedAt should be recent");
+            var savedAccount = _accountService.GetAccountByEmail("newuser@example.com");
+            Assert.IsNotNull(savedAccount);
+            Assert.AreEqual("newuser", savedAccount.UserName);
+            Assert.AreEqual(50, savedAccount.UsedCapacity);
+            Assert.AreEqual(500, savedAccount.Capacity);
+            Assert.IsTrue(savedAccount.CreatedAt > DateTime.MinValue);
         }
 
         [TestMethod]
-        public async Task UserService_GetUserByEmailAsync_Should_Return_User_When_Exists()
+        public void AccountService_CreateAccount_DuplicateEmail_ShouldThrowException()
         {
-            var email = "test@example.com";
+            var account = new Account
+            {
+                UserName = "testuser",
+                Email = "test@example.com",
+                PasswordHash = "hashedpassword"
+            };
+            _accountService.CreateAccount(account);
+            var duplicateAccount = new Account
+            {
+                UserName = "duplicateuser",
+                Email = "test@example.com",
+                PasswordHash = "hashedpassword"
+            };
 
-            var result = await _userService.GetUserByEmailAsync(email);
-
-            Assert.IsNotNull(result, "User should not be null when exists");
-            Assert.AreEqual(1, result.UserId, "UserId should be 1");
-            Assert.AreEqual("Test User", result.Name, "Name should match");
-            Assert.AreEqual(email, result.Email, "Email should match");
+            Assert.ThrowsException<InvalidOperationException>(() => _accountService.CreateAccount(duplicateAccount));
         }
 
         [TestMethod]
-        public async Task UserService_GetUserByEmailAsync_Should_Return_Null_When_Not_Exists()
+        public void FolderService_CreateFolder_ShouldAddFolderWithCorrectPath()
         {
-            var email = "nonexistent@example.com";
+            var owner = _accountService.GetAccountByEmail("test@example.com");
+            var folder = new Folder
+            {
+                OwnerId = owner.UserId,
+                FolderName = "TestFolder",
+                FolderStatus = "Active"
+            };
 
-            var result = await _userService.GetUserByEmailAsync(email);
+            _folderService.CreateFolder(folder);
 
-            Assert.IsNull(result, "User should be null when email does not exist");
+            var savedFolder = _folderService.GetFolderById(folder.FolderId);
+            Assert.IsNotNull(savedFolder);
+            Assert.AreEqual(owner.UserId, savedFolder.OwnerId);
+            Assert.AreEqual("TestFolder", savedFolder.FolderName);
+            Assert.AreEqual("Active", savedFolder.FolderStatus);
+            Assert.AreEqual($"{folder.FolderId}", savedFolder.FolderPath);
+            Assert.IsTrue(savedFolder.CreatedAt > DateTime.MinValue);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task UserService_CreateUserAsync_Should_Throw_When_Name_Too_Long()
+        public void FolderService_CreateNestedFolder_ShouldAddFolderWithCorrectPath()
         {
-            var longName = new string('a', 101); 
+            var owner = _accountService.GetAccountByEmail("test@example.com");
+            var parentFolder = new Folder
+            {
+                OwnerId = owner.UserId,
+                FolderName = "ParentFolder",
+                FolderStatus = "Active"
+            };
+            _folderService.CreateFolder(parentFolder);
 
-            await _userService.CreateUserAsync(longName, "test@example.com", "hashed_password");
+            var nestedFolder = new Folder
+            {
+                OwnerId = owner.UserId,
+                ParentId = parentFolder.FolderId,
+                FolderName = "NestedFolder",
+                FolderStatus = "Active"
+            };
+
+            _folderService.CreateFolder(nestedFolder);
+
+            var savedFolder = _folderService.GetFolderById(nestedFolder.FolderId);
+            Assert.IsNotNull(savedFolder);
+            Assert.AreEqual(parentFolder.FolderId, savedFolder.ParentId);
+            Assert.AreEqual("NestedFolder", savedFolder.FolderName);
+            Assert.AreEqual("Active", savedFolder.FolderStatus);
+            Assert.AreEqual($"{parentFolder.FolderId}/{nestedFolder.FolderId}", savedFolder.FolderPath);
+            Assert.IsTrue(savedFolder.CreatedAt > DateTime.MinValue);
         }
 
         [TestMethod]
-        public async Task UserService_UpdateUserLastLoginAsync_Should_Succeed()
+        public void FolderService_CreateFolder_InvalidOwner_ShouldThrowException()
         {
-            await _userService.UpdateUserLastLoginAsync(1);
+            var folder = new Folder
+            {
+                OwnerId = 999,
+                FolderName = "InvalidFolder"
+            };
 
-            Assert.IsTrue(true, "UpdateUserLastLoginAsync should complete without throwing");
+            Assert.ThrowsException<InvalidOperationException>(() => _folderService.CreateFolder(folder));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task UserService_UpdateUserLastLoginAsync_Should_Throw_When_User_Not_Found()
+        public void FolderService_CreateFolder_InvalidParentId_ShouldThrowException()
         {
-            await _userService.UpdateUserLastLoginAsync(999);
+            var owner = _accountService.GetAccountByEmail("test@example.com");
+            var folder = new Folder
+            {
+                OwnerId = owner.UserId,
+                ParentId = 999,
+                FolderName = "InvalidFolder"
+            };
+
+            Assert.ThrowsException<InvalidOperationException>(() => _folderService.CreateFolder(folder));
         }
 
         [TestMethod]
-        public async Task UserService_DeleteUserAsync_Should_Succeed()
+        public void FolderService_UpdateFolder_ShouldUpdateFolderDetailsAndPath()
         {
-            await _userService.DeleteUserAsync(1);
+            var owner = _accountService.GetAccountByEmail("test@example.com");
+            var parentFolder = new Folder
+            {
+                OwnerId = owner.UserId,
+                FolderName = "ParentFolder",
+                FolderStatus = "Active"
+            };
+            _folderService.CreateFolder(parentFolder);
 
-            Assert.IsTrue(true, "DeleteUserAsync should complete without throwing");
+            var folder = new Folder
+            {
+                OwnerId = owner.UserId,
+                FolderName = "OriginalFolder",
+                FolderStatus = "Active"
+            };
+            _folderService.CreateFolder(folder);
+
+            var updatedFolder = new Folder
+            {
+                FolderId = folder.FolderId,
+                OwnerId = owner.UserId,
+                ParentId = parentFolder.FolderId,
+                FolderName = "UpdatedFolder",
+                FolderStatus = "Active"
+            };
+
+            _folderService.UpdateFolder(updatedFolder);
+
+            var savedFolder = _folderService.GetFolderById(folder.FolderId);
+            Assert.IsNotNull(savedFolder);
+            Assert.AreEqual("UpdatedFolder", savedFolder.FolderName);
+            Assert.AreEqual(parentFolder.FolderId, savedFolder.ParentId);
+            Assert.AreEqual($"{parentFolder.FolderId}/{folder.FolderId}", savedFolder.FolderPath);
+            Assert.IsTrue(savedFolder.UpdatedAt > savedFolder.CreatedAt);
         }
 
         [TestMethod]
-        public async Task FolderService_CreateFolderAsync_Should_Create_And_Return_Folder()
+        public void UserFileService_CreateUserFile_ShouldAddFileWithFolder()
         {
-            var name = "Test Folder";
-            var ownerId = 1;
+            var owner = _accountService.GetAccountByEmail("test@example.com");
+            var fileType = _repository.GetFileTypeById(1);
+            var folder = new Folder
+            {
+                OwnerId = owner.UserId,
+                FolderName = "Documents",
+                FolderStatus = "Active"
+            };
+            _folderService.CreateFolder(folder);
 
-            var result = await _folderService.CreateFolderAsync(name, ownerId, null);
+            var userFile = new UserFile
+            {
+                FolderId = folder.FolderId,
+                OwnerId = owner.UserId,
+                Size = 1024,
+                UserFileName = "test.pdf",
+                UserFilePath = $"{folder.FolderPath}/test.pdf",
+                FileTypeId = fileType.FileTypeId,
+                UserFileStatus = "Active"
+            };
 
-            Assert.IsNotNull(result, "Created folder should not be null");
-            Assert.AreEqual(1, result.FolderId, "FolderId should be 1");
-            Assert.AreEqual(name, result.Name, "Name should match input");
-            Assert.AreEqual(ownerId, result.OwnerId, "OwnerId should match input");
-            Assert.IsTrue(result.CreatedAt <= DateTime.UtcNow, "CreatedAt should be recent");
+            _userFileService.CreateUserFile(userFile);
+
+            var savedFile = _userFileService.GetUserFileById(userFile.FileId);
+            Assert.IsNotNull(savedFile);
+            Assert.AreEqual(folder.FolderId, savedFile.FolderId);
+            Assert.AreEqual(fileType.FileTypeId, savedFile.FileTypeId);
+            Assert.AreEqual(1024, savedFile.Size);
+            Assert.AreEqual($"{folder.FolderPath}/test.pdf", savedFile.UserFilePath);
         }
 
         [TestMethod]
-        public async Task FolderService_GetFolderByIdAsync_Should_Return_Folder_When_Exists()
+        public void ShareService_CreateShare_ShouldAddShareWithObjectType()
         {
-            var folderId = 1;
+            var sharer = _accountService.GetAccountByEmail("test@example.com");
+            var objectType = _repository.GetObjectTypeById(1);
+            var file = new UserFile
+            {
+                OwnerId = sharer.UserId,
+                UserFileName = "shared.pdf",
+                UserFilePath = "/shared.pdf",
+                UserFileStatus = "Active"
+            };
+            _userFileService.CreateUserFile(file);
 
-            var result = await _folderService.GetFolderByIdAsync(folderId);
+            var share = new Share
+            {
+                Sharer = sharer.UserId,
+                ObjectId = file.FileId,
+                ObjectTypeId = objectType.ObjectTypeId,
+                ShareUrl = "http://share.link",
+                UrlApprove = true
+            };
 
-            Assert.IsNotNull(result, "Folder should not be null when exists");
-            Assert.AreEqual(1, result.FolderId, "FolderId should be 1");
-            Assert.AreEqual("Test Folder", result.Name, "Name should match");
+            _shareService.CreateShare(share);
+
+            var savedShare = _shareService.GetShareById(share.ShareId);
+            Assert.IsNotNull(savedShare);
+            Assert.AreEqual(sharer.UserId, savedShare.Sharer);
+            Assert.AreEqual(file.FileId, savedShare.ObjectId);
+            Assert.AreEqual(objectType.ObjectTypeId, savedShare.ObjectTypeId);
+            Assert.IsTrue(savedShare.UrlApprove);
         }
 
         [TestMethod]
-        public async Task FolderService_GetFolderByIdAsync_Should_Return_Null_When_Not_Exists()
+        public void SharedUserService_CreateSharedUser_ShouldAddSharedUser()
         {
-            var folderId = 999;
+            var sharer = _accountService.GetAccountByEmail("test@example.com");
+            var sharedUser = _accountService.GetAccountByEmail("shareduser@example.com");
+            var objectType = _repository.GetObjectTypeById(1);
+            var file = new UserFile
+            {
+                OwnerId = sharer.UserId,
+                UserFileName = "shared.pdf",
+                UserFilePath = "/shared.pdf",
+                UserFileStatus = "Active"
+            };
+            _userFileService.CreateUserFile(file);
 
-            var result = await _folderService.GetFolderByIdAsync(folderId);
+            var share = new Share
+            {
+                Sharer = sharer.UserId,
+                ObjectId = file.FileId,
+                ObjectTypeId = objectType.ObjectTypeId,
+                ShareUrl = "http://share.link",
+                UrlApprove = true
+            };
+            _shareService.CreateShare(share);
 
-            Assert.IsNull(result, "Folder should be null when ID does not exist");
+            var sharedUserEntry = new SharedUser
+            {
+                ShareId = share.ShareId,
+                UserId = sharedUser.UserId,
+                Permission = "Read"
+            };
+
+            _sharedUserService.CreateSharedUser(sharedUserEntry);
+
+            var savedSharedUser = _sharedUserService.GetSharedUserById(sharedUserEntry.SharedUserId);
+            Assert.IsNotNull(savedSharedUser);
+            Assert.AreEqual(share.ShareId, savedSharedUser.ShareId);
+            Assert.AreEqual(sharedUser.UserId, savedSharedUser.UserId);
+            Assert.AreEqual("Read", savedSharedUser.Permission);
+            Assert.IsTrue(savedSharedUser.CreatedAt > DateTime.MinValue);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task FolderService_CreateFolderAsync_Should_Throw_When_Name_Too_Long()
+        public void SharedUserService_CreateSharedUser_InvalidShareId_ShouldThrowException()
         {
-            var longName = new string('a', 256); 
-            await _folderService.CreateFolderAsync(longName, 1, null);
-        }
-
-        [TestMethod]
-        public async Task FolderService_DeleteFolderAsync_Should_Succeed()
-        {
-            await _folderService.DeleteFolderAsync(1);
-            Assert.IsTrue(true, "DeleteFolderAsync should complete without throwing");
-        }
-
-        [TestMethod]
-        public async Task FileService_CreateFileAsync_Should_Create_And_Return_File()
-        {
-            var name = "test.txt";
-            var ownerId = 1;
-            var folderId = 1;
-            var fileTypeId = 1;
-            var size = 1024L;
-
-            var result = await _fileService.CreateFileAsync(name, ownerId, folderId, fileTypeId, size);
-
-            Assert.IsNotNull(result, "Created file should not be null");
-            Assert.AreEqual(1, result.FileId, "FileId should be 1");
-            Assert.AreEqual(name, result.Name, "Name should match input");
-            Assert.AreEqual(ownerId, result.OwnerId, "OwnerId should match input");
-            Assert.AreEqual(folderId, result.FolderId, "FolderId should match input");
-            Assert.AreEqual(fileTypeId, result.FileTypeId, "FileTypeId should match input");
-            Assert.AreEqual(size, result.Size, "Size should match input");
-            Assert.AreEqual("Active", result.Status, "Status should be Active");
-            Assert.IsTrue(result.CreatedAt <= DateTime.UtcNow, "CreatedAt should be recent");
-        }
-
-        [TestMethod]
-        public async Task FileService_GetFileByIdAsync_Should_Return_File_When_Exists()
-        {
-            var fileId = 1;
-
-            var result = await _fileService.GetFileByIdAsync(fileId);
-
-            Assert.IsNotNull(result, "File should not be null when exists");
-            Assert.AreEqual(1, result.FileId, "FileId should be 1");
-            Assert.AreEqual("test.txt", result.Name, "Name should match");
-            Assert.AreEqual(1024, result.Size, "Size should be 1024");
-            Assert.AreEqual("Active", result.Status, "Status should be Active");
-        }
-
-        [TestMethod]
-        public async Task FileService_GetFileByIdAsync_Should_Return_Null_When_Not_Exists()
-        {
-            var fileId = 999;
-
-            var result = await _fileService.GetFileByIdAsync(fileId);
-
-            Assert.IsNull(result, "File should be null when ID does not exist");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task FileService_CreateFileAsync_Should_Throw_When_Name_Too_Long()
-        {
-            var longName = new string('a', 256);
-
-            await _fileService.CreateFileAsync(longName, 1, 1, 1, 1024);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task FileService_CreateFileAsync_Should_Throw_When_Negative_Size()
-        {
-            await _fileService.CreateFileAsync("test.txt", 1, 1, 1, -1);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public async Task FileService_CreateFileAsync_Should_Throw_When_Invalid_FolderId()
-        {
-            await _fileService.CreateFileAsync("test.txt", 1, 0, 1, 1024);
-        }
-
-        [TestMethod]
-        public async Task FileService_DeleteFileAsync_Should_Succeed()
-        {
-            await _fileService.DeleteFileAsync(1);
-
-            Assert.IsTrue(true, "DeleteFileAsync should complete without throwing");
+            var sharedUser = _accountService.GetAccountByEmail("shareduser@example.com");
+            var sharedUserEntry = new SharedUser
+            {
+                ShareId = 999,
+                UserId = sharedUser.UserId,
+                Permission = "Read"
+            };
+            Assert.ThrowsException<InvalidOperationException>(() => _sharedUserService.CreateSharedUser(sharedUserEntry));
         }
     }
 }

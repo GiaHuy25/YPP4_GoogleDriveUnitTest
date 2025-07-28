@@ -1,73 +1,71 @@
 ﻿using GoogleDrive.GoogleDriveModel;
-using GoogleDrive.GooglrDriveInterface;
+using GoogleDrive.GoogleDriveInterface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GoogleDrive.Repositories;
 
 namespace GoogleDrive.GoogleDriveService
 {
     public class FolderService : IFolderService
     {
-        public async Task<Folder> CreateFolderAsync(string name, int ownerId, int? parentId)
+        private readonly IGoogleDriveRepository _repository;
+
+        public FolderService(IGoogleDriveRepository repository)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Folder name is required.");
-            }
-            if (name.Length > 255)
-            {
-                throw new ArgumentException("Folder name exceeds maximum length of 255 characters.");
-            }
-            if (ownerId <= 0)
-            {
-                throw new ArgumentException("Invalid owner ID.");
-            }
-            if (parentId.HasValue && parentId <= 0)
-            {
-                throw new ArgumentException("Invalid parent folder ID.");
-            }
-            return await Task.FromResult(new Folder
-            {
-                FolderId = 1,
-                Name = name,
-                OwnerId = ownerId,
-                ParentFolderId = parentId,
-                CreatedAt = DateTime.UtcNow
-            });
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
-        public async Task<Folder> GetFolderByIdAsync(int folderId)
+        public void CreateFolder(Folder folder)
         {
-            if (folderId <= 0)
-            {
-                throw new ArgumentException("Invalid folder ID.");
-            }
-            if (folderId == 1)
-            {
-                return await Task.FromResult(new Folder
-                {
-                    FolderId = 1,
-                    Name = "Test Folder",
-                    OwnerId = 1,
-                    CreatedAt = DateTime.UtcNow.AddDays(-1)
-                });
-            }
-            return await Task.FromResult((Folder)null);
+            if (folder == null)
+                throw new ArgumentNullException(nameof(folder));
+            if (string.IsNullOrWhiteSpace(folder.FolderName))
+                throw new ArgumentException("FolderName is required.");
+            if (folder.FolderName.Length > 50)
+                throw new ArgumentException("FolderName cannot exceed 50 characters.");
+            if (folder.OwnerId <= 0)
+                throw new ArgumentException("Valid OwnerId is required.");
+            if (!string.IsNullOrWhiteSpace(folder.FolderStatus) && folder.FolderStatus != "Active" && folder.FolderStatus != "Deleted")
+                throw new ArgumentException("FolderStatus must be 'Active' or 'Deleted' if specified.");
+
+            folder.CreatedAt = DateTime.UtcNow;
+            folder.FolderStatus = folder.FolderStatus ?? "Active";
+            _repository.AddFolder(folder);
         }
 
-        public async Task DeleteFolderAsync(int folderId)
+        public Folder GetFolderById(int folderId)
         {
             if (folderId <= 0)
-            {
-                throw new ArgumentException("Invalid folder ID.");
-            }
-            if (folderId != 1)
-            {
-                throw new ArgumentException("Folder not found.");
-            }
-            await Task.CompletedTask;
+                throw new ArgumentException("Invalid FolderId.");
+            return _repository.GetFolderById(folderId);
+        }
+
+        public void UpdateFolder(Folder folder)
+        {
+            if (folder == null)
+                throw new ArgumentNullException(nameof(folder));
+            if (folder.FolderId <= 0)
+                throw new ArgumentException("Invalid FolderId.");
+            if (string.IsNullOrWhiteSpace(folder.FolderName))
+                throw new ArgumentException("FolderName is required.");
+            if (folder.FolderName.Length > 50)
+                throw new ArgumentException("FolderName cannot exceed 50 characters.");
+            if (folder.OwnerId <= 0)
+                throw new ArgumentException("Valid OwnerId is required.");
+            if (!string.IsNullOrWhiteSpace(folder.FolderStatus) && folder.FolderStatus != "Active" && folder.FolderStatus != "Deleted")
+                throw new ArgumentException("FolderStatus must be 'Active' or 'Deleted' if specified.");
+
+            var existingFolder = _repository.GetFolderById(folder.FolderId);
+            if (existingFolder == null)
+                throw new InvalidOperationException("Folder does not exist.");
+
+            folder.FolderPath = folder.ParentId.HasValue ? $"{folder.ParentId}/{folder.FolderId}" : $"{folder.FolderId}";
+            folder.UpdatedAt = DateTime.UtcNow;
+            folder.CreatedAt = existingFolder.CreatedAt; 
+            _repository.UpdateFolder(folder); 
         }
     }
 }

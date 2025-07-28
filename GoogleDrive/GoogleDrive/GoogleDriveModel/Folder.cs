@@ -9,14 +9,13 @@ namespace GoogleDrive.GoogleDriveModel
     public class Folder
     {
         public int FolderId { get; set; }
-        public int? ParentFolderId { get; set; }
+        public int? ParentId { get; set; }
         public int OwnerId { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Path { get; set; } = string.Empty;
+        public string FolderName { get; set; } = string.Empty; 
         public DateTime CreatedAt { get; set; }
-        public DateTime? ModifiedDate { get; set; }
-        public string Status { get; set; } = string.Empty;
-        public List<File> Files { get; set; } = new List<File>();
-        public List<Folder> SubFolders { get; set; } = new List<Folder>();
+        public DateTime? UpdatedAt { get; set; }
+        public string FolderPath { get; set; } = string.Empty;
+        public string FolderStatus { get; set; } = string.Empty;
+        public int? ColorId { get; set; }
     }
 }
