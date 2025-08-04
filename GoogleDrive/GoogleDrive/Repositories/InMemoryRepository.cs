@@ -140,5 +140,22 @@ namespace GoogleDrive.Repositories
         }
 
         public SharedUser GetSharedUserById(int sharedUserId) => sharedUsers.FirstOrDefault(su => su.SharedUserId == sharedUserId);
+        public void ClearAll()
+        {
+            accounts.Clear();
+            folders.Clear();
+            fileTypes.Clear();
+            userFiles.Clear();
+            objectTypes.Clear();
+            shares.Clear();
+            sharedUsers.Clear();
+            nextAccountId = 1;
+            nextFolderId = 1;
+            nextFileId = 1;
+            nextFileTypeId = 1;
+            nextObjectTypeId = 1;
+            nextShareId = 1;
+            nextSharedUserId = 1;
+        }
     }
 }

@@ -25,5 +25,6 @@ namespace GoogleDrive.Repositories
         Share GetShareById(int shareId);
         void AddSharedUser(SharedUser sharedUser);
         SharedUser GetSharedUserById(int sharedUserId);
+        void ClearAll();
     }
 }

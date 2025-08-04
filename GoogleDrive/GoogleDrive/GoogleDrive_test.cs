@@ -19,6 +19,7 @@ namespace GoogleDrive
         public void Setup()
         {
             _repository = new InMemoryRepository();
+            _repository.ClearAll();
             _accountService = new AccountService(_repository);
             _folderService = new FolderService(_repository);
             _userFileService = new UserFileService(_repository);
@@ -83,14 +84,14 @@ namespace GoogleDrive
             var account = new Account
             {
                 UserName = "testuser",
-                Email = "test@example.com",
+                Email = "test@example1.com",
                 PasswordHash = "hashedpassword"
             };
             _accountService.CreateAccount(account);
             var duplicateAccount = new Account
             {
                 UserName = "duplicateuser",
-                Email = "test@example.com",
+                Email = "test@example1.com",
                 PasswordHash = "hashedpassword"
             };
 
