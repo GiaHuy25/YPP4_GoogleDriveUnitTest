@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UnitTestGoogleDriveWithADO.Models;
+using GoogleDriveUnitTestWithADO.Models;
 
-namespace UnitTestGoogleDriveWithADO.Database.Account
+namespace GoogleDriveUnitTestWithADO.Database.Account
 {
     public class AccountRepository : IAccountRepository
     {
@@ -65,12 +65,12 @@ namespace UnitTestGoogleDriveWithADO.Database.Account
             cmd.Parameters.AddWithValue("@Capacity", (object)acc.Capacity ?? DBNull.Value);
             cmd.ExecuteNonQuery();
         }
-        public void Delete(int id)
+        public void Delete(string email)
         {
             using var conn = DataAccess.DatabaseHelper.GetConnection();
             conn.Open();
-            var cmd = new SqlCommand("DELETE FROM Account WHERE UserId = @UserId", conn);
-            cmd.Parameters.AddWithValue("@UserId", id);
+            var cmd = new SqlCommand("DELETE FROM Account WHERE Email = @Email", conn);
+            cmd.Parameters.AddWithValue("@Email", email);
             cmd.ExecuteNonQuery();
         }
         public List<Models.Account> GetAll()

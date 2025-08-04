@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UnitTestGoogleDriveWithADO.Models
+namespace GoogleDriveUnitTestWithADO.Models
 {
     public class UserFile
     {

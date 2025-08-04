@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UnitTestGoogleDriveWithADO.Models;
+using GoogleDriveUnitTestWithADO.Models;
 
-namespace UnitTestGoogleDriveWithADO.Database.Account
+namespace GoogleDriveUnitTestWithADO.Database.Account
 {
     public interface IAccountRepository
     {
         void Add(Models.Account acc);
         Models.Account GetByEmail(string email);
         void Update(Models.Account acc);
-        void Delete(int id);
+        void Delete(string email);
         List<Models.Account> GetAll();
 
     }

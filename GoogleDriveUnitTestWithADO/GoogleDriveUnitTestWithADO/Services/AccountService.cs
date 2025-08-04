@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UnitTestGoogleDriveWithADO.Database.Account;
-using UnitTestGoogleDriveWithADO.Models;
+using GoogleDriveUnitTestWithADO.Database.Account;
+using GoogleDriveUnitTestWithADO.Models;
 
-namespace UnitTestGoogleDriveWithADO.Services
+namespace GoogleDriveUnitTestWithADO.Services
 {
     public class AccountService
     {
@@ -32,9 +32,9 @@ namespace UnitTestGoogleDriveWithADO.Services
         {
             _repository.Update(acc);
         }
-        public void DeleteAccount(int id)
+        public void DeleteAccount(string email)
         {
-            _repository.Delete(id);
+            _repository.Delete(email);
         }
     }
 }
