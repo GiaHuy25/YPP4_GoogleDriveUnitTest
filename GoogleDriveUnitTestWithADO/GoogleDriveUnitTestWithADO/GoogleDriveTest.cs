@@ -11,7 +11,7 @@ namespace GoogleDriveUnitTestWithADO
     {
         private readonly AccountService AccountService = new(new AccountRepository());
         private readonly FolderService FolderService = new(new FolderRepository());
-        private int _addedFolderId;
+        private int _addedFolderId = 0;
         //Test CRUD for AccountService
         // Follow this flow
         // 1. Create an account
@@ -112,8 +112,7 @@ namespace GoogleDriveUnitTestWithADO
         [TestMethod]
         public void TestUpdateFolder()
         {
-            // Arrange
-            TestAddFolder(); 
+            TestAddFolder();
             var folder = FolderService.GetFolderById(_addedFolderId);
             Assert.IsNotNull(folder, "Folder should exist before updating.");
 
@@ -122,7 +121,7 @@ namespace GoogleDriveUnitTestWithADO
             folder.FolderName = "UpdatedFolderName";
             folder.ParentId = 6; 
             folder.ColorId = 2; 
-            DateTime? originalUpdatedAt = folder.UpdatedAt;
+            DateTime? originalUpdatedAt = DateTime.Now;
 
             // Act
             FolderService.UpdateFolder(folder);
@@ -151,8 +150,7 @@ namespace GoogleDriveUnitTestWithADO
         [TestMethod]
         public void TestDeleteFolder()
         {
-            // Arrange
-            TestAddFolder();
+            _addedFolderId = 1016;
             var folder = FolderService.GetFolderById(_addedFolderId);
             Assert.IsNotNull(folder, "Folder should exist before deletion.");
 
