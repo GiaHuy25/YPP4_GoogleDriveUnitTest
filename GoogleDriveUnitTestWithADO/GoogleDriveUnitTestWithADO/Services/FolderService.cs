@@ -15,14 +15,27 @@ namespace GoogleDriveUnitTestWithADO.Services
         {
             _repository = repository;
         }
+
         public Folder GetFolderById(int id)
         {
             return _repository.GetFolderById(id);
         }
-        public void AddFolder(Folder folder)
+
+        public int AddFolder(Folder folder)
         {
             folder.CreatedAt = DateTime.Now;
-            _repository.AddFolder(folder);
+            return _repository.AddFolder(folder);
+        }
+
+        public void UpdateFolder(Folder folder)
+        {
+            folder.UpdatedAt = DateTime.Now;
+            _repository.UpdateFolder(folder);
+        }
+
+        public void DeleteFolder(int folderId)
+        {
+            _repository.DeleteFolder(folderId);
         }
     }
 }

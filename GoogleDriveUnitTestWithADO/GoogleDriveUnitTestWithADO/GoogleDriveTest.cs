@@ -9,8 +9,9 @@ namespace GoogleDriveUnitTestWithADO
     [TestClass]
     public class GoogleDriveTest
     {
-        private readonly AccountService service = new(new AccountRepository());
-        private readonly FolderService folderService = new(new FolderRepository());
+        private readonly AccountService AccountService = new(new AccountRepository());
+        private readonly FolderService FolderService = new(new FolderRepository());
+        private int _addedFolderId;
         //Test CRUD for AccountService
         // Follow this flow
         // 1. Create an account
@@ -28,25 +29,25 @@ namespace GoogleDriveUnitTestWithADO
                 UsedCapacity = 62235696,
                 Capacity = 200000000
             };
-            service.RegisterUser(account);
-            var fetched = service.GetAccountByEmail("test@example.com");
+            AccountService.RegisterUser(account);
+            var fetched = AccountService.GetAccountByEmail("test@example.com");
             Assert.IsNotNull(fetched);
             Assert.AreEqual("testuser", fetched.UserName);
         }
         [TestMethod]
         public void TestGetAccountByEmail() {
-            var account = service.GetAccountByEmail("aaron85@thompson.com");
+            var account = AccountService.GetAccountByEmail("test@example.com");
             Assert.IsNotNull(account);
-            Assert.AreEqual("castroabigail", account.UserName);
+            Assert.AreEqual("testuser", account.UserName);
             Assert.AreEqual(62235696, account.UsedCapacity);
             Assert.AreEqual(200000000, account.Capacity);
         }
         [TestMethod]
         public void TestUpdateAccount()
         {
-            var email = "aaron85@thompson.com";
+            var email = "test@example.com";
 
-            var account = service.GetAccountByEmail(email);
+            var account = AccountService.GetAccountByEmail(email);
             Assert.IsNotNull(account, "Account should exist before updating.");
 
             var originalUserName = account.UserName;
@@ -54,9 +55,9 @@ namespace GoogleDriveUnitTestWithADO
             account.UsedCapacity = 75000000; 
             account.LastLogin = DateTime.Now;
 
-            service.updateAccount(account);
+            AccountService.updateAccount(account);
 
-            var updatedAccount = service.GetAccountByEmail(email);
+            var updatedAccount = AccountService.GetAccountByEmail(email);
             Assert.IsNotNull(updatedAccount, "Updated account should exist.");
             Assert.AreEqual("updatedUserName", updatedAccount.UserName, "UserName should be updated.");
             Assert.AreEqual(75000000, updatedAccount.UsedCapacity, "UsedCapacity should be updated.");
@@ -67,28 +68,100 @@ namespace GoogleDriveUnitTestWithADO
         public void TestDeleteAccount() 
         {
             var email = "test@example.com";
-            var account = service.GetAccountByEmail(email);
+            var account = AccountService.GetAccountByEmail(email);
             Assert.IsNotNull(account, "Account should exist before deletion.");
-            service.DeleteAccount(email);
-            var deletedAccount = service.GetAccountByEmail(email);
+            AccountService.DeleteAccount(email);
+            var deletedAccount = AccountService.GetAccountByEmail(email);
             Assert.IsNull(deletedAccount, "Account should be deleted.");
         }
+        // Test CRUD for FolderService
+        // Follow this flow
+        // 1. Add a folder
+        // 2. Update the folder
         [TestMethod]
-        public void TestCreateFolder()
+        public void TestAddFolder()
         {
+            // Arrange
             var folder = new Folder
             {
-                FolderName = "UnitTestFolder",
-                ParentId = null,
                 OwnerId = 1,
-                CreatedAt = DateTime.Now
+                FolderName = "TestFolder",
+                ParentId = 5 
             };
 
-            folderService.AddFolder(folder);
-            var fetched = folderService.GetFolderById(1);
+            // Act
+            _addedFolderId = FolderService.AddFolder(folder); 
 
-            Assert.IsNotNull(fetched);
-            Assert.AreEqual("UnitTestFolder", fetched.FolderName);
+            // Assert
+            Assert.IsTrue(_addedFolderId > 0, "FolderId should be a positive integer.");
+            var addedFolder = FolderService.GetFolderById(_addedFolderId);
+            Assert.IsNotNull(addedFolder, "Added folder should exist.");
+            Assert.AreEqual(folder.FolderName, addedFolder.FolderName, "FolderName should match.");
+            Assert.AreEqual(folder.OwnerId, addedFolder.OwnerId, "OwnerId should match.");
+
+            // Verify FolderPath
+            string expectedPath = _addedFolderId.ToString();
+            var parentFolder = FolderService.GetFolderById(folder.ParentId.Value);
+            if (parentFolder != null && !string.IsNullOrEmpty(parentFolder.FolderPath))
+            {
+                expectedPath = $"{parentFolder.FolderPath}/{_addedFolderId}";
+            }
+            Assert.AreEqual(expectedPath, addedFolder.FolderPath, "FolderPath should be correctly set.");
+        }
+
+        [TestMethod]
+        public void TestUpdateFolder()
+        {
+            // Arrange
+            TestAddFolder(); 
+            var folder = FolderService.GetFolderById(_addedFolderId);
+            Assert.IsNotNull(folder, "Folder should exist before updating.");
+
+            // Modify some properties
+            string originalFolderName = folder.FolderName;
+            folder.FolderName = "UpdatedFolderName";
+            folder.ParentId = 6; 
+            folder.ColorId = 2; 
+            DateTime? originalUpdatedAt = folder.UpdatedAt;
+
+            // Act
+            FolderService.UpdateFolder(folder);
+
+            // Assert
+            var updatedFolder = FolderService.GetFolderById(_addedFolderId);
+            Assert.IsNotNull(updatedFolder, "Updated folder should exist.");
+            Assert.AreEqual("UpdatedFolderName", updatedFolder.FolderName, "FolderName should be updated.");
+            Assert.AreEqual(folder.ParentId, updatedFolder.ParentId, "ParentId should be updated.");
+            Assert.AreEqual(2, updatedFolder.ColorId, "ColorId should be updated.");
+            Assert.IsNotNull(updatedFolder.UpdatedAt, "UpdatedAt should be set.");
+            Assert.IsTrue(updatedFolder.UpdatedAt >= originalUpdatedAt, "UpdatedAt should be newer.");
+
+            // Verify FolderPath
+            string expectedPath = _addedFolderId.ToString(); 
+            if (folder.ParentId.HasValue)
+            {
+                var parentFolder = FolderService.GetFolderById(folder.ParentId.Value);
+                if (parentFolder != null && !string.IsNullOrEmpty(parentFolder.FolderPath))
+                {
+                    expectedPath = $"{parentFolder.FolderPath}/{_addedFolderId}";
+                }
+            }
+            Assert.AreEqual(expectedPath, updatedFolder.FolderPath, "FolderPath should be correctly set.");
+        }
+        [TestMethod]
+        public void TestDeleteFolder()
+        {
+            // Arrange
+            TestAddFolder();
+            var folder = FolderService.GetFolderById(_addedFolderId);
+            Assert.IsNotNull(folder, "Folder should exist before deletion.");
+
+            // Act
+            FolderService.DeleteFolder(_addedFolderId);
+
+            // Assert
+            var deletedFolder = FolderService.GetFolderById(_addedFolderId);
+            Assert.IsNull(deletedFolder, "Deleted folder should not exist.");
         }
     }
 
