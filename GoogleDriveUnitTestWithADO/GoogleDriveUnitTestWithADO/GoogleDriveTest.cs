@@ -26,7 +26,6 @@ namespace GoogleDriveUnitTestWithADO
             var fetched = service.GetAccountByEmail("test@example.com");
             Assert.IsNotNull(fetched);
             Assert.AreEqual("testuser", fetched.UserName);
-            service.DeleteAccount("test@example.com");
         }
         [TestMethod]
         public void TestGetAccountByEmail() {
@@ -46,8 +45,8 @@ namespace GoogleDriveUnitTestWithADO
 
             var originalUserName = account.UserName;
             account.UserName = "updatedUserName";
-            account.UsedCapacity = 75000000; // Update used capacity
-            account.LastLogin = DateTime.Now; // Update last login
+            account.UsedCapacity = 75000000; 
+            account.LastLogin = DateTime.Now;
 
             service.updateAccount(account);
 
@@ -57,6 +56,16 @@ namespace GoogleDriveUnitTestWithADO
             Assert.AreEqual(75000000, updatedAccount.UsedCapacity, "UsedCapacity should be updated.");
             Assert.IsNotNull(updatedAccount.LastLogin, "LastLogin should be updated.");
             Assert.AreEqual(account.Capacity, updatedAccount.Capacity, "Capacity should remain unchanged.");
+        }
+        [TestMethod]
+        public void TestDeleteAccount() 
+        {
+            var email = "test@example.com";
+            var account = service.GetAccountByEmail(email);
+            Assert.IsNotNull(account, "Account should exist before deletion.");
+            service.DeleteAccount(email);
+            var deletedAccount = service.GetAccountByEmail(email);
+            Assert.IsNull(deletedAccount, "Account should be deleted.");
         }
         [TestMethod]
         public void TestCreateFolder()
