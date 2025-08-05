@@ -18,7 +18,9 @@ namespace GoogleDriveUnitTestWithADO
             {
                 UserName = "testuser",
                 Email = "test@example.com",
-                PasswordHash = "hash123"
+                PasswordHash = "hash123",
+                UsedCapacity = 62235696,
+                Capacity = 200000000
             };
             service.RegisterUser(account);
             var fetched = service.GetAccountByEmail("test@example.com");
@@ -33,6 +35,28 @@ namespace GoogleDriveUnitTestWithADO
             Assert.AreEqual("castroabigail", account.UserName);
             Assert.AreEqual(62235696, account.UsedCapacity);
             Assert.AreEqual(200000000, account.Capacity);
+        }
+        [TestMethod]
+        public void TestUpdateAccount()
+        {
+            var email = "aaron85@thompson.com";
+
+            var account = service.GetAccountByEmail(email);
+            Assert.IsNotNull(account, "Account should exist before updating.");
+
+            var originalUserName = account.UserName;
+            account.UserName = "updatedUserName";
+            account.UsedCapacity = 75000000; // Update used capacity
+            account.LastLogin = DateTime.Now; // Update last login
+
+            service.updateAccount(account);
+
+            var updatedAccount = service.GetAccountByEmail(email);
+            Assert.IsNotNull(updatedAccount, "Updated account should exist.");
+            Assert.AreEqual("updatedUserName", updatedAccount.UserName, "UserName should be updated.");
+            Assert.AreEqual(75000000, updatedAccount.UsedCapacity, "UsedCapacity should be updated.");
+            Assert.IsNotNull(updatedAccount.LastLogin, "LastLogin should be updated.");
+            Assert.AreEqual(account.Capacity, updatedAccount.Capacity, "Capacity should remain unchanged.");
         }
         [TestMethod]
         public void TestCreateFolder()
