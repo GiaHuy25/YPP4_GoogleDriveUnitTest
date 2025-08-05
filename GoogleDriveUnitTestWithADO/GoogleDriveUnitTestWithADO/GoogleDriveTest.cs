@@ -27,6 +27,14 @@ namespace GoogleDriveUnitTestWithADO
             service.DeleteAccount("test@example.com");
         }
         [TestMethod]
+        public void TestGetAccountByEmail() {
+            var account = service.GetAccountByEmail("aaron85@thompson.com");
+            Assert.IsNotNull(account);
+            Assert.AreEqual("castroabigail", account.UserName);
+            Assert.AreEqual(62235696, account.UsedCapacity);
+            Assert.AreEqual(200000000, account.Capacity);
+        }
+        [TestMethod]
         public void TestCreateFolder()
         {
             var folder = new Folder
