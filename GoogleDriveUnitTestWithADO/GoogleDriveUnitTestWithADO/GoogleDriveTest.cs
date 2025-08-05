@@ -11,6 +11,12 @@ namespace GoogleDriveUnitTestWithADO
     {
         private readonly AccountService service = new(new AccountRepository());
         private readonly FolderService folderService = new(new FolderRepository());
+        //Test CRUD for AccountService
+        // Follow this flow
+        // 1. Create an account
+        // 2. Get the account by email
+        // 3. Update the account
+        // 4. Delete the account
         [TestMethod]
         public void TestCreateAccount()
         {
