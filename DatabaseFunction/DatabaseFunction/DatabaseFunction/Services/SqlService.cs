@@ -57,6 +57,9 @@ namespace DatabaseFunction.Services
                         }
                     }
                     break;
+                case "count":
+                    result = Source.Count;
+                    break;
 
                 default:
                     throw new ArgumentException("Unsupported aggregate operation");
