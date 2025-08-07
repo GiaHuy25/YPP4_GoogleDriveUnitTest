@@ -11,12 +11,38 @@ namespace GoogleDriveUnitTestWithADO.Database.UserFile
     {
         public int AddUserFile(Models.UserFile userFile)
         {
-            throw new NotImplementedException();
+            using var conn = DataAccess.DatabaseHelper.GetConnection();
+            conn.Open();
+            string query = @"INSERT INTO UserFile (FolderId, OwnerId, Size, UserFileName, UserFilePath, 
+                          UserFileThumbNailImg, FileTypeId, ModifiedDate, UserFileStatus, CreatedAt)
+                          VALUES (@FolderId, @OwnerId, @Size, @UserFileName, @UserFilePath, 
+                          @UserFileThumbNailImg, @FileTypeId, @ModifiedDate, @UserFileStatus, @CreatedAt);
+                          SELECT SCOPE_IDENTITY();";
+
+            using SqlCommand cmd = new(query, conn);
+            cmd.Parameters.AddWithValue("@FolderId", (object)userFile.FolderId ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@OwnerId", userFile.OwnerId);
+            cmd.Parameters.AddWithValue("@Size", (object)userFile.Size ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@UserFileName", userFile.UserFileName);
+            cmd.Parameters.AddWithValue("@UserFilePath", userFile.UserFilePath);
+            cmd.Parameters.AddWithValue("@UserFileThumbNailImg", userFile.UserFileThumbNailImg);
+            cmd.Parameters.AddWithValue("@FileTypeId", (object)userFile.FileTypeId ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@ModifiedDate", (object)userFile.ModifiedDate ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@UserFileStatus", userFile.UserFileStatus);
+            cmd.Parameters.AddWithValue("@CreatedAt", userFile.CreatedAt);
+
+            decimal fileId = (decimal)cmd.ExecuteScalar();
+            return (int)fileId;
         }
 
         public void DeleteUserFile(int fileId)
         {
-            throw new NotImplementedException();
+            using var conn = DataAccess.DatabaseHelper.GetConnection();
+            conn.Open();
+            string query = "DELETE FROM UserFile WHERE FileId = @FileId";
+            using SqlCommand cmd = new(query, conn);
+            cmd.Parameters.AddWithValue("@FileId", fileId);
+            cmd.ExecuteNonQuery();
         }
 
         public Models.UserFile GetUserFileById(int id)
@@ -49,7 +75,35 @@ namespace GoogleDriveUnitTestWithADO.Database.UserFile
 
         public void UpdateUserFile(Models.UserFile userFile)
         {
-            throw new NotImplementedException();
+            using var conn = DataAccess.DatabaseHelper.GetConnection();
+            conn.Open();
+            string query = @"UPDATE UserFile 
+                          SET FolderId = @FolderId,
+                              OwnerId = @OwnerId,
+                              Size = @Size,
+                              UserFileName = @UserFileName,
+                              UserFilePath = @UserFilePath,
+                              UserFileThumbNailImg = @UserFileThumbNailImg,
+                              FileTypeId = @FileTypeId,
+                              ModifiedDate = @ModifiedDate,
+                              UserFileStatus = @UserFileStatus,
+                              CreatedAt = @CreatedAt
+                          WHERE FileId = @FileId";
+
+            using SqlCommand cmd = new(query, conn);
+            cmd.Parameters.AddWithValue("@FileId", userFile.FileId);
+            cmd.Parameters.AddWithValue("@FolderId", (object)userFile.FolderId ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@OwnerId", userFile.OwnerId);
+            cmd.Parameters.AddWithValue("@Size", (object)userFile.Size ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@UserFileName", userFile.UserFileName);
+            cmd.Parameters.AddWithValue("@UserFilePath", userFile.UserFilePath);
+            cmd.Parameters.AddWithValue("@UserFileThumbNailImg", userFile.UserFileThumbNailImg);
+            cmd.Parameters.AddWithValue("@FileTypeId", (object)userFile.FileTypeId ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@ModifiedDate", (object)userFile.ModifiedDate ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@UserFileStatus", userFile.UserFileStatus);
+            cmd.Parameters.AddWithValue("@CreatedAt", userFile.CreatedAt);
+
+            cmd.ExecuteNonQuery();
         }
     }
 }
