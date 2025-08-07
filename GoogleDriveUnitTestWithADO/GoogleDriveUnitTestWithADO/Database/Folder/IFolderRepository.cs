@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using GoogleDriveUnitTestWithADO.Models;
-
-namespace GoogleDriveUnitTestWithADO.Database.Folder
+﻿namespace GoogleDriveUnitTestWithADO.Database.Folder
 {
     public interface IFolderRepository
     {
