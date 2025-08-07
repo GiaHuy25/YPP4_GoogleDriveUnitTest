@@ -2,6 +2,7 @@ using GoogleDriveUnitTestWithADO.Database.Account;
 using GoogleDriveUnitTestWithADO.Database.Folder;
 using GoogleDriveUnitTestWithADO.Services;
 using GoogleDriveUnitTestWithADO.Models;
+using GoogleDriveUnitTestWithADO.Database.UserFile;
 
 
 namespace GoogleDriveUnitTestWithADO
@@ -11,6 +12,7 @@ namespace GoogleDriveUnitTestWithADO
     {
         private readonly AccountService AccountService = new(new AccountRepository());
         private readonly FolderService FolderService = new(new FolderRepository());
+        private readonly UserFileService UserFileService = new(new UserFileRepository());
         private int _addedFolderId = 0;
         //Test CRUD for AccountService
         // Follow this flow
@@ -160,6 +162,115 @@ namespace GoogleDriveUnitTestWithADO
             // Assert
             var deletedFolder = FolderService.GetFolderById(_addedFolderId);
             Assert.IsNull(deletedFolder, "Deleted folder should not exist.");
+        }
+        [TestMethod]
+        public void AddUserFile_ShouldInsertAndReturnFileId()
+        {
+            // Arrange
+            var userFile = new UserFile
+            {
+                FolderId = 1,
+                OwnerId = 100,
+                Size = 1024,
+                UserFileName = "test.txt",
+                UserFilePath = "/files/test.txt",
+                UserFileThumbNailImg = "/thumbnails/test.jpg",
+                FileTypeId = 2,
+                ModifiedDate = DateTime.Now,
+                UserFileStatus = "Active",
+                CreatedAt = DateTime.Now
+            };
+
+            // Act
+            int fileId = UserFileService.AddUserFile(userFile);
+
+            // Assert
+            Assert.IsTrue(fileId > 0);
+            var retrievedFile = UserFileService.GetUserFileById(fileId);
+            Assert.IsNotNull(retrievedFile);
+            Assert.AreEqual(userFile.UserFileName, retrievedFile.UserFileName);
+            Assert.AreEqual(userFile.UserFilePath, retrievedFile.UserFilePath);
+        }
+
+        [TestMethod]
+        public void GetUserFileById_ShouldReturnNullForNonExistentFile()
+        {
+            // Act
+            var result = UserFileService.GetUserFileById(999);
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public void UpdateUserFile_ShouldUpdateExistingFile()
+        {
+            // Arrange
+            var userFile = new UserFile
+            {
+                FolderId = 1,
+                OwnerId = 100,
+                Size = 1024,
+                UserFileName = "test.txt",
+                UserFilePath = "/files/test.txt",
+                UserFileThumbNailImg = "/thumbnails/test.jpg",
+                FileTypeId = 2,
+                ModifiedDate = DateTime.Now,
+                UserFileStatus = "Active",
+                CreatedAt = DateTime.Now
+            };
+            int fileId = UserFileService.AddUserFile(userFile);
+
+            // Act
+            var updatedFile = new UserFile
+            {
+                FileId = fileId,
+                FolderId = 2,
+                OwnerId = 100,
+                Size = 2048,
+                UserFileName = "updated.txt",
+                UserFilePath = "/files/updated.txt",
+                UserFileThumbNailImg = "/thumbnails/updated.jpg",
+                FileTypeId = 3,
+                ModifiedDate = DateTime.Now.AddDays(1),
+                UserFileStatus = "Modified",
+                CreatedAt = userFile.CreatedAt
+            };
+            UserFileService.UpdateUserFile(updatedFile);
+
+            // Assert
+            var retrievedFile = UserFileService.GetUserFileById(fileId);
+            Assert.IsNotNull(retrievedFile);
+            Assert.AreEqual(updatedFile.UserFileName, retrievedFile.UserFileName);
+            Assert.AreEqual(updatedFile.Size, retrievedFile.Size);
+            Assert.AreEqual(updatedFile.UserFileStatus, retrievedFile.UserFileStatus);
+        }
+
+        [TestMethod]
+        public void DeleteUserFile_ShouldRemoveFile()
+        {
+            // Arrange
+            var userFile = new UserFile
+            {
+                FolderId = 1,
+                OwnerId = 100,
+                Size = 1024,
+                UserFileName = "test.txt",
+                UserFilePath = "/files/test.txt",
+                UserFileThumbNailImg = "/thumbnails/test.jpg",
+                FileTypeId = 2,
+                ModifiedDate = DateTime.Now,
+                UserFileStatus = "Active",
+                CreatedAt = DateTime.Now
+            };
+            int fileId = UserFileService.AddUserFile(userFile);
+
+            // Act
+            UserFileService.DeleteUserFile(fileId);
+
+            // Assert
+            var retrievedFile = UserFileService.GetUserFileById(fileId);
+            Assert.IsNull(retrievedFile);
         }
     }
 
