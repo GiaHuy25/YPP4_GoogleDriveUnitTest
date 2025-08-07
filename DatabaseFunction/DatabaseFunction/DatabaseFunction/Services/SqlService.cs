@@ -1,80 +1,105 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DatabaseFunction.Interfaces;
+﻿using DatabaseFunction.Interfaces;
 
 namespace DatabaseFunction.Services
 {
     public class SqlService<L, R> : ISqlService<L, R>
     {
-        public int Aggregate(List<L> Source, Func<L, int> selector, string operation)
+        public int Aggregate(IEnumerable<L> Source, Func<L, int> selector, string operation)
         {
-            if (Source == null || !Source.Any()) return 0;
+            if (Source == null) return 0;
 
-            int result = 0;
-            switch (operation.ToLower())
+            using (var enumerator = Source.GetEnumerator())
             {
-                case "sum":
-                    foreach (var item in Source)
-                    {
-                        result += selector(item);
-                    }
-                    break;
+                if (!enumerator.MoveNext()) return 0;
 
-                case "avg":
-                    int sum = 0;
-                    int count = 0;
-                    foreach (var item in Source)
-                    {
-                        sum += selector(item);
-                        count++;
-                    }
-                    result = count > 0 ? sum / count : 0;
-                    break;
-
-                case "max":
-                    result = selector(Source[0]);
-                    foreach (var item in Source)
-                    {
-                        var value = selector(item);
-                        if (value > result)
+                int result = 0;
+                switch (operation.ToLower())
+                {
+                    case "sum":
+                        result = selector(enumerator.Current);
+                        while (enumerator.MoveNext())
                         {
-                            result = value;
+                            result += selector(enumerator.Current);
                         }
-                    }
-                    break;
+                        break;
 
-                case "min":
-                    result = selector(Source[0]);
-                    foreach (var item in Source)
-                    {
-                        var value = selector(item);
-                        if (value < result)
+                    case "avg":
+                        int sum = selector(enumerator.Current);
+                        int count = 1;
+                        while (enumerator.MoveNext())
                         {
-                            result = value;
+                            sum += selector(enumerator.Current);
+                            count++;
                         }
-                    }
-                    break;
-                case "count":
-                    result = Source.Count;
-                    break;
+                        result = count > 0 ? sum / count : 0;
+                        break;
 
-                default:
-                    throw new ArgumentException("Unsupported aggregate operation");
+                    case "max":
+                        result = selector(enumerator.Current);
+                        while (enumerator.MoveNext())
+                        {
+                            var value = selector(enumerator.Current);
+                            if (value > result)
+                            {
+                                result = value;
+                            }
+                        }
+                        break;
+
+                    case "min":
+                        result = selector(enumerator.Current);
+                        while (enumerator.MoveNext())
+                        {
+                            var value = selector(enumerator.Current);
+                            if (value < result)
+                            {
+                                result = value;
+                            }
+                        }
+                        break;
+                    case "count":
+                        result = 1;
+                        while (enumerator.MoveNext())
+                        {
+                            result++;
+                        }
+                        break;
+
+                    default:
+                        throw new ArgumentException("Unsupported aggregate operation");
+                }
+
+                return result;
             }
-
-            return result;
         }
 
-        public List<(L, R)> CrossJoin(List<L> left, List<R> right)
+        public List<(L, R)> CrossJoin(IEnumerable<L> left, IEnumerable<R> right)
         {
             var result = new List<(L, R)>();
+            var leftEnumerator = left.GetEnumerator();
+            var rightEnumerator = right.GetEnumerator();
 
-            foreach (var leftItem in left)
+            // Materialize left into a list for nested iteration
+            var leftList = new List<L>();
+            while (leftEnumerator.MoveNext())
             {
-                foreach (var rightItem in right)
+                leftList.Add(leftEnumerator.Current);
+            }
+
+            // Materialize right into a list for nested iteration
+            var rightList = new List<R>();
+            if (rightEnumerator.MoveNext())
+            {
+                rightList.Add(rightEnumerator.Current);
+                while (rightEnumerator.MoveNext())
+                {
+                    rightList.Add(rightEnumerator.Current);
+                }
+            }
+
+            foreach (var leftItem in leftList)
+            {
+                foreach (var rightItem in rightList)
                 {
                     result.Add((leftItem, rightItem));
                 }
@@ -83,13 +108,29 @@ namespace DatabaseFunction.Services
             return result;
         }
 
-        public List<(L, R)> InnerJoin(List<L> left, List<R> right, Func<L, R, bool> keySelector)
+        public List<(L, R)> InnerJoin(IEnumerable<L> left, IEnumerable<R> right, Func<L, R, bool> keySelector)
         {
             var result = new List<(L, R)>();
+            var leftEnumerator = left.GetEnumerator();
+            var rightEnumerator = right.GetEnumerator();
 
-            foreach (var leftItem in left)
+            // Materialize left into a list for nested iteration
+            var leftList = new List<L>();
+            while (leftEnumerator.MoveNext())
             {
-                foreach (var rightItem in right)
+                leftList.Add(leftEnumerator.Current);
+            }
+
+            // Materialize right into a list for nested iteration
+            var rightList = new List<R>();
+            while (rightEnumerator.MoveNext())
+            {
+                rightList.Add(rightEnumerator.Current);
+            }
+
+            foreach (var leftItem in leftList)
+            {
+                foreach (var rightItem in rightList)
                 {
                     if (keySelector(leftItem, rightItem))
                     {
@@ -101,14 +142,30 @@ namespace DatabaseFunction.Services
             return result;
         }
 
-        public List<(L, R)> LeftJoin(List<L> left, List<R> right, Func<L, R, bool> keySelector)
+        public List<(L, R)> LeftJoin(IEnumerable<L> left, IEnumerable<R> right, Func<L, R, bool> keySelector)
         {
             var result = new List<(L, R?)>();
+            var leftEnumerator = left.GetEnumerator();
+            var rightEnumerator = right.GetEnumerator();
 
-            foreach (var leftItem in left)
+            // Materialize left into a list for outer loop
+            var leftList = new List<L>();
+            while (leftEnumerator.MoveNext())
+            {
+                leftList.Add(leftEnumerator.Current);
+            }
+
+            // Materialize right into a list for inner loop
+            var rightList = new List<R>();
+            while (rightEnumerator.MoveNext())
+            {
+                rightList.Add(rightEnumerator.Current);
+            }
+
+            foreach (var leftItem in leftList)
             {
                 bool hasMatch = false;
-                foreach (var rightItem in right)
+                foreach (var rightItem in rightList)
                 {
                     if (keySelector(leftItem, rightItem))
                     {
@@ -126,7 +183,7 @@ namespace DatabaseFunction.Services
             return result;
         }
 
-        public List<L> Where(List<L> Source, Func<L, bool> predicate)
+        public List<L> Where(IEnumerable<L> Source, Func<L, bool> predicate)
         {
             var result = new List<L>();
 
