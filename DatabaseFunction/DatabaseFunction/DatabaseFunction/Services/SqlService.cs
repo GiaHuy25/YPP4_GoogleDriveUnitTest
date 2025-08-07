@@ -147,15 +147,11 @@ namespace DatabaseFunction.Services
             var result = new List<(L, R?)>();
             var leftEnumerator = left.GetEnumerator();
             var rightEnumerator = right.GetEnumerator();
-
-            // Materialize left into a list for outer loop
             var leftList = new List<L>();
             while (leftEnumerator.MoveNext())
             {
                 leftList.Add(leftEnumerator.Current);
             }
-
-            // Materialize right into a list for inner loop
             var rightList = new List<R>();
             while (rightEnumerator.MoveNext())
             {
