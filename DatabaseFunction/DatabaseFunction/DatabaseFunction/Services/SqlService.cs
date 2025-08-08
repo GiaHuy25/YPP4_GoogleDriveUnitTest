@@ -193,5 +193,45 @@ namespace DatabaseFunction.Services
 
             return result;
         }
+        public Dictionary<TKey, List<T>> GroupBy<T, TKey>(IEnumerable<T> source, Func<T, TKey> keySelector)
+        {
+            if (source == null) throw new ArgumentNullException(nameof(source));
+            if (keySelector == null) throw new ArgumentNullException(nameof(keySelector));
+
+            var result = new Dictionary<TKey, List<T>>();
+
+            foreach (var item in source)
+            {
+                var key = keySelector(item);
+                if (!result.ContainsKey(key))
+                {
+                    result[key] = new List<T>();
+                }
+                result[key].Add(item);
+            }
+
+            return result;
+        }
+
+        public List<T> OrderBy<T, TKey>(IEnumerable<T> source, Func<T, TKey> keySelector, bool descending = false)
+        {
+            if (source == null) throw new ArgumentNullException(nameof(source));
+            if (keySelector == null) throw new ArgumentNullException(nameof(keySelector));
+
+            var result = source.ToList();
+            result.Sort((a, b) =>
+            {
+                var keyA = keySelector(a);
+                var keyB = keySelector(b);
+
+                if (descending)
+                {
+                    return Comparer<TKey>.Default.Compare(keyB, keyA);
+                }
+                return Comparer<TKey>.Default.Compare(keyA, keyB);
+            });
+
+            return result;
+        }
     }
 }
