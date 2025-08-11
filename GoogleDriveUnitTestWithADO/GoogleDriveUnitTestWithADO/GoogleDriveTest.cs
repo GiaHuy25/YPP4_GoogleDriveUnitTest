@@ -6,6 +6,7 @@ using GoogleDriveUnitTestWithADO.Database.UserFile;
 using GoogleDriveUnitTestWithADO.Database.SharedUser;
 using GoogleDriveUnitTestWithADO.Database.Share;
 using Microsoft.Identity.Client;
+using GoogleDriveUnitTestWithADO.Database.Permission;
 
 
 namespace GoogleDriveUnitTestWithADO
@@ -18,6 +19,7 @@ namespace GoogleDriveUnitTestWithADO
         private readonly UserFileService UserFileService = new(new UserFileRepository());
         private readonly SharedUserService SharedUserService = new(new SharedUserRepository());
         private readonly ShareService ShareService = new(new ShareRepositpry());
+        private readonly PermissionService permissionService = new(new PermissionRepository());
         private int _addedFolderId = 0;
         //Test CRUD for AccountService
         // Follow this flow
@@ -388,6 +390,101 @@ namespace GoogleDriveUnitTestWithADO
             // Assert
             var retrievedShare = ShareService.GetShareById(shareId);
             Assert.IsNull(retrievedShare, "Retrieved share should be null after deletion.");
+        }
+        [TestMethod]
+        public void AddSharedUSer_ShouldInsertAndReturnSharedUserId()
+        {
+            // Arrange
+            var sharedUser = new SharedUser
+            {
+                ShareId = 1,
+                UserId = 2,
+                PermissionId = 1,
+                CreatedAt = DateTime.Now,
+                ModifiedAt = DateTime.Now
+            };
+
+            int sharedUserId = SharedUserService.AddSharedUser(sharedUser);
+
+            // Assert
+            Assert.IsTrue(sharedUserId > 0);
+            var retrievedSharedUser = SharedUserService.GetSharedUserById(sharedUserId);
+            Assert.IsNotNull(retrievedSharedUser);
+            Assert.AreEqual(sharedUser.ShareId, retrievedSharedUser.ShareId);
+            Assert.AreEqual(sharedUser.UserId, retrievedSharedUser.UserId);
+            Assert.AreEqual(sharedUser.PermissionId, retrievedSharedUser.PermissionId);
+        }
+        [TestMethod]
+        public void GetSharedUserById_ShouldReturnNullForNonExistentSharedUser()
+        {
+            // Act
+            var result = SharedUserService.GetSharedUserById(999);
+
+            // Assert
+            Assert.IsNull(result, "Result should be null for non-existent shared user.");
+        }
+        [TestMethod]
+        public void UpdateSharedUser_ShouldUpdateExistingSharedUser()
+        {
+            // Arrange
+            var sharedUser = new SharedUser
+            {
+                ShareId = 1,
+                UserId = 2,
+                PermissionId = 1,
+                CreatedAt = DateTime.Now,
+                ModifiedAt = DateTime.Now
+            };
+            int sharedUserId = SharedUserService.AddSharedUser(sharedUser);
+
+            // Act
+            var updatedSharedUser = new SharedUser
+            {
+                SharedUserId = sharedUserId,
+                ShareId = 1,
+                UserId = 2,
+                PermissionId = 2,
+                CreatedAt = sharedUser.CreatedAt,
+                ModifiedAt = DateTime.Now.AddDays(1)
+            };
+            SharedUserService.UpdateSharedUser(updatedSharedUser);
+
+            // Assert
+            var retrievedSharedUser = SharedUserService.GetSharedUserById(sharedUserId);
+            Assert.IsNotNull(retrievedSharedUser);
+            Assert.AreEqual(updatedSharedUser.PermissionId, retrievedSharedUser.PermissionId);
+            Assert.IsTrue(retrievedSharedUser.ModifiedAt >= updatedSharedUser.ModifiedAt);
+        }
+        [TestMethod]
+        public void deletingSharedUser_ShouldDeleteSharedUser() 
+        {
+            var sharedUser = new SharedUser
+            {
+                ShareId = 1,
+                UserId = 2,
+                PermissionId = 1,
+                CreatedAt = DateTime.Now,
+                ModifiedAt = DateTime.Now
+            };
+            int sharedUserId = SharedUserService.AddSharedUser(sharedUser);
+            // Act 
+            SharedUserService.DeleteSharedUser(sharedUserId);
+            // Assert
+            var retrievedSharedUser = SharedUserService.GetSharedUserById(sharedUserId);
+            Assert.IsNull(retrievedSharedUser, "Retrieved shared user should be null after deletion.");
+        }
+        [TestMethod]
+        public void GetPermissionName_ShouldReturnPermissionName()
+        {
+            // Arrange
+            int permissionId = 1; 
+            string expectedPermissionName = "reader"; 
+
+            // Act
+            string permissionName = permissionService.GetPermissionNameById(permissionId);
+
+            // Assert
+            Assert.AreEqual(expectedPermissionName, permissionName, "Permission name should match the expected value.");
         }
     }
 
