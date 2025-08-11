@@ -3,6 +3,9 @@ using GoogleDriveUnitTestWithADO.Database.Folder;
 using GoogleDriveUnitTestWithADO.Services;
 using GoogleDriveUnitTestWithADO.Models;
 using GoogleDriveUnitTestWithADO.Database.UserFile;
+using GoogleDriveUnitTestWithADO.Database.SharedUser;
+using GoogleDriveUnitTestWithADO.Database.Share;
+using Microsoft.Identity.Client;
 
 
 namespace GoogleDriveUnitTestWithADO
@@ -13,6 +16,8 @@ namespace GoogleDriveUnitTestWithADO
         private readonly AccountService AccountService = new(new AccountRepository());
         private readonly FolderService FolderService = new(new FolderRepository());
         private readonly UserFileService UserFileService = new(new UserFileRepository());
+        private readonly SharedUserService SharedUserService = new(new SharedUserRepository());
+        private readonly ShareService ShareService = new(new ShareRepositpry());
         private int _addedFolderId = 0;
         //Test CRUD for AccountService
         // Follow this flow
@@ -271,6 +276,118 @@ namespace GoogleDriveUnitTestWithADO
             // Assert
             var retrievedFile = UserFileService.GetUserFileById(fileId);
             Assert.IsNull(retrievedFile);
+        }
+        [TestMethod]
+        public void addShare_ShouldInsertAndReturnShareId()
+        {
+            // Arrange
+            var share = new Share
+            {
+                Sharer = 1,
+                ObjectId = 1,
+                ObjectTypeId = 2,
+                CreatedAt = DateTime.Now,
+                ShareUrl = "https://example.com/share/1",
+                UrlApprove = true,
+            };
+
+            int shareId = ShareService.AddShare(share);
+
+            // Assert
+            Assert.IsTrue(shareId > 0, "ShareId should be a positive integer.");
+            var retrievedShare = ShareService.GetShareById(shareId);
+            Assert.IsNotNull(retrievedShare, "Retrieved share should not be null.");
+            Assert.AreEqual(share.Sharer, retrievedShare.Sharer, "Sharer should match.");
+            Assert.AreEqual(share.ObjectId, retrievedShare.ObjectId, "ObjectId should match.");
+            Assert.AreEqual(share.ObjectTypeId, retrievedShare.ObjectTypeId, "ObjectTypeId should match.");
+            Assert.AreEqual(share.ShareUrl, retrievedShare.ShareUrl, "ShareUrl should match.");
+            Assert.AreEqual(share.UrlApprove, retrievedShare.UrlApprove, "UrlApprove should match.");
+        }
+        [TestMethod]
+        public void GetShareById_ShouldReturnNullForNonExistentShare()
+        {
+            var result = ShareService.GetShareById(999);
+            Assert.IsNull(result, "Result should be null for non-existent share.");
+        }
+        [TestMethod]
+        public void GetShareById_ShouldReturnShare()
+        {
+            var share = new Share
+            {
+                Sharer = 1,
+                ObjectId = 1,
+                ObjectTypeId = 2,
+                CreatedAt = DateTime.Now,
+                ShareUrl = "https://example.com/share/1",
+                UrlApprove = true,
+            };
+            int shareId = ShareService.AddShare(share);
+
+            var retrievedShare = ShareService.GetShareById(shareId);
+
+            Assert.IsNotNull(retrievedShare, "Retrieved share should not be null.");
+            Assert.AreEqual(share.Sharer, retrievedShare.Sharer, "Sharer should match.");
+            Assert.AreEqual(share.ObjectId, retrievedShare.ObjectId, "ObjectId should match.");
+            Assert.AreEqual(share.ObjectTypeId, retrievedShare.ObjectTypeId, "ObjectTypeId should match.");
+            Assert.AreEqual(share.ShareUrl, retrievedShare.ShareUrl, "ShareUrl should match.");
+            Assert.AreEqual(share.UrlApprove, retrievedShare.UrlApprove, "UrlApprove should match.");
+        }
+        [TestMethod]
+        public void UpdateShare_ShouldUpdateExistingShare()
+        {
+            var share = new Share
+            {
+                Sharer = 1,
+                ObjectId = 1,
+                ObjectTypeId = 2,
+                CreatedAt = DateTime.Now,
+                ShareUrl = "https://example.com/share/1",
+                UrlApprove = true,
+            };
+            int shareId = ShareService.AddShare(share);
+
+            // Act
+            var updatedShare = new Share
+            {
+                ShareId = shareId,
+                Sharer = 1, 
+                ObjectId = 1, 
+                ObjectTypeId = 2,
+                CreatedAt = DateTime.Now.AddDays(1),
+                ShareUrl = "https://example.com/share/updated",
+                UrlApprove = false 
+            };
+            ShareService.UpdateShare(updatedShare);
+
+            // Assert
+            var retrievedShare = ShareService.GetShareById(shareId);
+            Assert.IsNotNull(retrievedShare, "Retrieved share should not be null.");
+            Assert.AreEqual(updatedShare.Sharer, retrievedShare.Sharer, "Sharer should match.");
+            Assert.AreEqual(updatedShare.ObjectId, retrievedShare.ObjectId, "ObjectId should match.");
+            Assert.AreEqual(updatedShare.ObjectTypeId, retrievedShare.ObjectTypeId, "ObjectTypeId should match.");
+            Assert.AreEqual(updatedShare.ShareUrl, retrievedShare.ShareUrl, "ShareUrl should match.");
+            Assert.AreEqual(updatedShare.UrlApprove, retrievedShare.UrlApprove, "UrlApprove should match.");
+        }
+        [TestMethod]
+        public void DeleteShare_ShouldRemoveShare()
+        {
+            var share = new Share
+            {
+                Sharer = 1,
+                ObjectId = 1,
+                ObjectTypeId = 2,
+                CreatedAt = DateTime.Now,
+                ShareUrl = "https://example.com/share/1",
+                UrlApprove = true,
+            };
+            int shareId = ShareService.AddShare(share);
+
+            // Act
+            ShareService.DeleteShare(shareId);
+
+            // Assert
+            var retrievedShare = ShareService.GetShareById(shareId);
+            Assert.IsNull(retrievedShare, "Retrieved share should be null after deletion.");
         }
     }
 

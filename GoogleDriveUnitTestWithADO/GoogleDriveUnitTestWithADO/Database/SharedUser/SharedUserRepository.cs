@@ -5,7 +5,7 @@ namespace GoogleDriveUnitTestWithADO.Database.SharedUser
 {
     public class SharedUserRepository : ISharedUserRepository
     {
-        public int addSharedUser(Models.SharedUser sharedUser)
+        public int AddSharedUser(Models.SharedUser sharedUser)
         {
             using var conn = DataAccess.DatabaseHelper.GetConnection();
             conn.Open();
