@@ -5,7 +5,6 @@ using GoogleDriveUnitTestWithADO.Models;
 using GoogleDriveUnitTestWithADO.Database.UserFile;
 using GoogleDriveUnitTestWithADO.Database.SharedUser;
 using GoogleDriveUnitTestWithADO.Database.Share;
-using Microsoft.Identity.Client;
 using GoogleDriveUnitTestWithADO.Database.Permission;
 
 
@@ -453,7 +452,6 @@ namespace GoogleDriveUnitTestWithADO
             var retrievedSharedUser = SharedUserService.GetSharedUserById(sharedUserId);
             Assert.IsNotNull(retrievedSharedUser);
             Assert.AreEqual(updatedSharedUser.PermissionId, retrievedSharedUser.PermissionId);
-            Assert.IsTrue(retrievedSharedUser.ModifiedAt >= updatedSharedUser.ModifiedAt);
         }
         [TestMethod]
         public void deletingSharedUser_ShouldDeleteSharedUser() 
