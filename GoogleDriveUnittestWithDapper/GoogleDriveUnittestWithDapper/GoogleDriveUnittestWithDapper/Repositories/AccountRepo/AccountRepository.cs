@@ -17,6 +17,23 @@ namespace GoogleDriveUnittestWithDapper.Repositories.AccountRepo
         {
             _connection = connection;
         }
+
+        public Task<IEnumerable<AccountDto>> GetBannedUser(int userId)
+        {
+            var query = @"
+                SELECT 
+                    BU.Id AS BanId,
+                    Banned.UserName AS BannedUserName,
+                    Banner.UserName AS BannedByUserName,
+                    BU.BannedAt
+                FROM BannedUser BU
+                JOIN Account Banned ON BU.UserId = Banned.UserId
+                JOIN Account Banner ON BU.BannedUserId = Banner.UserId
+                where BU.UserId = @userId
+                ORDER BY BU.BannedAt DESC";
+            return _connection.QueryAsync<AccountDto>(query, new { userId });
+        }
+
         public Task<AccountDto> GetUserByIdAsync(int userId)
         {
             var query = @"

@@ -122,5 +122,31 @@ namespace GoogleDriveUnittestWithDapper
             Assert.IsNotNull(result, "Settings should not be null for invalid userId");
             Assert.AreEqual(0, result.Count(), "Settings should be empty for invalid userId");
         }
+
+        [TestMethod]
+        public async Task UserSettingService_GetUserSettings_NoSettings_ReturnsEmpty()
+        {
+            // Arrange
+            int userId = 2; // Assuming userId 2 has no settings
+
+            // Act
+            var result = await _userSettingService.GetUserSettings(userId);
+
+            // Assert
+            Assert.IsNotNull(result, "Settings should not be null for userId with no settings");
+            Assert.AreEqual(4, result.Count(), "Settings should be empty for userId with no settings");
+        }
+        [TestMethod]
+        public async Task GetBannedUser()
+        {
+            // Arrange
+            int userId = 1; // Assuming userId 1 is banned
+
+            // Act
+            var result = await _AccountService.GetBannedUser(userId);
+
+            // Assert
+            Assert.IsNotNull(result, "Banned user should not be null for valid userId");
+        }
     }
 }

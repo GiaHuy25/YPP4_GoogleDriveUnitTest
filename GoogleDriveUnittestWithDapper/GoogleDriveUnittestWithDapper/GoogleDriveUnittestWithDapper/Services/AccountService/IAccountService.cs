@@ -10,5 +10,6 @@ namespace GoogleDriveUnittestWithDapper.Services.AccountService
     public interface IAccountService
     {
         Task<AccountDto> GetUserById(int userId);
+        Task<IEnumerable<AccountDto>> GetBannedUser(int userId);
     }
 }

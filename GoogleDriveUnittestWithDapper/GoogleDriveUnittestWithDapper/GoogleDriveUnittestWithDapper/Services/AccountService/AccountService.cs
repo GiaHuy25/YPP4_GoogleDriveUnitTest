@@ -15,6 +15,17 @@ namespace GoogleDriveUnittestWithDapper.Services.AccountService
         {
             _accountRepository = accountRepository ?? throw new ArgumentNullException(nameof(accountRepository));
         }
+
+        public Task<IEnumerable<AccountDto>> GetBannedUser(int userId)
+        {
+            if (userId <= 0)
+            {
+                throw new ArgumentException("UserId must be a positive integer.", nameof(userId));
+            }
+            var bannedUsers = _accountRepository.GetBannedUser(userId);
+            return bannedUsers;
+        }
+
         public Task<AccountDto> GetUserById(int userId)
         {
             if (userId <= 0)

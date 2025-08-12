@@ -362,11 +362,12 @@ namespace GoogleDriveUnittestWithDapper
             connection.Execute("INSERT INTO UserProduct (UserId, ProductId, PayingDatetime, IsFirstPaying, PromotionId, EndDatetime) VALUES (" + ownerId1 + ", " + productId3 + ", '2025-08-12 17:45:00', 0, " + promotionId3 + ", '2025-11-11 17:45:00');");
 
             // Insert into BannedUser (3 rows)
-            connection.Execute("INSERT INTO BannedUser (UserId, BannedAt, BannedUserId) VALUES (" + ownerId1 + ", '2025-08-12 17:45:00', " + ownerId1 + ");");
+
             int ownerId2 = connection.QuerySingle<int>("SELECT UserId FROM Account WHERE UserName = 'Jane'");
-            connection.Execute("INSERT INTO BannedUser (UserId, BannedAt, BannedUserId) VALUES (" + ownerId2 + ", '2025-08-12 17:45:00', " + ownerId1 + ");");
             int ownerId3 = connection.QuerySingle<int>("SELECT UserId FROM Account WHERE UserName = 'Bob'");
-            connection.Execute("INSERT INTO BannedUser (UserId, BannedAt, BannedUserId) VALUES (" + ownerId3 + ", '2025-08-12 17:45:00', " + ownerId1 + ");");
+            connection.Execute("INSERT INTO BannedUser (UserId, BannedAt, BannedUserId) VALUES (" + ownerId1 + ", '2025-08-12 17:45:00', " + ownerId2 + ");");
+            connection.Execute("INSERT INTO BannedUser (UserId, BannedAt, BannedUserId) VALUES (" + ownerId1 + ", '2025-08-12 17:45:00', " + ownerId3 + ");");
+            connection.Execute("INSERT INTO BannedUser (UserId, BannedAt, BannedUserId) VALUES (" + ownerId2 + ", '2025-08-12 17:45:00', " + ownerId3 + ");");
 
             // Insert into FavoriteObject (3 rows)
             connection.Execute("INSERT INTO FavoriteObject (OwnerId, ObjectId, ObjectTypeId) VALUES (" + ownerId1 + ", " + folderId1 + ", " + objectTypeId1 + ");");
