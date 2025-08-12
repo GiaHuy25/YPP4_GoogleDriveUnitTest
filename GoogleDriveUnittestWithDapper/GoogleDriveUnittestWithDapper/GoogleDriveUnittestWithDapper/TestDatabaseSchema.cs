@@ -271,7 +271,7 @@ namespace GoogleDriveUnittestWithDapper
         public static void InsertSampleData(IDbConnection connection)
         {
             // Insert into Account (3 rows)
-            connection.Execute("INSERT INTO Account (UserName, Email, PasswordHash) VALUES ('John', 'john@example.com', 'hash123');");
+            connection.Execute("INSERT INTO Account (UserName, Email, PasswordHash, UserImg) VALUES ('John', 'john@example.com', 'hash123', 'img1.jpg');");
             connection.Execute("INSERT INTO Account (UserName, Email, PasswordHash) VALUES ('Jane', 'jane@example.com', 'hash456');");
             connection.Execute("INSERT INTO Account (UserName, Email, PasswordHash) VALUES ('Bob', 'bob@example.com', 'hash789');");
 
@@ -281,9 +281,9 @@ namespace GoogleDriveUnittestWithDapper
             connection.Execute("INSERT INTO Color (ColorName, ColorIcon) VALUES ('Green', 'green_icon.png');");
 
             // Insert into Permission (3 rows)
-            connection.Execute("INSERT INTO Permission (PermissionName, PermissionPriority) VALUES ('Read', 1);");
-            connection.Execute("INSERT INTO Permission (PermissionName, PermissionPriority) VALUES ('Write', 2);");
-            connection.Execute("INSERT INTO Permission (PermissionName, PermissionPriority) VALUES ('Admin', 3);");
+            connection.Execute("INSERT INTO Permission (PermissionName, PermissionPriority) VALUES ('Owner', 1);");
+            connection.Execute("INSERT INTO Permission (PermissionName, PermissionPriority) VALUES ('Contributor', 2);");
+            connection.Execute("INSERT INTO Permission (PermissionName, PermissionPriority) VALUES ('Viewer', 3);");
 
             // Insert into ObjectType (3 rows)
             connection.Execute("INSERT INTO ObjectType (ObjectTypeName) VALUES ('Folder');");
@@ -321,13 +321,13 @@ namespace GoogleDriveUnittestWithDapper
             connection.Execute("INSERT INTO Share (Sharer, ObjectId, ObjectTypeId, ShareUrl, UrlApprove) VALUES (" + ownerId1 + ", " + folderId1 + ", " + objectTypeId1 + ", 'http://share3', 0);");
 
             // Insert into SharedUser (3 rows)
-            int permissionId1 = connection.QuerySingle<int>("SELECT PermissionId FROM Permission WHERE PermissionName = 'Read'");
+            int permissionId3 = connection.QuerySingle<int>("SELECT PermissionId FROM Permission WHERE PermissionName = 'Viewer'");
             int shareId1 = connection.QuerySingle<int>("SELECT ShareId FROM Share WHERE ShareUrl = 'http://share1'");
-            connection.Execute("INSERT INTO SharedUser (ShareId, UserId, PermissionId, CreatedAt, ModifiedAt) VALUES (" + shareId1 + ", " + ownerId1 + ", " + permissionId1 + ", '2025-08-12 17:45:00', '2025-08-12 17:45:00');");
+            connection.Execute("INSERT INTO SharedUser (ShareId, UserId, PermissionId, CreatedAt, ModifiedAt) VALUES (" + shareId1 + ", " + ownerId1 + ", " + permissionId3 + ", '2025-08-12 17:45:00', '2025-08-12 17:45:00');");
             int shareId2 = connection.QuerySingle<int>("SELECT ShareId FROM Share WHERE ShareUrl = 'http://share2'");
-            connection.Execute("INSERT INTO SharedUser (ShareId, UserId, PermissionId, CreatedAt, ModifiedAt) VALUES (" + shareId2 + ", " + ownerId1 + ", " + permissionId1 + ", '2025-08-12 17:45:00', '2025-08-12 17:45:00');");
+            connection.Execute("INSERT INTO SharedUser (ShareId, UserId, PermissionId, CreatedAt, ModifiedAt) VALUES (" + shareId2 + ", " + ownerId1 + ", " + permissionId3 + ", '2025-08-12 17:45:00', '2025-08-12 17:45:00');");
             int shareId3 = connection.QuerySingle<int>("SELECT ShareId FROM Share WHERE ShareUrl = 'http://share3'");
-            connection.Execute("INSERT INTO SharedUser (ShareId, UserId, PermissionId, CreatedAt, ModifiedAt) VALUES (" + shareId3 + ", " + ownerId1 + ", " + permissionId1 + ", '2025-08-12 17:45:00', '2025-08-12 17:45:00');");
+            connection.Execute("INSERT INTO SharedUser (ShareId, UserId, PermissionId, CreatedAt, ModifiedAt) VALUES (" + shareId3 + ", " + ownerId1 + ", " + permissionId3 + ", '2025-08-12 17:45:00', '2025-08-12 17:45:00');");
 
             // Insert into FileVersion (3 rows)
             int fileId3 = connection.QuerySingle<int>("SELECT FileId FROM UserFile WHERE UserFileName = 'Note1.txt'");
@@ -388,26 +388,40 @@ namespace GoogleDriveUnittestWithDapper
             connection.Execute("INSERT INTO UserSession (UserId, Token, ExpiresAt) VALUES (" + ownerId2 + ", 'token2', '2025-08-13 17:45:00');");
             connection.Execute("INSERT INTO UserSession (UserId, Token, ExpiresAt) VALUES (" + ownerId3 + ", 'token3', '2025-08-13 17:45:00');");
 
-            // Insert into AppSettingKey (3 rows)
-            connection.Execute("INSERT INTO AppSettingKey (SettingKey, IsBoolean, Decription) VALUES ('Theme', 0, 'User interface theme');");
-            connection.Execute("INSERT INTO AppSettingKey (SettingKey, IsBoolean, Decription) VALUES ('Language', 0, 'User language preference');");
-            connection.Execute("INSERT INTO AppSettingKey (SettingKey, IsBoolean, Decription) VALUES ('Notifications', 1, 'Notification settings');");
+            connection.Execute("INSERT INTO AppSettingKey (SettingKey, IsBoolean) VALUES ('StartPage', 0);");
+            connection.Execute("INSERT INTO AppSettingKey (SettingKey, IsBoolean) VALUES ('ThemeMode', 0);");
+            connection.Execute("INSERT INTO AppSettingKey (SettingKey, IsBoolean) VALUES ('Density', 0);");
+            connection.Execute("INSERT INTO AppSettingKey (SettingKey, IsBoolean) VALUES ('OpenPDFMode', 0);");
+            connection.Execute("INSERT INTO AppSettingKey (SettingKey, IsBoolean) VALUES ('ConvertUploadsToGoogleDocs', 1);");
+            connection.Execute("INSERT INTO AppSettingKey (SettingKey, IsBoolean) VALUES ('OfflineModeEnabled', 1);");
+            connection.Execute("INSERT INTO AppSettingKey (SettingKey, IsBoolean) VALUES ('ShowFilePreviewDetails', 1);");
+            connection.Execute("INSERT INTO AppSettingKey (SettingKey, IsBoolean) VALUES ('EnableSoundEffects', 1);");
 
-            // Insert into AppSettingOption (3 rows)
-            int settingKeyId1 = connection.QuerySingle<int>("SELECT SettingId FROM AppSettingKey WHERE SettingKey = 'Theme'");
-            connection.Execute("INSERT INTO AppSettingOption (SettingKeyId, SettingValue) VALUES (" + settingKeyId1 + ", 'Dark');");
-            int settingKeyId2 = connection.QuerySingle<int>("SELECT SettingId FROM AppSettingKey WHERE SettingKey = 'Language'");
-            connection.Execute("INSERT INTO AppSettingOption (SettingKeyId, SettingValue) VALUES (" + settingKeyId2 + ", 'English');");
-            int settingKeyId3 = connection.QuerySingle<int>("SELECT SettingId FROM AppSettingKey WHERE SettingKey = 'Notifications'");
-            connection.Execute("INSERT INTO AppSettingOption (SettingKeyId, SettingValue) VALUES (" + settingKeyId3 + ", 'On');");
+            // Insert into AppSettingOption (10 rows)
+            connection.Execute("INSERT INTO AppSettingOption (SettingKeyId, SettingValue) VALUES (1, 'MyDrive');");
+            connection.Execute("INSERT INTO AppSettingOption (SettingKeyId, SettingValue) VALUES (1, 'Home');");
+            connection.Execute("INSERT INTO AppSettingOption (SettingKeyId, SettingValue) VALUES (2, 'Light');");
+            connection.Execute("INSERT INTO AppSettingOption (SettingKeyId, SettingValue) VALUES (2, 'Dark');");
+            connection.Execute("INSERT INTO AppSettingOption (SettingKeyId, SettingValue) VALUES (2, 'default');");
+            connection.Execute("INSERT INTO AppSettingOption (SettingKeyId, SettingValue) VALUES (3, 'Medium');");
+            connection.Execute("INSERT INTO AppSettingOption (SettingKeyId, SettingValue) VALUES (3, 'Low');");
+            connection.Execute("INSERT INTO AppSettingOption (SettingKeyId, SettingValue) VALUES (3, 'High');");
+            connection.Execute("INSERT INTO AppSettingOption (SettingKeyId, SettingValue) VALUES (4, 'Preview');");
+            connection.Execute("INSERT INTO AppSettingOption (SettingKeyId, SettingValue) VALUES (4, 'New');");
 
-            // Insert into UserSetting (3 rows)
-            int appSettingOptionId1 = connection.QuerySingle<int>("SELECT AppSettingOptionId FROM AppSettingOption WHERE SettingValue = 'Dark'");
-            connection.Execute("INSERT INTO UserSetting (UserId, AppSettingKeyId, AppSettingOptionId) VALUES (" + ownerId1 + ", " + settingKeyId1 + ", " + appSettingOptionId1 + ");");
-            int appSettingOptionId2 = connection.QuerySingle<int>("SELECT AppSettingOptionId FROM AppSettingOption WHERE SettingValue = 'English'");
-            connection.Execute("INSERT INTO UserSetting (UserId, AppSettingKeyId, AppSettingOptionId) VALUES (" + ownerId2 + ", " + settingKeyId2 + ", " + appSettingOptionId2 + ");");
-            int appSettingOptionId3 = connection.QuerySingle<int>("SELECT AppSettingOptionId FROM AppSettingOption WHERE SettingValue = 'On'");
-            connection.Execute("INSERT INTO UserSetting (UserId, AppSettingKeyId, AppSettingOptionId) VALUES (" + ownerId3 + ", " + settingKeyId3 + ", " + appSettingOptionId3 + ");");
+            // Insert into UserSetting (12 rows)
+            connection.Execute("INSERT INTO UserSetting (UserId, AppSettingKeyId, AppSettingOptionId) VALUES (1, 1, 2);");
+            connection.Execute("INSERT INTO UserSetting (UserId, AppSettingKeyId, AppSettingOptionId) VALUES (1, 2, 3);"); 
+            connection.Execute("INSERT INTO UserSetting (UserId, AppSettingKeyId, AppSettingOptionId) VALUES (1, 3, 6);"); 
+            connection.Execute("INSERT INTO UserSetting (UserId, AppSettingKeyId, AppSettingOptionId) VALUES (1, 4, 10);"); 
+            connection.Execute("INSERT INTO UserSetting (UserId, AppSettingKeyId, AppSettingOptionId) VALUES (2, 1, 2);"); 
+            connection.Execute("INSERT INTO UserSetting (UserId, AppSettingKeyId, AppSettingOptionId) VALUES (2, 2, 3);");
+            connection.Execute("INSERT INTO UserSetting (UserId, AppSettingKeyId, AppSettingOptionId) VALUES (2, 3, 7);"); 
+            connection.Execute("INSERT INTO UserSetting (UserId, AppSettingKeyId, AppSettingOptionId) VALUES (2, 4, 9);");
+            connection.Execute("INSERT INTO UserSetting (UserId, AppSettingKeyId, AppSettingOptionId) VALUES (3, 1, 2);"); 
+            connection.Execute("INSERT INTO UserSetting (UserId, AppSettingKeyId, AppSettingOptionId) VALUES (3, 2, 5);");
+            connection.Execute("INSERT INTO UserSetting (UserId, AppSettingKeyId, AppSettingOptionId) VALUES (3, 3, 8);");
+            connection.Execute("INSERT INTO UserSetting (UserId, AppSettingKeyId, AppSettingOptionId) VALUES (3, 4, 9);");
 
             // Insert into FileContent (3 rows)
             connection.Execute("INSERT INTO FileContent (FileId, ContentChunk, ChunkIndex, DocumentLength) VALUES (" + fileId1 + ", 'Content1', 0, 1024);");
