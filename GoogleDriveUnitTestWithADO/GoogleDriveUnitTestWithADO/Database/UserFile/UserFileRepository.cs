@@ -1,10 +1,10 @@
 ﻿using Microsoft.Data.SqlClient;
-
-namespace GoogleDriveUnitTestWithADO.Database.UserFile
+using GoogleDriveUnitTestWithADO.Models;
+namespace GoogleDriveUnitTestWithADO.Database.UserFileRepo
 {
     public class UserFileRepository : IUserFileRepository
     {
-        public int AddUserFile(Models.UserFile userFile)
+        public int AddUserFile(UserFile userFile)
         {
             using var conn = DataAccess.DatabaseHelper.GetConnection();
             conn.Open();
@@ -40,7 +40,7 @@ namespace GoogleDriveUnitTestWithADO.Database.UserFile
             cmd.ExecuteNonQuery();
         }
 
-        public Models.UserFile GetUserFileById(int id)
+        public UserFile GetUserFileById(int id)
         {
             using var conn = DataAccess.DatabaseHelper.GetConnection();
             conn.Open();
@@ -50,7 +50,7 @@ namespace GoogleDriveUnitTestWithADO.Database.UserFile
             using SqlDataReader reader = cmd.ExecuteReader();
             if (reader.Read())
             {
-                return new Models.UserFile
+                return new UserFile
                 {
                     FileId = (int)reader["FileId"],
                     FolderId = reader["FolderId"] as int?,
@@ -68,7 +68,7 @@ namespace GoogleDriveUnitTestWithADO.Database.UserFile
             return null;
         }
 
-        public void UpdateUserFile(Models.UserFile userFile)
+        public void UpdateUserFile(UserFile userFile)
         {
             using var conn = DataAccess.DatabaseHelper.GetConnection();
             conn.Open();

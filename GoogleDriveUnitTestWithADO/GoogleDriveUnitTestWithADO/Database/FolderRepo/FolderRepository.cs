@@ -1,10 +1,11 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using GoogleDriveUnitTestWithADO.Models;
+using Microsoft.Data.SqlClient;
 
-namespace GoogleDriveUnitTestWithADO.Database.Folder
+namespace GoogleDriveUnitTestWithADO.Database.FolderRepo
 {
     public class FolderRepository : IFolderRepository
     {
-        public Models.Folder? GetFolderById(int id)
+        public Folder? GetFolderById(int id)
         {
             using var conn = DataAccess.DatabaseHelper.GetConnection();
             conn.Open();
@@ -16,7 +17,7 @@ namespace GoogleDriveUnitTestWithADO.Database.Folder
             using SqlDataReader reader = cmd.ExecuteReader();
             if (reader.Read())
             {
-                return new Models.Folder
+                return new Folder
                 {
                     FolderId = (int)reader["FolderId"],
                     ParentId = reader["ParentId"] as int?,
@@ -32,7 +33,7 @@ namespace GoogleDriveUnitTestWithADO.Database.Folder
             return null;
         }
 
-        public int AddFolder(Models.Folder folder)
+        public int AddFolder(Folder folder)
         {
             using var conn = DataAccess.DatabaseHelper.GetConnection();
             conn.Open();
@@ -51,7 +52,7 @@ namespace GoogleDriveUnitTestWithADO.Database.Folder
 
             int newFolderId = (int)cmd.ExecuteScalar();
 
-            string folderPath = newFolderId.ToString(); 
+            string folderPath = newFolderId.ToString();
             if (folder.ParentId.HasValue)
             {
                 string parentQuery = "SELECT FolderPath FROM Folder WHERE FolderId = @ParentId";
@@ -72,7 +73,7 @@ namespace GoogleDriveUnitTestWithADO.Database.Folder
 
             return newFolderId;
         }
-        public void UpdateFolder(Models.Folder folder)
+        public void UpdateFolder(Folder folder)
         {
             using var conn = DataAccess.DatabaseHelper.GetConnection();
             conn.Open();

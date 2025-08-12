@@ -1,4 +1,5 @@
-﻿using GoogleDriveUnitTestWithADO.Database.Permission;
+﻿using GoogleDriveUnitTestWithADO.Database.PermissionRepo;
+using GoogleDriveUnitTestWithADO.Models;
 
 namespace GoogleDriveUnitTestWithADO.Services
 {
@@ -9,15 +10,15 @@ namespace GoogleDriveUnitTestWithADO.Services
         {
             _permissionRepository = permissionRepository;
         }
-        public int AddPermission(Models.Permission permission)
+        public int AddPermission(Permission permission)
         {
             return _permissionRepository.AddPermission(permission);
         }
-        public Models.Permission GetPermissionById(int permissionId)
+        public Permission GetPermissionById(int permissionId)
         {
             return _permissionRepository.GetPermissionById(permissionId);
         }
-        public void UpdatePermission(Models.Permission permission)
+        public void UpdatePermission(Permission permission)
         {
             _permissionRepository.UpdatePermission(permission);
         }

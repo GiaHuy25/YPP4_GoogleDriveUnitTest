@@ -1,11 +1,13 @@
-using GoogleDriveUnitTestWithADO.Database.Account;
-using GoogleDriveUnitTestWithADO.Database.Folder;
+using GoogleDriveUnitTestWithADO.Database.AccountRepo;
+using GoogleDriveUnitTestWithADO.Database.FolderRepo;
 using GoogleDriveUnitTestWithADO.Services;
 using GoogleDriveUnitTestWithADO.Models;
-using GoogleDriveUnitTestWithADO.Database.UserFile;
-using GoogleDriveUnitTestWithADO.Database.SharedUser;
-using GoogleDriveUnitTestWithADO.Database.Share;
-using GoogleDriveUnitTestWithADO.Database.Permission;
+using GoogleDriveUnitTestWithADO.Database.UserFileRepo;
+using GoogleDriveUnitTestWithADO.Database.SharedUserRepo;
+using GoogleDriveUnitTestWithADO.Database.ShareRepo;
+using GoogleDriveUnitTestWithADO.Database.PermissionRepo;
+using GoogleDriveUnitTestWithADO.Services;
+using GoogleDriveUnitTestWithADO.Services;
 
 
 namespace GoogleDriveUnitTestWithADO
@@ -169,6 +171,7 @@ namespace GoogleDriveUnitTestWithADO
             var deletedFolder = FolderService.GetFolderById(_addedFolderId);
             Assert.IsNull(deletedFolder, "Deleted folder should not exist.");
         }
+        // Test CRUD for UserFileService
         [TestMethod]
         public void AddUserFile_ShouldInsertAndReturnFileId()
         {
@@ -278,6 +281,7 @@ namespace GoogleDriveUnitTestWithADO
             var retrievedFile = UserFileService.GetUserFileById(fileId);
             Assert.IsNull(retrievedFile);
         }
+        // Test CRUD for ShareService
         [TestMethod]
         public void addShare_ShouldInsertAndReturnShareId()
         {
@@ -390,6 +394,7 @@ namespace GoogleDriveUnitTestWithADO
             var retrievedShare = ShareService.GetShareById(shareId);
             Assert.IsNull(retrievedShare, "Retrieved share should be null after deletion.");
         }
+        // Test CRUD for SharedUserService
         [TestMethod]
         public void AddSharedUSer_ShouldInsertAndReturnSharedUserId()
         {
@@ -471,6 +476,7 @@ namespace GoogleDriveUnitTestWithADO
             var retrievedSharedUser = SharedUserService.GetSharedUserById(sharedUserId);
             Assert.IsNull(retrievedSharedUser, "Retrieved shared user should be null after deletion.");
         }
+        // Test PermissionService
         [TestMethod]
         public void GetPermissionName_ShouldReturnPermissionName()
         {
@@ -484,6 +490,7 @@ namespace GoogleDriveUnitTestWithADO
             // Assert
             Assert.AreEqual(expectedPermissionName, permissionName, "Permission name should match the expected value.");
         }
+        //Test UserSettingService
     }
 
 }

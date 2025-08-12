@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoogleDriveUnitTestWithADO", "GoogleDriveUnitTestWithADO\GoogleDriveUnitTestWithADO.csproj", "{CC3B20E2-0FF1-4C82-982B-868A4F8435E6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoogleDriveUnittestWithDapper", "GoogleDriveUnittestWithDapper\GoogleDriveUnittestWithDapper.csproj", "{1A7F2BA0-D1C7-480B-8575-331FC39CF859}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{CC3B20E2-0FF1-4C82-982B-868A4F8435E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CC3B20E2-0FF1-4C82-982B-868A4F8435E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CC3B20E2-0FF1-4C82-982B-868A4F8435E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CC3B20E2-0FF1-4C82-982B-868A4F8435E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A7F2BA0-D1C7-480B-8575-331FC39CF859}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A7F2BA0-D1C7-480B-8575-331FC39CF859}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A7F2BA0-D1C7-480B-8575-331FC39CF859}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A7F2BA0-D1C7-480B-8575-331FC39CF859}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {AA0F2CA9-4442-401E-A2DB-C0CE7DA3C6F6}
+		SolutionGuid = {9BFCA6B8-62DE-4D9E-B947-57C971D762C7}
 	EndGlobalSection
 EndGlobal

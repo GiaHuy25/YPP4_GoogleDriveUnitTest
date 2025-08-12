@@ -1,10 +1,12 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using GoogleDriveUnitTestWithADO.Models;
 
-namespace GoogleDriveUnitTestWithADO.Database.Account
+using Microsoft.Data.SqlClient;
+
+namespace GoogleDriveUnitTestWithADO.Database.AccountRepo
 {
     public class AccountRepository : IAccountRepository
     {
-        public void Add(Models.Account acc)
+        public void Add(Account acc)
         {
             using var conn = DataAccess.DatabaseHelper.GetConnection();
             conn.Open();
@@ -19,7 +21,7 @@ namespace GoogleDriveUnitTestWithADO.Database.Account
             cmd.Parameters.AddWithValue("@Capacity", (object)acc.Capacity ?? DBNull.Value);
             cmd.ExecuteNonQuery();
         }
-        public Models.Account GetByEmail(string email)
+        public Account GetByEmail(string email)
         {
             using var conn = DataAccess.DatabaseHelper.GetConnection();
             conn.Open();
@@ -28,7 +30,7 @@ namespace GoogleDriveUnitTestWithADO.Database.Account
             using var reader = cmd.ExecuteReader();
             if (reader.Read())
             {
-                return new Models.Account
+                return new Account
                 {
                     UserId = (int)reader["UserId"],
                     UserName = reader["UserName"].ToString(),
@@ -43,7 +45,7 @@ namespace GoogleDriveUnitTestWithADO.Database.Account
             }
             return null;
         }
-        public void Update(Models.Account acc)
+        public void Update(Account acc)
         {
             using var conn = DataAccess.DatabaseHelper.GetConnection();
             conn.Open();
@@ -67,23 +69,23 @@ namespace GoogleDriveUnitTestWithADO.Database.Account
             cmd.Parameters.AddWithValue("@Email", email);
             cmd.ExecuteNonQuery();
         }
-        public List<Models.Account> GetAll()
+        public List<Account> GetAll()
         {
-            var accounts = new List<Models.Account>();
+            var accounts = new List<Account>();
             using var conn = DataAccess.DatabaseHelper.GetConnection();
             conn.Open();
             var cmd = new SqlCommand("SELECT * FROM Account", conn);
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                accounts.Add(new Models.Account
+                accounts.Add(new Account
                 {
                     UserId = (int)reader["UserId"],
                     UserName = reader["UserName"].ToString(),
                     Email = reader["Email"].ToString(),
                     PasswordHash = reader["PasswordHash"].ToString(),
                     CreatedAt = (DateTime)reader["CreatedAt"],
-                    UserImg = reader["UserImg"].ToString(),
+                    UserImg = reader["UserImg"].ToString(), 
                     LastLogin = reader["LastLogin"] as DateTime?,
                     UsedCapacity = reader["UsedCapacity"] as long?,
                     Capacity = reader["Capacity"] as long?

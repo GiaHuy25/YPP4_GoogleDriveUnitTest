@@ -1,10 +1,11 @@
-﻿namespace GoogleDriveUnitTestWithADO.Database.SharedUser
+﻿using GoogleDriveUnitTestWithADO.Models;
+namespace GoogleDriveUnitTestWithADO.Database.SharedUserRepo
 {
     public interface ISharedUserRepository
     {
-        int AddSharedUser(Models.SharedUser sharedUser);
-        Models.SharedUser GetSharedUserById(int sharedUserId);
-        void UpdateSharedUser(Models.SharedUser sharedUser);
+        int AddSharedUser(SharedUser sharedUser);
+        SharedUser GetSharedUserById(int sharedUserId);
+        void UpdateSharedUser(SharedUser sharedUser);
         void DeleteSharedUser(int sharedUserId);
     }
 }

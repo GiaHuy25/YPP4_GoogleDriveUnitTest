@@ -4,7 +4,8 @@ namespace GoogleDriveUnitTestWithADO.Database
 {
     public static class DataAccess
     {
-        public static class DatabaseHelper {
+        public static class DatabaseHelper
+        {
             private const string ConnectionString = "Server=INTERN-HUYPHAN\\MSSQLSERVER03;Database=GoogleDrive;Trusted_Connection=True;Encrypt=False;";
 
             public static SqlConnection GetConnection()

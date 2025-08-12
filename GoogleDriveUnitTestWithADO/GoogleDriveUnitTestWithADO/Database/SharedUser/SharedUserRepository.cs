@@ -1,11 +1,10 @@
-﻿
-using Microsoft.Data.SqlClient;
-
-namespace GoogleDriveUnitTestWithADO.Database.SharedUser
+﻿using Microsoft.Data.SqlClient;
+using GoogleDriveUnitTestWithADO.Models;
+namespace GoogleDriveUnitTestWithADO.Database.SharedUserRepo
 {
     public class SharedUserRepository : ISharedUserRepository
     {
-        public int AddSharedUser(Models.SharedUser sharedUser)
+        public int AddSharedUser(SharedUser sharedUser)
         {
             using var conn = DataAccess.DatabaseHelper.GetConnection();
             conn.Open();
@@ -32,9 +31,9 @@ namespace GoogleDriveUnitTestWithADO.Database.SharedUser
             cmd.ExecuteNonQuery();
         }
 
-        public Models.SharedUser GetSharedUserById(int sharedUserId)
+        public SharedUser GetSharedUserById(int sharedUserId)
         {
-           using var conn = DataAccess.DatabaseHelper.GetConnection();
+            using var conn = DataAccess.DatabaseHelper.GetConnection();
             conn.Open();
             string query = "SELECT * FROM SharedUser WHERE SharedUserId = @SharedUserId";
             using SqlCommand cmd = new(query, conn);
@@ -42,7 +41,7 @@ namespace GoogleDriveUnitTestWithADO.Database.SharedUser
             using SqlDataReader reader = cmd.ExecuteReader();
             if (reader.Read())
             {
-                return new Models.SharedUser
+                return new SharedUser
                 {
                     SharedUserId = (int)reader["SharedUserId"],
                     ShareId = (int)reader["ShareId"],
@@ -55,9 +54,9 @@ namespace GoogleDriveUnitTestWithADO.Database.SharedUser
             return null;
         }
 
-        public void UpdateSharedUser(Models.SharedUser sharedUser)
+        public void UpdateSharedUser(SharedUser sharedUser)
         {
-           using var conn = DataAccess.DatabaseHelper.GetConnection();
+            using var conn = DataAccess.DatabaseHelper.GetConnection();
             conn.Open();
             string query = "UPDATE SharedUser SET " +
                                 "ShareId = @ShareId," +

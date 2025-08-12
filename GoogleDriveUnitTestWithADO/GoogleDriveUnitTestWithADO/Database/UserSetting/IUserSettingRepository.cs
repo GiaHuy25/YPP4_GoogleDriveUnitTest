@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GoogleDriveUnitTestWithADO.Database.UserSetting
+﻿using GoogleDriveUnitTestWithADO.Models;
+namespace GoogleDriveUnitTestWithADO.Database.UserSettingRepo
 {
     public interface IUserSettingRepository
     {
-        int AddUserSetting(Models.UserSetting userSetting);
-        Models.UserSetting GetUserSettingById(int id);
-        void UpdateUserSetting(Models.UserSetting userSetting);
+        int AddUserSetting(UserSetting userSetting);
+        UserSetting GetUserSettingById(int id);
+        void UpdateUserSetting(UserSetting userSetting);
         void DeleteUserSetting(int userSettingId);
     }
 }

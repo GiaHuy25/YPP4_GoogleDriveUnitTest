@@ -1,4 +1,5 @@
-﻿using GoogleDriveUnitTestWithADO.Database.Share;
+﻿using GoogleDriveUnitTestWithADO.Database.ShareRepo;
+using GoogleDriveUnitTestWithADO.Models;
 
 namespace GoogleDriveUnitTestWithADO.Services
 {
@@ -9,17 +10,17 @@ namespace GoogleDriveUnitTestWithADO.Services
         {
             _shareRepository = repository;
         }
-        public int AddShare(Models.Share share)
+        public int AddShare(Share share)
         {
             share.CreatedAt = DateTime.Now;
             return _shareRepository.AddShare(share);
         }
-        public void UpdateShare(Models.Share share)
+        public void UpdateShare(Share share)
         {
             share.CreatedAt = DateTime.Now;
             _shareRepository.UpdateShare(share);
         }
-        public Models.Share GetShareById(int shareId)
+        public Share GetShareById(int shareId)
         {
             return _shareRepository.GetShareById(shareId);
         }

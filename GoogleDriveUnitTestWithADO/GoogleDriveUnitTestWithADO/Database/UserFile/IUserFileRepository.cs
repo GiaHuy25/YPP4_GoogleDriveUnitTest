@@ -1,10 +1,11 @@
-﻿namespace GoogleDriveUnitTestWithADO.Database.UserFile
+﻿using GoogleDriveUnitTestWithADO.Models;
+namespace GoogleDriveUnitTestWithADO.Database.UserFileRepo
 {
     public interface IUserFileRepository
     {
-        Models.UserFile GetUserFileById(int id);
-        int AddUserFile(Models.UserFile userFile);
-        void UpdateUserFile(Models.UserFile userFile);
+        UserFile GetUserFileById(int id);
+        int AddUserFile(UserFile userFile);
+        void UpdateUserFile(UserFile userFile);
         void DeleteUserFile(int fileId);
 
     }

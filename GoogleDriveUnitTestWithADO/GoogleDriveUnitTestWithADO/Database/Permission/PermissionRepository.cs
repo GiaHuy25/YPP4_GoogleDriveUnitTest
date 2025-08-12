@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
+using GoogleDriveUnitTestWithADO.Models;
 
-namespace GoogleDriveUnitTestWithADO.Database.Permission
+namespace GoogleDriveUnitTestWithADO.Database.PermissionRepo
 {
     public class PermissionRepository : IPermissionRepositoy
     {
@@ -11,7 +12,7 @@ namespace GoogleDriveUnitTestWithADO.Database.Permission
             {3,"Owner" }
         };
 
-        public int AddPermission(Models.Permission permission)
+        public int AddPermission(Permission permission)
         {
             if (!PermissionMap.ContainsValue(permission.PermissionName))
             {
@@ -39,7 +40,7 @@ namespace GoogleDriveUnitTestWithADO.Database.Permission
             cmd.ExecuteNonQuery();
         }
 
-        public Models.Permission GetPermissionById(int permissionId)
+        public Permission GetPermissionById(int permissionId)
         {
             using var conn = DataAccess.DatabaseHelper.GetConnection();
             conn.Open();
@@ -49,7 +50,7 @@ namespace GoogleDriveUnitTestWithADO.Database.Permission
             using SqlDataReader reader = cmd.ExecuteReader();
             if (reader.Read())
             {
-                return new Models.Permission
+                return new Permission
                 {
                     PermissionId = (int)reader["PermissionId"],
                     PermissionName = reader["PermissionName"] as string,
@@ -70,7 +71,7 @@ namespace GoogleDriveUnitTestWithADO.Database.Permission
             return result?.ToString() ?? string.Empty;
         }
 
-        public void UpdatePermission(Models.Permission permission)
+        public void UpdatePermission(Permission permission)
         {
             if (!PermissionMap.ContainsValue(permission.PermissionName))
             {

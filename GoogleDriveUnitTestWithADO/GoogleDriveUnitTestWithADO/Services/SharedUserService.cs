@@ -1,4 +1,5 @@
-﻿using GoogleDriveUnitTestWithADO.Database.SharedUser;
+﻿using GoogleDriveUnitTestWithADO.Database.SharedUserRepo;
+using GoogleDriveUnitTestWithADO.Models;
 
 namespace GoogleDriveUnitTestWithADO.Services
 {
@@ -11,19 +12,19 @@ namespace GoogleDriveUnitTestWithADO.Services
             _sharedUserRepository = sharedUserRepository;
         }
 
-        public int AddSharedUser(Models.SharedUser sharedUser)
+        public int AddSharedUser(SharedUser sharedUser)
         {
             sharedUser.CreatedAt = DateTime.Now;
             return _sharedUserRepository.AddSharedUser(sharedUser);
         }
 
-        public void UpdateSharedUser(Models.SharedUser sharedUser)
+        public void UpdateSharedUser(SharedUser sharedUser)
         {
             sharedUser.ModifiedAt = DateTime.Now;
             _sharedUserRepository.UpdateSharedUser(sharedUser);
         }
 
-        public Models.SharedUser GetSharedUserById(int sharedUserId)
+        public SharedUser GetSharedUserById(int sharedUserId)
         {
             return _sharedUserRepository.GetSharedUserById(sharedUserId);
         }

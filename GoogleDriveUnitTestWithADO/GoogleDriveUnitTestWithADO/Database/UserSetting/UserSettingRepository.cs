@@ -1,11 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using GoogleDriveUnitTestWithADO.Models;
 
-namespace GoogleDriveUnitTestWithADO.Database.UserSetting
+namespace GoogleDriveUnitTestWithADO.Database.UserSettingRepo
 {
     public class UserSettingRepository : IUserSettingRepository
     {
@@ -44,7 +40,7 @@ namespace GoogleDriveUnitTestWithADO.Database.UserSetting
             {
                 return new UserSetting
                 {
-                    Id = (int)reader["Id"],
+                    id = (int)reader["Id"],
                     UserId = (int)reader["UserId"],
                     AppSettingKeyId = (int)reader["AppSettingKeyId"],
                     BooleanValue = reader["BooleanValue"] as bool?,
@@ -71,7 +67,7 @@ namespace GoogleDriveUnitTestWithADO.Database.UserSetting
                             WHERE Id = @Id";
 
             using SqlCommand cmd = new(query, conn);
-            cmd.Parameters.AddWithValue("@Id", userSetting.Id);
+            cmd.Parameters.AddWithValue("@Id", userSetting.id);
             cmd.Parameters.AddWithValue("@UserId", userSetting.UserId);
             cmd.Parameters.AddWithValue("@AppSettingKeyId", userSetting.AppSettingKeyId);
             cmd.Parameters.AddWithValue("@BooleanValue", (object)userSetting.BooleanValue ?? DBNull.Value);

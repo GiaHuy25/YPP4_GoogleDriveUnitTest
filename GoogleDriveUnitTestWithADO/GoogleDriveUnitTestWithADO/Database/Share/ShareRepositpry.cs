@@ -1,10 +1,11 @@
 ﻿using Microsoft.Data.SqlClient;
+using GoogleDriveUnitTestWithADO.Models;
 
-namespace GoogleDriveUnitTestWithADO.Database.Share
+namespace GoogleDriveUnitTestWithADO.Database.ShareRepo
 {
     public class ShareRepositpry : IShareRepository
     {
-        public int AddShare(Models.Share share)
+        public int AddShare(Share share)
         {
             using var conn = DataAccess.DatabaseHelper.GetConnection();
             conn.Open();
@@ -32,7 +33,7 @@ namespace GoogleDriveUnitTestWithADO.Database.Share
             cmd.ExecuteNonQuery();
         }
 
-        public Models.Share GetShareById(int shareId)
+        public Share GetShareById(int shareId)
         {
             using var conn = DataAccess.DatabaseHelper.GetConnection();
             conn.Open();
@@ -42,7 +43,7 @@ namespace GoogleDriveUnitTestWithADO.Database.Share
             using SqlDataReader reader = cmd.ExecuteReader();
             if (reader.Read())
             {
-                return new Models.Share
+                return new Share
                 {
                     ShareId = (int)reader["ShareId"],
                     Sharer = (int)reader["Sharer"],
@@ -56,7 +57,7 @@ namespace GoogleDriveUnitTestWithADO.Database.Share
             return null;
         }
 
-        public void UpdateShare(Models.Share share)
+        public void UpdateShare(Share share)
         {
             using var conn = DataAccess.DatabaseHelper.GetConnection();
             conn.Open();
