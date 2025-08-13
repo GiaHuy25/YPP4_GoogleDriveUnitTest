@@ -1,4 +1,5 @@
-﻿using GoogleDriveUnittestWithDapper.Models;
+﻿using GoogleDriveUnittestWithDapper.Dto;
+using GoogleDriveUnittestWithDapper.Models;
 using GoogleDriveUnittestWithDapper.Repositories.FolderRepo;
 using System;
 using System.Collections.Generic;
@@ -17,20 +18,23 @@ namespace GoogleDriveUnittestWithDapper.Services.FolderService
             _repository = repository;
         }
 
-        public Folder CreateFolder(string name, int ownerId)
+        public int CreateFolder(FolderDto folder)
         {
-            var folder = new Folder
-            {
-                FolderName = name,
-                OwnerId = ownerId,
-                CreatedAt = DateTime.UtcNow
-            };
+            if (folder == null)
+                throw new ArgumentNullException(nameof(folder));
+            if (string.IsNullOrWhiteSpace(folder.FolderName))
+                throw new ArgumentException("FolderName is required.", nameof(folder));
+            if (folder.OwnerId <= 0)
+                throw new ArgumentException("OwnerId must be a positive integer.", nameof(folder));
 
-            folder.FolderId = _repository.CreateFolder(folder);
-            return folder;
+            return _repository.CreateFolder(folder);
         }
-        public Folder? GetFolderById(int folderId)
+
+        public FolderDto? GetFolderById(int folderId)
         {
+            if (folderId <= 0)
+                throw new ArgumentException("FolderId must be a positive integer.", nameof(folderId));
+
             return _repository.GetFolderById(folderId);
         }
     }

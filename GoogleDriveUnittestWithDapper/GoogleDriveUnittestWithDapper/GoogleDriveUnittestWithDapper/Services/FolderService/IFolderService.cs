@@ -1,4 +1,5 @@
-﻿using GoogleDriveUnittestWithDapper.Models;
+﻿using GoogleDriveUnittestWithDapper.Dto;
+using GoogleDriveUnittestWithDapper.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace GoogleDriveUnittestWithDapper.Services.FolderService
 {
     public interface IFolderService
     {
-        Folder CreateFolder(string name, int ownerId);
-        Folder? GetFolderById(int folderId);
+        int CreateFolder(FolderDto folder);
+        FolderDto? GetFolderById(int folderId);
     }
 }
