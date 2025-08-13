@@ -1,14 +1,7 @@
-﻿using Dapper;
-using GoogleDriveUnittestWithDapper.Controller;
-using GoogleDriveUnittestWithDapper.Dto;
+﻿using GoogleDriveUnittestWithDapper.Controller;
 using GoogleDriveUnittestWithDapper.Repositories.FavoriteObjectRepo;
 using GoogleDriveUnittestWithDapper.Services.FavoriteObjectService;
 using Microsoft.Data.Sqlite;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GoogleDriveUnittestWithDapper.Test
 {

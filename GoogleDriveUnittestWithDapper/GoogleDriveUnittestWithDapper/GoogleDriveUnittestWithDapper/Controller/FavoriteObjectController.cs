@@ -1,11 +1,5 @@
 ﻿using GoogleDriveUnittestWithDapper.Dto;
-using GoogleDriveUnittestWithDapper.Repositories.FavoriteObjectRepo;
 using GoogleDriveUnittestWithDapper.Services.FavoriteObjectService;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GoogleDriveUnittestWithDapper.Controller
 {

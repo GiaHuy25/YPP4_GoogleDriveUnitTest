@@ -1,11 +1,5 @@
 ﻿using GoogleDriveUnittestWithDapper.Dto;
-using GoogleDriveUnittestWithDapper.Repositories.UserSettingRepo;
 using GoogleDriveUnittestWithDapper.Services.UserSettingService;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GoogleDriveUnittestWithDapper.Controller
 {
