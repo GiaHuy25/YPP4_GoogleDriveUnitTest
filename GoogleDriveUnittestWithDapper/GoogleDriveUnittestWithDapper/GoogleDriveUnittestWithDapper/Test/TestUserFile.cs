@@ -1,4 +1,5 @@
-﻿using GoogleDriveUnittestWithDapper.Dto;
+﻿using GoogleDriveUnittestWithDapper.Controller;
+using GoogleDriveUnittestWithDapper.Dto;
 using GoogleDriveUnittestWithDapper.Repositories.UserFileRepo;
 using GoogleDriveUnittestWithDapper.Services.UserFileService;
 using Microsoft.Data.Sqlite;
@@ -16,6 +17,7 @@ namespace GoogleDriveUnittestWithDapper.Test
         private SqliteConnection _connection;
         private IUserFileRepository _userFileRepository;
         private IUserFileService _userFileService;
+        private UserFileController _userFileController;
 
         [TestInitialize]
         public void Setup()
@@ -28,6 +30,7 @@ namespace GoogleDriveUnittestWithDapper.Test
 
             _userFileRepository = new UserFileRepository(_connection);
             _userFileService = new UserFileService(_userFileRepository);
+            _userFileController = new UserFileController(_userFileService);
         }
 
         [TestCleanup]
@@ -71,7 +74,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             };
 
             // Act
-            var result = _userFileService.GetFilesByUserId(userId).ToList();
+            var result = _userFileController.GetFilesByUserId(userId).ToList();
 
             // Assert
             Assert.IsNotNull(result, "Result should not be null");
@@ -93,11 +96,11 @@ namespace GoogleDriveUnittestWithDapper.Test
             int invalidUserId = 999; // Non-existent UserId
 
             // Act
-            var result = _userFileService.GetFilesByUserId(invalidUserId).ToList();
+            var result = _userFileController.GetFilesByUserId(invalidUserId).ToList();
 
             // Assert
             Assert.IsNotNull(result, "Result should not be null");
-            Assert.AreEqual(0, result.Count, "Result should be empty for invalid UserId");
+            Assert.HasCount(0, result, "Result should be empty for invalid UserId");
         }
     }
 }

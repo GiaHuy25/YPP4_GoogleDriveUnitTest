@@ -1,4 +1,5 @@
-﻿using GoogleDriveUnittestWithDapper.Dto;
+﻿using GoogleDriveUnittestWithDapper.Controller;
+using GoogleDriveUnittestWithDapper.Dto;
 using GoogleDriveUnittestWithDapper.Repositories.UserFileFolderRepo;
 using GoogleDriveUnittestWithDapper.Services.UserFileFolderService;
 using Microsoft.Data.Sqlite;
@@ -6,11 +7,12 @@ using Microsoft.Data.Sqlite;
 namespace GoogleDriveUnittestWithDapper.Test
 {
     [TestClass]
-    public class TestUserFileFolderService
+    public class TestUserFileFolder
     {
         private SqliteConnection _connection;
         private IUserFileFolderRepository _userFileFolderRepository;
         private IUserFileFolderService _userFileFolderService;
+        private UserFileFolderController _userFileFolderController;
         [TestInitialize]
         public void Setup()
         {
@@ -25,6 +27,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             // Initialize repository and service
             _userFileFolderRepository = new UserFileFolderRepository(_connection);
             _userFileFolderService = new UserFileFolderService(_userFileFolderRepository);
+            _userFileFolderController = new UserFileFolderController(_userFileFolderService);
         }
 
         [TestCleanup]
@@ -41,7 +44,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             int userId = 1;
 
             // Act
-            var result = _userFileFolderService.GetFilesAndFoldersByUserId(userId).ToList();
+            var result = _userFileFolderController.GetFilesAndFoldersByUserId(userId).ToList();
 
             // Assert
             Assert.IsNotNull(result, "Result should not be null");
@@ -56,11 +59,11 @@ namespace GoogleDriveUnittestWithDapper.Test
             int invalidUserId = 999; // Non-existent UserId
 
             // Act
-            var result = _userFileFolderService.GetFilesAndFoldersByUserId(invalidUserId).ToList();
+            var result = _userFileFolderController.GetFilesAndFoldersByUserId(invalidUserId).ToList();
 
             // Assert
             Assert.IsNotNull(result, "Result should not be null");
-            Assert.AreEqual(0, result.Count, "Result should be empty for invalid UserId");
+            Assert.HasCount(0, result, "Result should be empty for invalid UserId");
         }
     }
 }

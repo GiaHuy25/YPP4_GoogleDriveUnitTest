@@ -1,4 +1,5 @@
-﻿using GoogleDriveUnittestWithDapper.Dto;
+﻿using GoogleDriveUnittestWithDapper.Controller;
+using GoogleDriveUnittestWithDapper.Dto;
 using GoogleDriveUnittestWithDapper.Repositories.UserSettingRepo;
 using GoogleDriveUnittestWithDapper.Services.UserSettingService;
 using Microsoft.Data.Sqlite;
@@ -7,11 +8,12 @@ using System.Data;
 namespace GoogleDriveUnittestWithDapper.Test
 {
     [TestClass]
-    public class TestUserSettingService
+    public class TestUserSetting
     {
         private IDbConnection _connection;
         private IUserSettingRepository _userSettingRepository;
         private IUserSettingService _userSettingService;
+        private UserSettingController _userSettingController;
         [TestInitialize]
         public void Setup()
         {
@@ -25,6 +27,7 @@ namespace GoogleDriveUnittestWithDapper.Test
 
             _userSettingRepository = new UserSettingRepository(_connection);
             _userSettingService = new UserSettingService(_userSettingRepository);
+            _userSettingController = new UserSettingController(_userSettingService);
         }
 
         [TestCleanup]
@@ -46,7 +49,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             };
 
             // Act
-            var result = _userSettingService.GetUserSettings(userId);
+            var result = _userSettingController.GetUserSettings(userId);
 
             // Assert
             Assert.IsNotNull(result, "Settings should not be null for valid userId");
@@ -67,7 +70,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             int invalidUserId = 999;
 
             // Act
-            var result =  _userSettingService.GetUserSettings(invalidUserId);
+            var result = _userSettingController.GetUserSettings(invalidUserId);
 
             // Assert
             Assert.IsNotNull(result, "Settings should not be null for invalid userId");
@@ -81,7 +84,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             int userId = 2; // Assuming userId 2 has no settings
 
             // Act
-            var result =  _userSettingService.GetUserSettings(userId);
+            var result = _userSettingController.GetUserSettings(userId);
 
             // Assert
             Assert.IsNotNull(result, "Settings should not be null for userId with no settings");

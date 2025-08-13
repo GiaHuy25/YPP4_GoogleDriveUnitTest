@@ -1,4 +1,5 @@
-﻿using GoogleDriveUnittestWithDapper.Dto;
+﻿using GoogleDriveUnittestWithDapper.Controller;
+using GoogleDriveUnittestWithDapper.Dto;
 using GoogleDriveUnittestWithDapper.Repositories.AccountRepo;
 using GoogleDriveUnittestWithDapper.Services.AccountService;
 using Microsoft.Data.Sqlite;
@@ -7,12 +8,13 @@ using System.Data;
 namespace GoogleDriveUnittestWithDapper.Test
 {
     [TestClass]
-    public class TestUserService
+    public class TestUser
     {
         private IDbConnection _connection;
 
         private IAccountRepository _AccountRepository;
         private IAccountService _AccountService;
+        private AccountController _accountController;
         [TestInitialize]
         public void Setup()
         {
@@ -27,6 +29,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             // Initialize repository and service
             _AccountRepository = new AccountRepository(_connection);
             _AccountService = new AccountService(_AccountRepository);
+            _accountController = new AccountController(_AccountService);
         }
 
         [TestCleanup]
@@ -47,7 +50,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             };
 
             // Act
-            var result =  _AccountService.GetUserById(userId);
+            var result = _accountController.GetUserById(userId);
 
             // Assert
             Assert.IsNotNull(result, "UserDto should not be null for valid userId");
@@ -63,7 +66,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             int invalidUserId = 999; // Non-existent UserId
 
             // Act
-            var result = _AccountService.GetUserById(invalidUserId);
+            var result = _accountController.GetUserById(invalidUserId);
 
             // Assert
             Assert.IsNull(result, "UserDto should be null for invalid UserId");
