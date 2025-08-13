@@ -1,0 +1,33 @@
+﻿using Dapper;
+using GoogleDriveUnittestWithDapper.Dto;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace GoogleDriveUnittestWithDapper.Repositories.BannedUserRepo
+{
+    public class BannedUserRepository : IBannedUserRepository
+    {
+        private readonly IDbConnection _connection;
+        public BannedUserRepository(IDbConnection connection)
+        {
+            _connection = connection;
+        }
+        public Task<IEnumerable<BannedUserDto>> GetBannedUserByUserId(int userId)
+        {
+            var query = @"
+                SELECT 
+                    bu.UserId,
+                    bu.BannedAt,
+                    bu.BannedUserId,
+                    a.UserName AS BannedUserName
+                FROM BannedUser bu
+                LEFT JOIN Account a ON bu.BannedUserId = a.UserId
+                WHERE bu.UserId = @userId";
+            return _connection.QueryAsync<BannedUserDto>(query, new { userId });
+        }
+    }
+}

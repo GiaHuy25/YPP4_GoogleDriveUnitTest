@@ -1,15 +1,14 @@
 using Dapper;
-using GoogleDriveUnittestWithDapper.Repositories.FolderRepo;
 using GoogleDriveUnittestWithDapper.Services.FolderService;
 using Microsoft.Data.Sqlite;
 using System.Data;
-using GoogleDriveUnittestWithDapper.Repositories;
-using GoogleDriveUnittestWithDapper.Services;
+using GoogleDriveUnittestWithDapper.Dto;
 using GoogleDriveUnittestWithDapper.Repositories.AccountRepo;
 using GoogleDriveUnittestWithDapper.Services.AccountService;
-using GoogleDriveUnittestWithDapper.Dto;
 using GoogleDriveUnittestWithDapper.Repositories.UserSettingRepo;
 using GoogleDriveUnittestWithDapper.Services.UserSettingService;
+using GoogleDriveUnittestWithDapper.Repositories.BannedUserRepo;
+using GoogleDriveUnittestWithDapper.Services.BannedUserService;
 
 namespace GoogleDriveUnittestWithDapper
 {
@@ -22,6 +21,8 @@ namespace GoogleDriveUnittestWithDapper
         private IAccountService _AccountService;
         private IUserSettingRepository _userSettingRepository;
         private IUserSettingService _userSettingService;
+        private IBannedUserRepository _bannedUserRepository;
+        private IBannedUserService _bannedUserService;
 
         [TestInitialize]
         public void Setup()
@@ -40,6 +41,9 @@ namespace GoogleDriveUnittestWithDapper
 
             _userSettingRepository = new UserSettingRepository(_connection);
             _userSettingService = new UserSettingService(_userSettingRepository);
+
+            _bannedUserRepository = new BannedUserRepository(_connection);
+            _bannedUserService = new BannedUserService(_bannedUserRepository);
         }
 
         [TestCleanup]
@@ -113,7 +117,7 @@ namespace GoogleDriveUnittestWithDapper
         [TestMethod]
         public async Task UserSettingService_GetUserSettings_InvalidUserId_ReturnsEmpty()
         {
-            int invalidUserId = 999; 
+            int invalidUserId = 999;
 
             // Act
             var result = await _userSettingService.GetUserSettings(invalidUserId);
@@ -137,16 +141,39 @@ namespace GoogleDriveUnittestWithDapper
             Assert.AreEqual(4, result.Count(), "Settings should be empty for userId with no settings");
         }
         [TestMethod]
-        public async Task GetBannedUser()
+        public async Task GetBannedUserByUserId_MultipleBannedUsers_ReturnsAllMatching()
         {
             // Arrange
-            int userId = 1; // Assuming userId 1 is banned
+            int userId = 1;
+            var expected = new List<BannedUserDto>
+            {
+                new BannedUserDto
+                {
+                    UserId = 1,
+                    BannedUserId = 2,
+                    BannedUserName = "Jane"
+                },
+                new BannedUserDto
+                {
+                    UserId = 1,
+                    BannedUserId = 3,
+                    BannedUserName = "Bob"
+                }
+            };
 
             // Act
-            var result = await _AccountService.GetBannedUser(userId);
+            var result = await _bannedUserRepository.GetBannedUserByUserId(userId);
 
             // Assert
-            Assert.IsNotNull(result, "Banned user should not be null for valid userId");
+            Assert.IsNotNull(result, "Result should not be null for valid userId with multiple records");
+            var resultList = result.ToList();
+            Assert.AreEqual(expected.Count, resultList.Count, "Number of banned users does not match");
+            for (int i = 0; i < expected.Count; i++)
+            {
+                Assert.AreEqual(expected[i].UserId, resultList[i].UserId, $"UserId does not match at index {i}");
+                Assert.AreEqual(expected[i].BannedUserId, resultList[i].BannedUserId, $"BannedUserId does not match at index {i}");
+                Assert.AreEqual(expected[i].BannedUserName, resultList[i].BannedUserName, $"BannedUserName does not match at index {i}");
+            }
         }
     }
 }

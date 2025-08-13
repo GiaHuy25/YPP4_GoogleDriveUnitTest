@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GoogleDriveUnittestWithDapper.Services.AccountService
+namespace GoogleDriveUnittestWithDapper.Services.BannedUserService
 {
-    public interface IAccountService
+    public interface IBannedUserService
     {
-        Task<AccountDto> GetUserById(int userId);
+        Task<IEnumerable<BannedUserDto>> GetBannedUserByUserId(int userId);
     }
 }
