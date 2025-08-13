@@ -18,18 +18,6 @@ namespace GoogleDriveUnittestWithDapper.Services.FolderService
             _repository = repository;
         }
 
-        public int CreateFolder(FolderDto folder)
-        {
-            if (folder == null)
-                throw new ArgumentNullException(nameof(folder));
-            if (string.IsNullOrWhiteSpace(folder.FolderName))
-                throw new ArgumentException("FolderName is required.", nameof(folder));
-            if (folder.OwnerId <= 0)
-                throw new ArgumentException("OwnerId must be a positive integer.", nameof(folder));
-
-            return _repository.CreateFolder(folder);
-        }
-
         public FolderDto? GetFolderById(int folderId)
         {
             if (folderId <= 0)

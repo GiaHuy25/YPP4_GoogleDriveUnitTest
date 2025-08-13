@@ -9,6 +9,6 @@ namespace GoogleDriveUnittestWithDapper.Services.UserSettingService
 {
     public interface IUserSettingService
     {
-        Task<IEnumerable<UserSettingDto>> GetUserSettings(int userId);
+        IEnumerable<UserSettingDto> GetUserSettings(int userId);
     }
 }

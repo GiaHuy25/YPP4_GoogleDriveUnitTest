@@ -9,6 +9,6 @@ namespace GoogleDriveUnittestWithDapper.Repositories.AccountRepo
 {
     public interface IAccountRepository
     {
-        Task<AccountDto> GetUserByIdAsync(int userId);
+        AccountDto? GetUserByIdAsync(int userId);
     }
 }

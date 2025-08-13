@@ -33,7 +33,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             _connection.Dispose();
         }
         [TestMethod]
-        public async Task UserSettingService_GetUserSettings_ValidUserId_ReturnsCorrectSettings()
+        public void UserSettingService_GetUserSettings_ValidUserId_ReturnsCorrectSettings()
         {
             // Arrange
             int userId = 1;
@@ -46,7 +46,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             };
 
             // Act
-            var result = await _userSettingService.GetUserSettings(userId);
+            var result = _userSettingService.GetUserSettings(userId);
 
             // Assert
             Assert.IsNotNull(result, "Settings should not be null for valid userId");
@@ -62,12 +62,12 @@ namespace GoogleDriveUnittestWithDapper.Test
             }
         }
         [TestMethod]
-        public async Task UserSettingService_GetUserSettings_InvalidUserId_ReturnsEmpty()
+        public void UserSettingService_GetUserSettings_InvalidUserId_ReturnsEmpty()
         {
             int invalidUserId = 999;
 
             // Act
-            var result = await _userSettingService.GetUserSettings(invalidUserId);
+            var result =  _userSettingService.GetUserSettings(invalidUserId);
 
             // Assert
             Assert.IsNotNull(result, "Settings should not be null for invalid userId");
@@ -75,13 +75,13 @@ namespace GoogleDriveUnittestWithDapper.Test
         }
 
         [TestMethod]
-        public async Task UserSettingService_GetUserSettings_NoSettings_ReturnsEmpty()
+        public void UserSettingService_GetUserSettings_NoSettings_ReturnsEmpty()
         {
             // Arrange
             int userId = 2; // Assuming userId 2 has no settings
 
             // Act
-            var result = await _userSettingService.GetUserSettings(userId);
+            var result =  _userSettingService.GetUserSettings(userId);
 
             // Assert
             Assert.IsNotNull(result, "Settings should not be null for userId with no settings");

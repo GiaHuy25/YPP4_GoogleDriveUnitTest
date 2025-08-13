@@ -35,7 +35,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             _connection.Dispose();
         }
         [TestMethod]
-        public async Task UserService_GetUserById_ValidUserId_ReturnsCorrectUserDto()
+        public void UserService_GetUserById_ValidUserId_ReturnsCorrectUserDto()
         {
             // Arrange
             int userId = 1;
@@ -47,7 +47,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             };
 
             // Act
-            var result = await _AccountService.GetUserById(userId);
+            var result =  _AccountService.GetUserById(userId);
 
             // Assert
             Assert.IsNotNull(result, "UserDto should not be null for valid userId");
@@ -57,16 +57,16 @@ namespace GoogleDriveUnittestWithDapper.Test
         }
 
         [TestMethod]
-        public async Task UserService_GetUserById_InvalidUserId_ReturnsNull()
+        public void UserService_GetUserById_InvalidUserId_ReturnsNull()
         {
             // Arrange
-            int invalidUserId = 999;
+            int invalidUserId = 999; // Non-existent UserId
 
             // Act
-            var result = await _AccountService.GetUserById(invalidUserId);
+            var result = _AccountService.GetUserById(invalidUserId);
 
             // Assert
-            Assert.IsNull(result, "UserDto should be null for invalid userId");
+            Assert.IsNull(result, "UserDto should be null for invalid UserId");
         }
     }
 }

@@ -18,24 +18,6 @@ namespace GoogleDriveUnittestWithDapper.Repositories.FolderRepo
         {
             _connection = connection;
         }
-        public int CreateFolder(FolderDto folder)
-        {
-            string sql = @"
-                INSERT INTO Folder (ParentId, OwnerId, FolderName, CreatedAt, FolderPath, FolderStatus, ColorId)
-                VALUES (@ParentId, @OwnerId, @FolderName, @CreatedAt, @FolderPath, @FolderStatus, @ColorId);
-                SELECT last_insert_rowid();";
-
-            return _connection.ExecuteScalar<int>(sql, new
-            {
-                folder.ParentId,
-                folder.OwnerId,
-                folder.FolderName,
-                CreatedAt = folder.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"), 
-                folder.FolderPath,
-                folder.FolderStatus,
-                folder.ColorId
-            });
-        }
 
         public FolderDto? GetFolderById(int folderId)
         {

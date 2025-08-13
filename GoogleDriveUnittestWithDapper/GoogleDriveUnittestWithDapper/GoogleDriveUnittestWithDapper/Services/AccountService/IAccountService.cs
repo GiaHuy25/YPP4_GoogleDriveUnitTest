@@ -9,6 +9,6 @@ namespace GoogleDriveUnittestWithDapper.Services.AccountService
 {
     public interface IAccountService
     {
-        Task<AccountDto> GetUserById(int userId);
+        AccountDto? GetUserById(int userId);
     }
 }

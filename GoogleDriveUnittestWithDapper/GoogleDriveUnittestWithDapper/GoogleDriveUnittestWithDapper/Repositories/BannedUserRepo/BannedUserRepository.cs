@@ -16,7 +16,7 @@ namespace GoogleDriveUnittestWithDapper.Repositories.BannedUserRepo
         {
             _connection = connection;
         }
-        public Task<IEnumerable<BannedUserDto>> GetBannedUserByUserId(int userId)
+        public IEnumerable<BannedUserDto>GetBannedUserByUserId(int userId)
         {
             var query = @"
                 SELECT 
@@ -27,7 +27,7 @@ namespace GoogleDriveUnittestWithDapper.Repositories.BannedUserRepo
                 FROM BannedUser bu
                 LEFT JOIN Account a ON bu.BannedUserId = a.UserId
                 WHERE bu.UserId = @userId";
-            return _connection.QueryAsync<BannedUserDto>(query, new { userId });
+            return _connection.Query<BannedUserDto>(query, new { userId });
         }
     }
 }

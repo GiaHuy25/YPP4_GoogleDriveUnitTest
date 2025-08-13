@@ -16,7 +16,7 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserSettingRepo
         {
             _connection = connection;
         }
-        public Task<IEnumerable<UserSettingDto>> GetUserSettings(int userId)
+        public IEnumerable<UserSettingDto> GetUserSettings(int userId)
         {
             var query = @"
                 SELECT 
@@ -28,7 +28,7 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserSettingRepo
                 JOIN AppSettingOption ao ON us.AppSettingOptionId = ao.AppSettingOptionId
                 WHERE us.UserId = @userId";
 
-            return  _connection.QueryAsync<UserSettingDto>(query, new { userId });
+            return  _connection.Query<UserSettingDto>(query, new { userId });
         }
     }
 }

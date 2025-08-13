@@ -16,7 +16,7 @@ namespace GoogleDriveUnittestWithDapper.Services.AccountService
             _accountRepository = accountRepository ?? throw new ArgumentNullException(nameof(accountRepository));
         }
 
-        public Task<AccountDto> GetUserById(int userId)
+        public AccountDto? GetUserById(int userId)
         {
             if (userId <= 0)
             {

@@ -33,7 +33,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             _connection.Dispose();
         }
         [TestMethod]
-        public async Task GetBannedUserByUserId_MultipleBannedUsers_ReturnsAllMatching()
+        public void GetBannedUserByUserId_MultipleBannedUsers_ReturnsAllMatching()
         {
             // Arrange
             int userId = 1;
@@ -54,7 +54,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             };
 
             // Act
-            var result = await _bannedUserRepository.GetBannedUserByUserId(userId);
+            var result =  _bannedUserRepository.GetBannedUserByUserId(userId);
 
             // Assert
             Assert.IsNotNull(result, "Result should not be null for valid userId with multiple records");

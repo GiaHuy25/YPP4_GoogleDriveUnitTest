@@ -10,7 +10,6 @@ namespace GoogleDriveUnittestWithDapper.Services.FolderService
 {
     public interface IFolderService
     {
-        int CreateFolder(FolderDto folder);
         FolderDto? GetFolderById(int folderId);
     }
 }

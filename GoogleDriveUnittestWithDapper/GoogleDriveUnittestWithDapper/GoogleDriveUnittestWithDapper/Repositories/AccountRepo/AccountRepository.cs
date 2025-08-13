@@ -18,7 +18,7 @@ namespace GoogleDriveUnittestWithDapper.Repositories.AccountRepo
             _connection = connection;
         }
 
-        public Task<AccountDto> GetUserByIdAsync(int userId)
+        public AccountDto? GetUserByIdAsync(int userId)
         {
             var query = @"
                 SELECT 
@@ -28,7 +28,7 @@ namespace GoogleDriveUnittestWithDapper.Repositories.AccountRepo
                 FROM Account a
                 WHERE a.UserId = @userId";
 
-            return  _connection.QueryFirstOrDefaultAsync<AccountDto>(query, new { userId });
+            return  _connection.QuerySingleOrDefault<AccountDto>(query, new { userId });
         }
     }
 }
