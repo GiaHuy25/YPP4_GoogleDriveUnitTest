@@ -10,7 +10,7 @@ namespace GoogleDriveUnittestWithDapper.Test
     [TestClass]
     public class TestUserSetting
     {
-        private IDbConnection _connection;
+        private IDbConnection _connection ;
         private IUserSettingRepository _userSettingRepository;
         private IUserSettingService _userSettingService;
         private UserSettingController _userSettingController;
