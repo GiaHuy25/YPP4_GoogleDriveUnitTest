@@ -10,11 +10,10 @@ namespace GoogleDriveUnittestWithDapper.Test
     [TestClass]
     public class TestUser
     {
-        private IDbConnection _connection;
-
-        private IAccountRepository _AccountRepository;
-        private IAccountService _AccountService;
-        private AccountController _accountController;
+        private IDbConnection? _connection;
+        private IAccountRepository? _AccountRepository;
+        private IAccountService? _AccountService;
+        private AccountController? _accountController;
         [TestInitialize]
         public void Setup()
         {
@@ -35,7 +34,7 @@ namespace GoogleDriveUnittestWithDapper.Test
         [TestCleanup]
         public void Cleanup()
         {
-            _connection.Dispose();
+            _connection?.Dispose();
         }
         [TestMethod]
         public void UserService_GetUserById_ValidUserId_ReturnsCorrectUserDto()
@@ -50,7 +49,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             };
 
             // Act
-            var result = _accountController.GetUserById(userId);
+            var result = _accountController?.GetUserById(userId);
 
             // Assert
             Assert.IsNotNull(result, "UserDto should not be null for valid userId");
@@ -66,7 +65,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             int invalidUserId = 999; // Non-existent UserId
 
             // Act
-            var result = _accountController.GetUserById(invalidUserId);
+            var result = _accountController?.GetUserById(invalidUserId);
 
             // Assert
             Assert.IsNull(result, "UserDto should be null for invalid UserId");

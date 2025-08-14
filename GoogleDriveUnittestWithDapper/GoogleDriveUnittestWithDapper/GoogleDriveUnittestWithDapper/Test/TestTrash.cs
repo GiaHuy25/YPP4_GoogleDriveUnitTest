@@ -14,10 +14,10 @@ namespace GoogleDriveUnittestWithDapper.Test
     [TestClass]
     public class TestTrash
     {
-        private IDbConnection? _dbConnection; // Made nullable to suppress CS8618
-        private ITrashRepository? _trashRepository; // Made nullable
-        private ITrashService? _trashService; // Made nullable
-        private TrashController? _trashController; // Made nullable
+        private IDbConnection? _dbConnection; 
+        private ITrashRepository? _trashRepository; 
+        private ITrashService? _trashService; 
+        private TrashController? _trashController;
 
         [TestInitialize]
         public void Setup()
@@ -42,7 +42,7 @@ namespace GoogleDriveUnittestWithDapper.Test
         }
 
         [TestMethod]
-        public async Task AddToTrashAsync_ValidFile_ReturnsTrashId()
+        public void AddToTrashAsync_ValidFile_ReturnsTrashId()
         {
             // Arrange
             var trash = new TrashDto { FileName = "Doc1.pdf", UserName = "John" };

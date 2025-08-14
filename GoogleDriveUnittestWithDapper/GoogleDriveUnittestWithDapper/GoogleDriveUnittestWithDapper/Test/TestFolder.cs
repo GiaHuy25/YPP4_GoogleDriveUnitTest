@@ -8,10 +8,10 @@ namespace GoogleDriveUnittestWithDapper.Test
     [TestClass]
     public class TestFolder
     {
-        private SqliteConnection _connection;
-        private IFolderRepository _folderRepository;
-        private IFolderService _folderService;
-        private FolderController _folderController;
+        private SqliteConnection? _connection;
+        private IFolderRepository? _folderRepository;
+        private IFolderService? _folderService;
+        private FolderController? _folderController;
         [TestInitialize]
         public void Setup()
         {
@@ -29,8 +29,8 @@ namespace GoogleDriveUnittestWithDapper.Test
         [TestCleanup]
         public void Cleanup()
         {
-            _connection.Close();
-            _connection.Dispose();
+            _connection?.Close();
+            _connection?.Dispose();
         }
         [TestMethod]
         public void GetFolderById_ValidFolderId_ReturnsFolder()
@@ -39,7 +39,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             int folderId = 1; // RootFolder from sample data
 
             // Act
-            var result = _folderController.GetFolderById(folderId);
+            var result = _folderController?.GetFolderById(folderId);
 
             // Assert
             Assert.IsNotNull(result, "Folder should not be null for valid FolderId");
@@ -57,7 +57,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             int invalidFolderId = 999; // Non-existent FolderId
 
             // Act
-            var result = _folderController.GetFolderById(invalidFolderId);
+            var result = _folderController?.GetFolderById(invalidFolderId);
 
             // Assert
             Assert.IsNull(result, "Folder should be null for invalid FolderId");

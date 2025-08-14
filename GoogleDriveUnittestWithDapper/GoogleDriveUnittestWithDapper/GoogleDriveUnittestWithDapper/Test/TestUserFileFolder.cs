@@ -8,10 +8,10 @@ namespace GoogleDriveUnittestWithDapper.Test
     [TestClass]
     public class TestUserFileFolder
     {
-        private SqliteConnection _connection;
-        private IUserFileFolderRepository _userFileFolderRepository;
-        private IUserFileFolderService _userFileFolderService;
-        private UserFileFolderController _userFileFolderController;
+        private SqliteConnection? _connection;
+        private IUserFileFolderRepository? _userFileFolderRepository;
+        private IUserFileFolderService? _userFileFolderService;
+        private UserFileFolderController? _userFileFolderController;
         [TestInitialize]
         public void Setup()
         {
@@ -32,8 +32,8 @@ namespace GoogleDriveUnittestWithDapper.Test
         [TestCleanup]
         public void Cleanup()
         {
-            _connection.Close();
-            _connection.Dispose();
+            _connection?.Close();
+            _connection?.Dispose();
         }
 
         [TestMethod]
@@ -43,11 +43,11 @@ namespace GoogleDriveUnittestWithDapper.Test
             int userId = 1;
 
             // Act
-            var result = _userFileFolderController.GetFilesAndFoldersByUserId(userId).ToList();
+            var result = _userFileFolderController?.GetFilesAndFoldersByUserId(userId).ToList();
 
             // Assert
             Assert.IsNotNull(result, "Result should not be null");
-            Assert.AreEqual(6, result.Count, "Number of items does not match");
+            Assert.HasCount(6, result);
             Assert.AreEqual("John", result[0].UserName);
         }
 
@@ -58,7 +58,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             int invalidUserId = 999; // Non-existent UserId
 
             // Act
-            var result = _userFileFolderController.GetFilesAndFoldersByUserId(invalidUserId).ToList();
+            var result = _userFileFolderController?.GetFilesAndFoldersByUserId(invalidUserId).ToList();
 
             // Assert
             Assert.IsNotNull(result, "Result should not be null");

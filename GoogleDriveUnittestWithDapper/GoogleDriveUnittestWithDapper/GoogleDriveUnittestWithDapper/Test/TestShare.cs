@@ -22,13 +22,11 @@ namespace GoogleDriveUnittestWithDapper.Test
         [TestInitialize]
         public void Setup()
         {
-            // Set up in-memory SQLite database
             _dbConnection = new SqliteConnection("Data Source=:memory:");
             _dbConnection.Open();
             TestDatabaseSchema.CreateSchema(_dbConnection);
             TestDatabaseSchema.InsertSampleData(_dbConnection);
 
-            // Initialize repository and service with real database for integration-like tests
             _shareRepository = new ShareRepository(_dbConnection);
             _shareService = new ShareService(_shareRepository);
             _shareObjectController = new ShareObjectController(_shareService);

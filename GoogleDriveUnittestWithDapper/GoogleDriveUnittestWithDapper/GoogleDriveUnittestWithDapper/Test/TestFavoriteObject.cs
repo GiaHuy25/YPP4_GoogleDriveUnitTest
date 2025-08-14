@@ -8,10 +8,10 @@ namespace GoogleDriveUnittestWithDapper.Test
     [TestClass]
     public class TestFavoriteObject
     {
-        private SqliteConnection _connection;
-        private IFavoriteObjectRepository _favoriteRepository;
-        private IFavoriteObjectService _favoriteService;
-        private FavoriteObjectController _favoriteController;
+        private SqliteConnection? _connection;
+        private IFavoriteObjectRepository? _favoriteRepository;
+        private IFavoriteObjectService? _favoriteService;
+        private FavoriteObjectController? _favoriteController;
 
         [TestInitialize]
         public void Setup()
@@ -33,8 +33,8 @@ namespace GoogleDriveUnittestWithDapper.Test
         [TestCleanup]
         public void Cleanup()
         {
-            _connection.Close();
-            _connection.Dispose();
+            _connection?.Close();
+            _connection?.Dispose();
         }
         [TestMethod]
         public void GetFavoritesByUserId_ValidUserId_ReturnsAllFavorites()
@@ -42,7 +42,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             // Arrange
             int userId = 1;
             // Act
-            var result = _favoriteController.GetFavoritesByUserId(userId).ToList();
+            var result = _favoriteController?.GetFavoritesByUserId(userId).ToList();
 
             // Assert
             Assert.IsNotNull(result, "Result should not be null");

@@ -10,10 +10,10 @@ namespace GoogleDriveUnittestWithDapper.Test
     [TestClass]
     public class TestBannedUser
     {
-        private IDbConnection _connection;
-        private IBannedUserRepository _bannedUserRepository;
-        private IBannedUserService _bannedUserService;
-        private BannedUserController _bannedUserController;
+        private IDbConnection? _connection;
+        private IBannedUserRepository? _bannedUserRepository;
+        private IBannedUserService? _bannedUserService;
+        private BannedUserController? _bannedUserController;
         [TestInitialize]
         public void Setup()
         {
@@ -33,7 +33,7 @@ namespace GoogleDriveUnittestWithDapper.Test
         [TestCleanup]
         public void Cleanup()
         {
-            _connection.Dispose();
+            _connection?.Dispose();
         }
         [TestMethod]
         public void GetBannedUserByUserId_MultipleBannedUsers_ReturnsAllMatching()
@@ -57,7 +57,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             };
 
             // Act
-            var result = _bannedUserController.GetBannedUserByUserId(userId);
+            var result = _bannedUserController?.GetBannedUserByUserId(userId);
 
             // Assert
             Assert.IsNotNull(result, "Result should not be null for valid userId with multiple records");
