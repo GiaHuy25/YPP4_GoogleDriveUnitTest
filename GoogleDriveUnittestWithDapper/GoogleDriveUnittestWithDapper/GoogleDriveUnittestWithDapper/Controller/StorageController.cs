@@ -31,7 +31,7 @@ namespace GoogleDriveUnittestWithDapper.Controller
             if (fileSize < 0)
                 throw new ArgumentException("FileSize cannot be negative.", nameof(fileSize));
 
-            if (fileSize > 1_073_741_824)
+            if (fileSize > 1)
                 throw new ArgumentException("FileSize exceeds maximum allowed limit.", nameof(fileSize));
 
             return await _storageService.UpdateUsedCapacityAsync(userId, fileSize);
