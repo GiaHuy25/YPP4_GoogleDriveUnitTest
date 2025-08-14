@@ -30,7 +30,7 @@ namespace GoogleDriveUnittestWithDapper.Controller
             return products;
         }
 
-        public async Task<int> AddUserProductAsync(UserProductItemDto userProduct)
+        public async Task<int> AddUserProductAsync(UserProductItemDto? userProduct)
         {
             if (userProduct == null)
                 throw new ArgumentNullException(nameof(userProduct), "UserProduct object cannot be null.");
@@ -46,7 +46,7 @@ namespace GoogleDriveUnittestWithDapper.Controller
             return await _userProductService.AddUserProductAsync(userProduct);
         }
 
-        public async Task<int> UpdateUserProductAsync(UserProductItemDto userProduct)
+        public async Task<int> UpdateUserProductAsync(UserProductItemDto? userProduct)
         {
             if (userProduct == null)
                 throw new ArgumentNullException(nameof(userProduct), "UserProduct object cannot be null.");

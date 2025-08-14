@@ -106,7 +106,7 @@ namespace GoogleDriveUnittestWithDapper.Test
         public void AddUserProductAsync_NullUserProduct_ThrowsArgumentException()
         {
             // Arrange
-            UserProductItemDto userProduct = null;
+            UserProductItemDto? userProduct = null;
 
             // Act & Assert
             try
@@ -147,7 +147,7 @@ namespace GoogleDriveUnittestWithDapper.Test
         public void UpdateUserProductAsync_NullUserProduct_ThrowsArgumentException()
         {
             // Arrange
-            UserProductItemDto userProduct = null;
+            UserProductItemDto? userProduct = null;
 
             // Act & Assert
             try
