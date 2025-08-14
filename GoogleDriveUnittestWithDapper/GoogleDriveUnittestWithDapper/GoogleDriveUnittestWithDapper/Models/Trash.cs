@@ -1,6 +1,6 @@
 ﻿namespace GoogleDriveUnittestWithDapper.Models
 {
-    public class Trash { 
+    public class TrashDto { 
         public int TrashId { get; set; } 
         public int ObjectId { get; set; } 
         public int ObjectTypeId { get; set; } 

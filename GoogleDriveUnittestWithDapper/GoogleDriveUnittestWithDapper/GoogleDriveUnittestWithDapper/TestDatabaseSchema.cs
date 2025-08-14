@@ -333,9 +333,9 @@ namespace GoogleDriveUnittestWithDapper
             connection.Execute("INSERT INTO FileVersion (FileId, FileVersion, FileVersionPath, CreatedAt, UpdateBy, IsCurrent, Size) VALUES (" + fileId3 + ", 1, '/1/" + folderId2 + "/3_v1', '2025-08-12 17:45:00', " + ownerId1 + ", 1, 512);");
 
             // Insert into Trash (3 rows)
-            connection.Execute("INSERT INTO Trash (ObjectId, ObjectTypeId, RemovedDatetime, UserId) VALUES (" + folderId1 + ", " + objectTypeId1 + ", '2025-08-12 17:45:00', " + ownerId1 + ");");
-            connection.Execute("INSERT INTO Trash (ObjectId, ObjectTypeId, RemovedDatetime, UserId) VALUES (" + folderId2 + ", " + objectTypeId1 + ", '2025-08-12 17:45:00', " + ownerId1 + ");");
-            connection.Execute("INSERT INTO Trash (ObjectId, ObjectTypeId, RemovedDatetime, UserId) VALUES (" + folderId1 + ", " + objectTypeId1 + ", '2025-08-12 17:45:00', " + ownerId1 + ");");
+            connection.Execute("INSERT INTO Trash (ObjectId, ObjectTypeId, RemovedDatetime, UserId) VALUES (" + fileId1 + ", " + objectTypeId2 + ", '2025-08-12 17:45:00', " + ownerId1 + ");");
+            connection.Execute("INSERT INTO Trash (ObjectId, ObjectTypeId, RemovedDatetime, UserId) VALUES (" + fileId2 + ", " + objectTypeId2 + ", '2025-08-12 17:45:00', " + ownerId1 + ");");
+            connection.Execute("INSERT INTO Trash (ObjectId, ObjectTypeId, RemovedDatetime, UserId) VALUES (" + fileId3 + ", " + objectTypeId2 + ", '2025-08-12 17:45:00', " + ownerId1 + ");");
 
             // Insert into ProductItem (3 rows)
             connection.Execute("INSERT INTO ProductItem (ProductName, Cost, Duration) VALUES ('Plan1', 9.99, 30);");
