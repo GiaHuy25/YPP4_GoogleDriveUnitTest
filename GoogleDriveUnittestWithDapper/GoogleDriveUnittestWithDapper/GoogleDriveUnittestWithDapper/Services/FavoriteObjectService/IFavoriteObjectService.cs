@@ -4,6 +4,6 @@ namespace GoogleDriveUnittestWithDapper.Services.FavoriteObjectService
 {
     public interface IFavoriteObjectService
     {
-        IEnumerable<FavoriteObjectOfUser> GetFavoritesByUserId(int userId);
+        IEnumerable<FavoriteObjectOfUserDto> GetFavoritesByUserId(int userId);
     }
 }

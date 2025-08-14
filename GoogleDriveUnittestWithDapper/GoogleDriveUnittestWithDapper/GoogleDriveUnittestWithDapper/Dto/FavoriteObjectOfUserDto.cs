@@ -1,6 +1,6 @@
 ﻿namespace GoogleDriveUnittestWithDapper.Dto
 {
-    public class FavoriteObjectOfUser
+    public class FavoriteObjectOfUserDto
     {
         public string UserName { get; set; } = string.Empty;
         public string FolderName { get; set; } = string.Empty;

@@ -12,7 +12,7 @@ namespace GoogleDriveUnittestWithDapper.Repositories.FavoriteObjectRepo
         {
             _connection = connection;
         }
-        public IEnumerable<FavoriteObjectOfUser> GetFavoritesByUserId(int userId)
+        public IEnumerable<FavoriteObjectOfUserDto> GetFavoritesByUserId(int userId)
         {
             var sql = @"
                 SELECT 
@@ -34,7 +34,7 @@ namespace GoogleDriveUnittestWithDapper.Repositories.FavoriteObjectRepo
                 LEFT JOIN ObjectType ot ON fav.ObjectTypeId = ot.ObjectTypeId
                 WHERE fav.OwnerId = @userId";
 
-            return _connection.Query<FavoriteObjectOfUser>(sql, new { userId });
+            return _connection.Query<FavoriteObjectOfUserDto>(sql, new { userId });
         }
     }
 }

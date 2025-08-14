@@ -12,7 +12,7 @@ namespace GoogleDriveUnittestWithDapper.Controller
             _favoriteObjectService = favoriteObjectService;
         }
 
-        public IEnumerable<FavoriteObjectOfUser> GetFavoritesByUserId(int userId)
+        public IEnumerable<FavoriteObjectOfUserDto> GetFavoritesByUserId(int userId)
         {
             return _favoriteObjectService.GetFavoritesByUserId(userId);
         }

@@ -12,9 +12,30 @@ namespace GoogleDriveUnittestWithDapper.Services.UserSettingService
             _userSettingRepository = userSettingRepository;
         }
 
-        public  IEnumerable<UserSettingDto> GetUserSettings(int userId)
+        public IEnumerable<UserSettingDto> GetUserSettings(int userId)
         {
-            return _userSettingRepository.GetUserSettings(userId);
+            var userSettings = _userSettingRepository.GetUserSettingsByUserId(userId);
+            var result = new List<UserSettingDto>();
+
+            foreach (var us in userSettings)
+            {
+                var key = _userSettingRepository.GetAppSettingKeyById(us.AppSettingKeyId);
+                var option = us.AppSettingOptionId.HasValue
+                    ? _userSettingRepository.GetAppSettingOptionById(us.AppSettingOptionId.Value)
+                    : null;
+
+                if (key != null)
+                {
+                    result.Add(new UserSettingDto
+                    {
+                        SettingKey = key.SettingKey ?? string.Empty,
+                        IsBoolean = key.IsBoolean ?? 0,
+                        SettingValue = option?.SettingValue ?? string.Empty
+                    });
+                }
+            }
+
+            return result;
         }
     }
 }

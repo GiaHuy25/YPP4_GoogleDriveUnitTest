@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using GoogleDriveUnittestWithDapper.Dto;
+using GoogleDriveUnittestWithDapper.Models;
 using System.Data;
 
 namespace GoogleDriveUnittestWithDapper.Repositories.UserSettingRepo
@@ -11,19 +12,23 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserSettingRepo
         {
             _connection = connection;
         }
-        public IEnumerable<UserSettingDto> GetUserSettings(int userId)
-        {
-            var query = @"
-                SELECT 
-                    ak.SettingKey,
-                    ak.IsBoolean,
-                    ao.SettingValue
-                FROM UserSetting us
-                JOIN AppSettingKey ak ON us.AppSettingKeyId = ak.SettingId
-                JOIN AppSettingOption ao ON us.AppSettingOptionId = ao.AppSettingOptionId
-                WHERE us.UserId = @userId";
 
-            return  _connection.Query<UserSettingDto>(query, new { userId });
+        public IEnumerable<UserSetting> GetUserSettingsByUserId(int userId)
+        {
+            var query = @"SELECT * FROM UserSetting WHERE UserId = @userId";
+            return _connection.Query<UserSetting>(query, new { userId });
+        }
+
+        public AppSettingKey? GetAppSettingKeyById(int settingId)
+        {
+            var query = @"SELECT * FROM AppSettingKey WHERE SettingId = @settingId";
+            return _connection.QuerySingleOrDefault<AppSettingKey>(query, new { settingId });
+        }
+
+        public AppSettingOption? GetAppSettingOptionById(int optionId)
+        {
+            var query = @"SELECT * FROM AppSettingOption WHERE AppSettingOptionId = @optionId";
+            return _connection.QuerySingleOrDefault<AppSettingOption>(query, new { optionId });
         }
     }
 }
