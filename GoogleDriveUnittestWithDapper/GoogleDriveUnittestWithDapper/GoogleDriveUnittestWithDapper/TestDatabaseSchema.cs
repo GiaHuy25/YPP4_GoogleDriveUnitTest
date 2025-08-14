@@ -310,18 +310,21 @@ namespace GoogleDriveUnittestWithDapper
 
             // Insert into Share (3 rows)
             int objectTypeId1 = connection.QuerySingle<int>("SELECT ObjectTypeId FROM ObjectType WHERE ObjectTypeName = 'Folder'");
+            int objectTypeId2 = connection.QuerySingle<int>("SELECT ObjectTypeId FROM ObjectType WHERE ObjectTypeName = 'File'");
             connection.Execute("INSERT INTO Share (Sharer, ObjectId, ObjectTypeId, ShareUrl, UrlApprove) VALUES (" + ownerId1 + ", " + folderId1 + ", " + objectTypeId1 + ", 'http://share1', 1);");
             connection.Execute("INSERT INTO Share (Sharer, ObjectId, ObjectTypeId, ShareUrl, UrlApprove) VALUES (" + ownerId1 + ", " + folderId2 + ", " + objectTypeId1 + ", 'http://share2', 1);");
-            connection.Execute("INSERT INTO Share (Sharer, ObjectId, ObjectTypeId, ShareUrl, UrlApprove) VALUES (" + ownerId1 + ", " + folderId1 + ", " + objectTypeId1 + ", 'http://share3', 0);");
+            connection.Execute("INSERT INTO Share (Sharer, ObjectId, ObjectTypeId, ShareUrl, UrlApprove) VALUES (" + ownerId1 + ", " + fileId1 + ", " + objectTypeId2 + ", 'http://share3', 0);");
 
+            int ownerId2 = connection.QuerySingle<int>("SELECT UserId FROM Account WHERE UserName = 'Jane'");
+            int ownerId3 = connection.QuerySingle<int>("SELECT UserId FROM Account WHERE UserName = 'Bob'");
             // Insert into SharedUser (3 rows)
             int permissionId3 = connection.QuerySingle<int>("SELECT PermissionId FROM Permission WHERE PermissionName = 'Viewer'");
             int shareId1 = connection.QuerySingle<int>("SELECT ShareId FROM Share WHERE ShareUrl = 'http://share1'");
-            connection.Execute("INSERT INTO SharedUser (ShareId, UserId, PermissionId, CreatedAt, ModifiedAt) VALUES (" + shareId1 + ", " + ownerId1 + ", " + permissionId3 + ", '2025-08-12 17:45:00', '2025-08-12 17:45:00');");
+            connection.Execute("INSERT INTO SharedUser (ShareId, UserId, PermissionId, CreatedAt, ModifiedAt) VALUES (" + shareId1 + ", " + ownerId2 + ", " + permissionId3 + ", '2025-08-12 17:45:00', '2025-08-12 17:45:00');");
             int shareId2 = connection.QuerySingle<int>("SELECT ShareId FROM Share WHERE ShareUrl = 'http://share2'");
-            connection.Execute("INSERT INTO SharedUser (ShareId, UserId, PermissionId, CreatedAt, ModifiedAt) VALUES (" + shareId2 + ", " + ownerId1 + ", " + permissionId3 + ", '2025-08-12 17:45:00', '2025-08-12 17:45:00');");
+            connection.Execute("INSERT INTO SharedUser (ShareId, UserId, PermissionId, CreatedAt, ModifiedAt) VALUES (" + shareId2 + ", " + ownerId2 + ", " + permissionId3 + ", '2025-08-12 17:45:00', '2025-08-12 17:45:00');");
             int shareId3 = connection.QuerySingle<int>("SELECT ShareId FROM Share WHERE ShareUrl = 'http://share3'");
-            connection.Execute("INSERT INTO SharedUser (ShareId, UserId, PermissionId, CreatedAt, ModifiedAt) VALUES (" + shareId3 + ", " + ownerId1 + ", " + permissionId3 + ", '2025-08-12 17:45:00', '2025-08-12 17:45:00');");
+            connection.Execute("INSERT INTO SharedUser (ShareId, UserId, PermissionId, CreatedAt, ModifiedAt) VALUES (" + shareId3 + ", " + ownerId2 + ", " + permissionId3 + ", '2025-08-12 17:45:00', '2025-08-12 17:45:00');");
 
             // Insert into FileVersion (3 rows)
             int fileId3 = connection.QuerySingle<int>("SELECT FileId FROM UserFile WHERE UserFileName = 'Note1.txt'");
@@ -357,8 +360,6 @@ namespace GoogleDriveUnittestWithDapper
 
             // Insert into BannedUser (3 rows)
 
-            int ownerId2 = connection.QuerySingle<int>("SELECT UserId FROM Account WHERE UserName = 'Jane'");
-            int ownerId3 = connection.QuerySingle<int>("SELECT UserId FROM Account WHERE UserName = 'Bob'");
             connection.Execute("INSERT INTO BannedUser (UserId, BannedAt, BannedUserId) VALUES (" + ownerId1 + ", '2025-08-12 17:45:00', " + ownerId2 + ");");
             connection.Execute("INSERT INTO BannedUser (UserId, BannedAt, BannedUserId) VALUES (" + ownerId1 + ", '2025-08-12 17:45:00', " + ownerId3 + ");");
             connection.Execute("INSERT INTO BannedUser (UserId, BannedAt, BannedUserId) VALUES (" + ownerId2 + ", '2025-08-12 17:45:00', " + ownerId3 + ");");

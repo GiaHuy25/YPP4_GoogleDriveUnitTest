@@ -15,6 +15,7 @@ namespace GoogleDriveUnittestWithDapper.Dto
         public string FileIcon { get; set; } = string.Empty;
         public string SharerName { get; set; } = string.Empty;
         public string SharedName { get; set; } = string.Empty;
+        public string PermissionName { get; set; } = string.Empty;
 
     }
 }
