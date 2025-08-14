@@ -16,7 +16,7 @@ namespace GoogleDriveUnittestWithDapper.Test
         private UserSettingController? _userSettingController;
         [TestInitialize]
         public void Setup()
-        {
+        { 
             // Use in-memory SQLite database
             _connection = new SqliteConnection("Data Source=:memory:");
             _connection.Open();
