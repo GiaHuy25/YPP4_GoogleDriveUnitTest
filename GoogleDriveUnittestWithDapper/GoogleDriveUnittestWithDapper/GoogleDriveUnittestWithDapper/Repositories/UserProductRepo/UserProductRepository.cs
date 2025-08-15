@@ -23,10 +23,10 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserProductRepo
                     pr.PromotionName,
                     pr.Discount,
                     pr.IsPercent
-                FROM UserProduct up
-                JOIN Account a ON up.UserId = a.UserId
-                JOIN ProductItem p ON up.ProductId = p.ProductId
-                LEFT JOIN Promotion pr ON up.PromotionId = pr.PromotionId
+                FROM UserProduct up  
+                JOIN Account a   ON up.UserId = a.UserId
+                JOIN ProductItem p   ON up.ProductId = p.ProductId
+                LEFT JOIN Promotion pr   ON up.PromotionId = pr.PromotionId
                 WHERE a.UserId = @UserId";
 
             return await _connection.QueryAsync<UserProductItemDto>(sql, new { UserId = userId });

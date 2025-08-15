@@ -26,12 +26,12 @@ namespace GoogleDriveUnittestWithDapper.Repositories.FavoriteObjectRepo
                     uf.UserFileName AS FileName,
                     ft.Icon AS FileIcon,
                     uf.Size AS FileSize
-                FROM FavoriteObject fav
-                LEFT JOIN Account a ON fav.OwnerId = a.UserId
-                LEFT JOIN Folder f ON fav.ObjectId = f.FolderId AND (SELECT ObjectTypeName FROM ObjectType WHERE ObjectTypeId = fav.ObjectTypeId) = 'Folder'
-                LEFT JOIN UserFile uf ON fav.ObjectId = uf.FileId AND (SELECT ObjectTypeName FROM ObjectType WHERE ObjectTypeId = fav.ObjectTypeId) = 'File'
-                LEFT JOIN FileType ft ON uf.FileTypeId = ft.FileTypeId
-                LEFT JOIN ObjectType ot ON fav.ObjectTypeId = ot.ObjectTypeId
+                FROM FavoriteObject fav  
+                LEFT JOIN Account a   ON fav.OwnerId = a.UserId
+                LEFT JOIN Folder f   ON fav.ObjectId = f.FolderId AND (SELECT ObjectTypeName FROM ObjectType WHERE ObjectTypeId = fav.ObjectTypeId) = 'Folder'
+                LEFT JOIN UserFile uf   ON fav.ObjectId = uf.FileId AND (SELECT ObjectTypeName FROM ObjectType WHERE ObjectTypeId = fav.ObjectTypeId) = 'File'
+                LEFT JOIN FileType ft   ON uf.FileTypeId = ft.FileTypeId
+                LEFT JOIN ObjectType ot   ON fav.ObjectTypeId = ot.ObjectTypeId
                 WHERE fav.OwnerId = @userId";
 
             return _connection.Query<FavoriteObjectOfUserDto>(sql, new { userId });

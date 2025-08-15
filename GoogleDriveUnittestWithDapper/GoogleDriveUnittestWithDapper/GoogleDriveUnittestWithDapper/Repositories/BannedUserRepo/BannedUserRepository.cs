@@ -14,14 +14,14 @@ namespace GoogleDriveUnittestWithDapper.Repositories.BannedUserRepo
         public IEnumerable<BannedUserDto>GetBannedUserByUserId(int userId)
         {
             var query = @"
-                SELECT 
-                    bu.UserId,
-                    bu.BannedAt,
-                    bu.BannedUserId,
-                    a.UserName AS BannedUserName
-                FROM BannedUser bu
-                LEFT JOIN Account a ON bu.BannedUserId = a.UserId
-                WHERE bu.UserId = @userId";
+                    SELECT 
+                        bu.UserId,
+                        bu.BannedAt,
+                        bu.BannedUserId,
+                        a.UserName AS BannedUserName
+                    FROM BannedUser bu  
+                    LEFT JOIN Account a   ON bu.BannedUserId = a.UserId
+                    WHERE bu.UserId = @userId";
             return _connection.Query<BannedUserDto>(query, new { userId });
         }
     }

@@ -23,14 +23,14 @@ namespace GoogleDriveUnittestWithDapper.Repositories.ShareObjectRepo
                     a1.UserName AS SharerName,
                     a2.UserName AS SharedName,
                     p.PermissionName
-                FROM SharedUser su
-                INNER JOIN Share s ON su.ShareId = s.ShareId
-                INNER JOIN UserFile uf ON s.ObjectId = uf.FileId AND s.ObjectTypeId = (SELECT ObjectTypeId FROM ObjectType WHERE ObjectTypeName = 'File')
-                INNER JOIN Account a1 ON s.Sharer = a1.UserId
-                INNER JOIN Account a2 ON su.UserId = a2.UserId
-                LEFT JOIN Folder f ON uf.FolderId = f.FolderId
-                LEFT JOIN FileType ft ON uf.FileTypeId = ft.FileTypeId
-                INNER JOIN Permission p ON su.PermissionId = p.PermissionId
+                FROM SharedUser su  
+                INNER JOIN Share s   ON su.ShareId = s.ShareId
+                INNER JOIN UserFile uf   ON s.ObjectId = uf.FileId AND s.ObjectTypeId = (SELECT ObjectTypeId FROM ObjectType WHERE ObjectTypeName = 'File')
+                INNER JOIN Account a1   ON s.Sharer = a1.UserId
+                INNER JOIN Account a2   ON su.UserId = a2.UserId
+                LEFT JOIN Folder f   ON uf.FolderId = f.FolderId
+                LEFT JOIN FileType ft   ON uf.FileTypeId = ft.FileTypeId
+                INNER JOIN Permission p   ON su.PermissionId = p.PermissionId
                 WHERE su.UserId = @UserId
                 UNION ALL
                 SELECT 
@@ -42,12 +42,12 @@ namespace GoogleDriveUnittestWithDapper.Repositories.ShareObjectRepo
                     a1.UserName AS SharerName,
                     a2.UserName AS SharedName,
                     p.PermissionName
-                FROM SharedUser su
-                INNER JOIN Share s ON su.ShareId = s.ShareId
-                INNER JOIN Folder f ON s.ObjectId = f.FolderId AND s.ObjectTypeId = (SELECT ObjectTypeId FROM ObjectType WHERE ObjectTypeName = 'Folder')
-                INNER JOIN Account a1 ON s.Sharer = a1.UserId
-                INNER JOIN Account a2 ON su.UserId = a2.UserId
-                INNER JOIN Permission p ON su.PermissionId = p.PermissionId
+                FROM SharedUser su  
+                INNER JOIN Share s   ON su.ShareId = s.ShareId
+                INNER JOIN Folder f   ON s.ObjectId = f.FolderId AND s.ObjectTypeId = (SELECT ObjectTypeId FROM ObjectType WHERE ObjectTypeName = 'Folder')
+                INNER JOIN Account a1   ON s.Sharer = a1.UserId
+                INNER JOIN Account a2   ON su.UserId = a2.UserId
+                INNER JOIN Permission p   ON su.PermissionId = p.PermissionId
                 WHERE su.UserId = @UserId";
 
             return await _connection.QueryAsync<ShareObjectDto>(sql, new { UserId = userId });

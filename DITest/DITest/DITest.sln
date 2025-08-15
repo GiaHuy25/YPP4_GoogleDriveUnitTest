@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35327.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DITest", "DITest\DITest.csproj", "{3C127D4C-00DD-497E-995F-EC0AAF8EBEE8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3C127D4C-00DD-497E-995F-EC0AAF8EBEE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C127D4C-00DD-497E-995F-EC0AAF8EBEE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C127D4C-00DD-497E-995F-EC0AAF8EBEE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C127D4C-00DD-497E-995F-EC0AAF8EBEE8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {23D2A50E-E52D-4735-90AF-07AD9DB9AA40}
+	EndGlobalSection
+EndGlobal

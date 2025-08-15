@@ -21,9 +21,9 @@ namespace GoogleDriveUnittestWithDapper.Repositories.FolderRepo
                     "fl.FolderPath, " +
                     "c.ColorName, " +
                     "a.UserName  " +
-                "FROM Folder fl " +
-                "JOIN Account a on fl.OwnerId = a.UserId  " +
-                "JOIN Color c on fl.ColorId = c.ColorId " +
+                "FROM Folder fl   " +
+                "JOIN Account a   on fl.OwnerId = a.UserId  " +
+                "JOIN Color c   on fl.ColorId = c.ColorId " +
                 "WHERE FolderId = @folderId", new { folderId });
         }
     }

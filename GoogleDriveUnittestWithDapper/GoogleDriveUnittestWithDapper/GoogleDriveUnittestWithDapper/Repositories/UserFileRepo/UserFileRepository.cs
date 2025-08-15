@@ -22,9 +22,9 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserFileRepo
                     uf.UserFilePath AS FilePath,
                     uf.Size AS fileSize,
                     a.UserName AS fileowner
-                FROM UserFile uf
-                LEFT JOIN FileType ft ON uf.FileTypeId = ft.FileTypeId
-                LEFT JOIN Account a ON uf.OwnerId = a.UserId
+                FROM UserFile uf  
+                LEFT JOIN FileType ft   ON uf.FileTypeId = ft.FileTypeId
+                LEFT JOIN Account a   ON uf.OwnerId = a.UserId
                 WHERE uf.OwnerId = @userId";
 
             return _connection.Query<FileDto>(sql, new { userId });

@@ -20,7 +20,7 @@ namespace GoogleDriveUnittestWithDapper.Repositories.AccountRepo
                     a.UserName AS UserName,
                     a.Email AS Email,
                     a.UserImg AS UserImg
-                FROM Account a
+                FROM Account a  
                 WHERE a.UserId = @userId";
 
             return  _connection.QuerySingleOrDefault<AccountDto>(query, new { userId });

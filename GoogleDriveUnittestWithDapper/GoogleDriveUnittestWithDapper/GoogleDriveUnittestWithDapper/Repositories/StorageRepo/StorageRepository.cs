@@ -26,9 +26,9 @@ namespace GoogleDriveUnittestWithDapper.Repositories.StorageRepo
                     ft.FileTypeName AS FileType,
                     uf.Size AS FileSize,
                     ft.Icon AS FileIcon
-                FROM Account a
-                LEFT JOIN UserFile uf ON a.UserId = uf.OwnerId AND uf.UserFileStatus = 'Active'
-                LEFT JOIN FileType ft ON uf.FileTypeId = ft.FileTypeId
+                FROM Account a  
+                LEFT JOIN UserFile uf   ON a.UserId = uf.OwnerId AND uf.UserFileStatus = 'Active'
+                LEFT JOIN FileType ft   ON uf.FileTypeId = ft.FileTypeId
                 WHERE a.UserId = @UserId";
 
             return await _connection.QueryAsync<StorageDto>(sql, new { UserId = userId });
@@ -43,7 +43,7 @@ namespace GoogleDriveUnittestWithDapper.Repositories.StorageRepo
 
             // Check current used capacity and capacity limit
             var currentStorage = await _connection.QuerySingleOrDefaultAsync<dynamic>(
-                "SELECT UsedCapacity, Capacity FROM Account WHERE UserId = @UserId", new { UserId = userId });
+                "SELECT UsedCapacity, Capacity FROM Account   WHERE UserId = @UserId", new { UserId = userId });
             if (currentStorage == null)
                 throw new ArgumentException("User not found.", nameof(userId));
             int newUsedCapacity = (currentStorage.UsedCapacity ?? 0) + fileSize;

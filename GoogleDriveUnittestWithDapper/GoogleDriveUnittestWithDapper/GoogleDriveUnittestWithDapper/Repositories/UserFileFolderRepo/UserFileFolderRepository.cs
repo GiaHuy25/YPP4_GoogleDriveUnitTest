@@ -22,10 +22,10 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserFileFolderRepo
                     uf.UserFileName AS FileName,
                     ft.Icon AS FileIcon,
                     uf.Size AS FileSize
-                FROM UserFile uf
-                LEFT JOIN Folder f ON uf.FolderId = f.FolderId
-                LEFT JOIN Account a ON uf.OwnerId = a.UserId
-                LEFT JOIN FileType ft ON uf.FileTypeId = ft.FileTypeId
+                FROM UserFile uf  
+                LEFT JOIN Folder f   ON uf.FolderId = f.FolderId
+                LEFT JOIN Account a   ON uf.OwnerId = a.UserId
+                LEFT JOIN FileType ft   ON uf.FileTypeId = ft.FileTypeId
                 WHERE uf.OwnerId = @userId
 
                 UNION
@@ -37,8 +37,8 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserFileFolderRepo
                     NULL AS FileName,
                     NULL AS FileIcon,
                     0 AS FileSize
-                FROM Folder f
-                LEFT JOIN Account a ON f.OwnerId = a.UserId
+                FROM Folder f  
+                LEFT JOIN Account a   ON f.OwnerId = a.UserId
                 WHERE f.OwnerId = @userId";
 
             return _connection.Query<UserFileAndFolderDto>(sql, new { userId });
