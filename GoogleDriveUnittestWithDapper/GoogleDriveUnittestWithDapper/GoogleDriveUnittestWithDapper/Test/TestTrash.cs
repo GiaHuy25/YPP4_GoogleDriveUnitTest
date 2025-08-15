@@ -2,12 +2,9 @@
 using GoogleDriveUnittestWithDapper.Controller;
 using GoogleDriveUnittestWithDapper.Dto;
 using GoogleDriveUnittestWithDapper.Repositories.TrashRepo;
-using GoogleDriveUnittestWithDapper.Services;
 using GoogleDriveUnittestWithDapper.Services.TrashService;
 using Microsoft.Data.Sqlite;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Data;
-using System.Threading.Tasks;
 
 namespace GoogleDriveUnittestWithDapper.Test
 {

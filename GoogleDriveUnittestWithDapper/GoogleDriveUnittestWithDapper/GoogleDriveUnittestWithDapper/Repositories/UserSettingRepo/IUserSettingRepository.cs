@@ -1,5 +1,4 @@
-﻿using GoogleDriveUnittestWithDapper.Dto;
-using GoogleDriveUnittestWithDapper.Models;
+﻿using GoogleDriveUnittestWithDapper.Models;
 
 namespace GoogleDriveUnittestWithDapper.Repositories.UserSettingRepo
 {
