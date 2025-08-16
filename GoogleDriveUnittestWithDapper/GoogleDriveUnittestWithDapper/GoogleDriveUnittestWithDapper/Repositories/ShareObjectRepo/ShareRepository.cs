@@ -13,7 +13,9 @@ namespace GoogleDriveUnittestWithDapper.Repositories.ShareObjectRepo
         }
         public async Task<IEnumerable<ShareObjectDto>> GetSharedObjectsByUserIdAsync(int userId)
         {
-            const string sql = @"
+            bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
+            var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
+            string sql = @"
                 SELECT 
                     uf.FileId,
                     uf.FolderId,
@@ -48,7 +50,7 @@ namespace GoogleDriveUnittestWithDapper.Repositories.ShareObjectRepo
                 INNER JOIN Account a1   ON s.Sharer = a1.UserId
                 INNER JOIN Account a2   ON su.UserId = a2.UserId
                 INNER JOIN Permission p   ON su.PermissionId = p.PermissionId
-                WHERE su.UserId = @UserId";
+                WHERE su.UserId = @UserId".Replace("{noLock}", noLock);
 
             return await _connection.QueryAsync<ShareObjectDto>(sql, new { UserId = userId });
         }

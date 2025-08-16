@@ -24,28 +24,32 @@ namespace GoogleDriveUnittestWithDapper.Repositories.TrashRepo
         }
         public async Task<int> AddToTrashAsync(TrashDto trash)
         {
-            const string sql = @"
+            bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
+            var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
+            string sql = @"
                 INSERT INTO Trash (ObjectId, ObjectTypeId, RemovedDatetime, UserId, IsPermanent)
                 VALUES (@ObjectId, @ObjectTypeId, @RemoveDateTime, @UserId, 0);
-                SELECT last_insert_rowid();";
+                SELECT last_insert_rowid();".Replace("{noLock}", noLock);
 
             var parameters = new
             {
                 ObjectId = trash.FileName != string.Empty ?
-                    (int?)_connection.QuerySingle<int>("SELECT FileId FROM UserFile   WHERE UserFileName = @FileName", new { FileName = trash.FileName }) :
-                    (int?)_connection.QuerySingle<int>("SELECT FolderId FROM Folder   WHERE FolderName = @FolderName", new { FolderName = trash.FolderName }),
+                    (int?)_connection.QuerySingle<int>("SELECT FileId FROM UserFile {noLock} WHERE UserFileName = @FileName".Replace("{noLock}", noLock), new { FileName = trash.FileName }) :
+                    (int?)_connection.QuerySingle<int>("SELECT FolderId FROM Folder {noLock} WHERE FolderName = @FolderName".Replace("{noLock}", noLock), new { FolderName = trash.FolderName }),
                 ObjectTypeId = trash.FileName != string.Empty ?
-                    _connection.QuerySingle<int>("SELECT ObjectTypeId FROM ObjectType   WHERE ObjectTypeName = 'File'") :
-                    _connection.QuerySingle<int>("SELECT ObjectTypeId FROM ObjectType   WHERE ObjectTypeName = 'Folder'"),
+                    _connection.QuerySingle<int>("SELECT ObjectTypeId FROM ObjectType {noLock} WHERE ObjectTypeName = 'File'".Replace("{noLock}", noLock)) :
+                    _connection.QuerySingle<int>("SELECT ObjectTypeId FROM ObjectType {noLock} WHERE ObjectTypeName = 'Folder'".Replace("{noLock}", noLock)),
                 RemoveDateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                UserId = _connection.QuerySingle<int>("SELECT UserId FROM Account   WHERE UserName = @UserName", new { UserName = trash.UserName })
+                UserId = _connection.QuerySingle<int>("SELECT UserId FROM Account {noLock} WHERE UserName = @UserName".Replace("{noLock}", noLock), new { UserName = trash.UserName })
             };
 
             return await _connection.ExecuteScalarAsync<int>(sql, parameters);
         }
         public async Task<IEnumerable<TrashDto>> GetTrashByUserIdAsync(int userId)
         {
-            const string sql = @"
+            bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
+            var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
+            string sql = @"
                 SELECT 
                     CASE 
                         WHEN ot.ObjectTypeName = 'File' THEN uf.UserFileName 
@@ -62,19 +66,21 @@ namespace GoogleDriveUnittestWithDapper.Repositories.TrashRepo
                         WHEN uf.Size IS NOT NULL THEN printf('%.2f KB', uf.Size / 1024.0) 
                         ELSE '' 
                     END AS FileSize
-                FROM Trash t  
-                INNER JOIN Account a   ON t.UserId = a.UserId
-                INNER JOIN ObjectType ot   ON t.ObjectTypeId = ot.ObjectTypeId
-                LEFT JOIN UserFile uf   ON t.ObjectId = uf.FileId AND ot.ObjectTypeName = 'File'
-                LEFT JOIN Folder f   ON t.ObjectId = f.FolderId AND ot.ObjectTypeName = 'Folder'
-                LEFT JOIN FileType ft   ON uf.FileTypeId = ft.FileTypeId
-                WHERE t.UserId = @UserId AND t.IsPermanent = 0";
+                FROM Trash t  {noLock}
+                INNER JOIN Account a {noLock} ON t.UserId = a.UserId
+                INNER JOIN ObjectType ot {noLock} ON t.ObjectTypeId = ot.ObjectTypeId
+                LEFT JOIN UserFile uf {noLock} ON t.ObjectId = uf.FileId AND ot.ObjectTypeName = 'File'
+                LEFT JOIN Folder f {noLock} ON t.ObjectId = f.FolderId AND ot.ObjectTypeName = 'Folder'
+                LEFT JOIN FileType ft {noLock} ON uf.FileTypeId = ft.FileTypeId
+                WHERE t.UserId = @UserId AND t.IsPermanent = 0".Replace("{noLock}", noLock);
 
             return await _connection.QueryAsync<TrashDto>(sql, new { UserId = userId });
         }
         public async Task<IEnumerable<TrashDto>> GetTrashByIdAsync(int trashId)
         {
-            const string sql = @"
+            bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
+            var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
+            string sql = @"
                 SELECT 
                     CASE 
                         WHEN ot.ObjectTypeName = 'File' THEN uf.UserFileName 
@@ -91,13 +97,13 @@ namespace GoogleDriveUnittestWithDapper.Repositories.TrashRepo
                         WHEN uf.Size IS NOT NULL THEN printf('%.2f KB', uf.Size / 1024.0) 
                         ELSE '' 
                     END AS FileSize
-                FROM Trash t  
-                INNER JOIN Account a   ON t.UserId = a.UserId
-                INNER JOIN ObjectType ot   ON t.ObjectTypeId = ot.ObjectTypeId
-                LEFT JOIN UserFile uf   ON t.ObjectId = uf.FileId AND ot.ObjectTypeName = 'File'
-                LEFT JOIN Folder f   ON t.ObjectId = f.FolderId AND ot.ObjectTypeName = 'Folder'
-                LEFT JOIN FileType ft   ON uf.FileTypeId = ft.FileTypeId
-                WHERE t.TrashId = @TrashId AND t.IsPermanent = 0";
+                FROM Trash t  {noLock}
+                INNER JOIN Account a {noLock} ON t.UserId = a.UserId
+                INNER JOIN ObjectType ot {noLock} ON t.ObjectTypeId = ot.ObjectTypeId
+                LEFT JOIN UserFile uf {noLock} ON t.ObjectId = uf.FileId AND ot.ObjectTypeName = 'File'
+                LEFT JOIN Folder f {noLock} ON t.ObjectId = f.FolderId AND ot.ObjectTypeName = 'Folder'
+                LEFT JOIN FileType ft {noLock} ON uf.FileTypeId = ft.FileTypeId
+                WHERE t.TrashId = @TrashId AND t.IsPermanent = 0".Replace("{noLock}", noLock);
 
             return await _connection.QueryAsync<TrashDto>(sql, new { TrashId = trashId });
         }

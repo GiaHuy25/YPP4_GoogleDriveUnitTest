@@ -14,6 +14,8 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserFileFolderRepo
         }
         public IEnumerable<UserFileAndFolderDto> GetFilesAndFoldersByUserId(int userId)
         {
+            bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
+            var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
             var sql = @"
                 -- Fetch files
                 SELECT 
@@ -22,10 +24,10 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserFileFolderRepo
                     uf.UserFileName AS FileName,
                     ft.Icon AS FileIcon,
                     uf.Size AS FileSize
-                FROM UserFile uf  
-                LEFT JOIN Folder f   ON uf.FolderId = f.FolderId
-                LEFT JOIN Account a   ON uf.OwnerId = a.UserId
-                LEFT JOIN FileType ft   ON uf.FileTypeId = ft.FileTypeId
+                FROM UserFile uf {noLock}
+                LEFT JOIN Folder f {noLock} ON uf.FolderId = f.FolderId
+                LEFT JOIN Account a {noLock} ON uf.OwnerId = a.UserId
+                LEFT JOIN FileType ft {noLock} ON uf.FileTypeId = ft.FileTypeId
                 WHERE uf.OwnerId = @userId
 
                 UNION
@@ -37,9 +39,9 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserFileFolderRepo
                     NULL AS FileName,
                     NULL AS FileIcon,
                     0 AS FileSize
-                FROM Folder f  
-                LEFT JOIN Account a   ON f.OwnerId = a.UserId
-                WHERE f.OwnerId = @userId";
+                FROM Folder f {noLock}
+                LEFT JOIN Account a {noLock} ON f.OwnerId = a.UserId
+                WHERE f.OwnerId = @userId".Replace("{noLock}", noLock);
 
             return _connection.Query<UserFileAndFolderDto>(sql, new { userId });
         }

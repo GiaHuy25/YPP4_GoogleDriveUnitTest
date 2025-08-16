@@ -13,8 +13,9 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserProductRepo
         }
         public async Task<IEnumerable<UserProductItemDto>> GetUserProductsByUserIdAsync(int userId)
         {
-
-            const string sql = @"
+            bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
+            var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
+            string sql = @"
                 SELECT 
                     p.ProductName,
                     p.Cost,
@@ -23,11 +24,11 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserProductRepo
                     pr.PromotionName,
                     pr.Discount,
                     pr.IsPercent
-                FROM UserProduct up  
-                JOIN Account a   ON up.UserId = a.UserId
-                JOIN ProductItem p   ON up.ProductId = p.ProductId
-                LEFT JOIN Promotion pr   ON up.PromotionId = pr.PromotionId
-                WHERE a.UserId = @UserId";
+                FROM UserProduct up  {noLock}
+                JOIN Account a {noLock} ON up.UserId = a.UserId
+                JOIN ProductItem p {noLock} ON up.ProductId = p.ProductId
+                LEFT JOIN Promotion pr {noLock} ON up.PromotionId = pr.PromotionId
+                WHERE a.UserId = @UserId".Replace("{noLock}", noLock);
 
             return await _connection.QueryAsync<UserProductItemDto>(sql, new { UserId = userId });
         }

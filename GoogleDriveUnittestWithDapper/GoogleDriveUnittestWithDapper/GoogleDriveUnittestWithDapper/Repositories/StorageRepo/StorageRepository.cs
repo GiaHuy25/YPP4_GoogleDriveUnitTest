@@ -15,10 +15,12 @@ namespace GoogleDriveUnittestWithDapper.Repositories.StorageRepo
 
         public async Task<IEnumerable<StorageDto>> GetStorageByUserIdAsync(int userId)
         {
+            bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
+            var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
             if (userId < 0)
                 throw new ArgumentException("UserId cannot be negative.", nameof(userId));
 
-            const string sql = @"
+            string sql = @"
                 SELECT 
                     a.Capacity AS UserCapacity,
                     COALESCE((SELECT SUM(uf.Size) FROM UserFile uf WHERE uf.OwnerId = a.UserId AND uf.UserFileStatus = 'Active'), 0) AS UsedCapacity,
@@ -26,16 +28,18 @@ namespace GoogleDriveUnittestWithDapper.Repositories.StorageRepo
                     ft.FileTypeName AS FileType,
                     uf.Size AS FileSize,
                     ft.Icon AS FileIcon
-                FROM Account a  
-                LEFT JOIN UserFile uf   ON a.UserId = uf.OwnerId AND uf.UserFileStatus = 'Active'
-                LEFT JOIN FileType ft   ON uf.FileTypeId = ft.FileTypeId
-                WHERE a.UserId = @UserId";
+                FROM Account a {noLock}
+                LEFT JOIN UserFile uf {noLock} ON a.UserId = uf.OwnerId AND uf.UserFileStatus = 'Active'
+                LEFT JOIN FileType ft {noLock} ON uf.FileTypeId = ft.FileTypeId
+                WHERE a.UserId = @UserId".Replace("{noLock}", noLock);
 
             return await _connection.QueryAsync<StorageDto>(sql, new { UserId = userId });
         }
 
         public async Task<int> UpdateUsedCapacityAsync(int userId, int fileSize)
         {
+            bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
+            var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
             if (userId < 0)
                 throw new ArgumentException("UserId cannot be negative.", nameof(userId));
             if (fileSize < 0)
@@ -43,7 +47,7 @@ namespace GoogleDriveUnittestWithDapper.Repositories.StorageRepo
 
             // Check current used capacity and capacity limit
             var currentStorage = await _connection.QuerySingleOrDefaultAsync<dynamic>(
-                "SELECT UsedCapacity, Capacity FROM Account   WHERE UserId = @UserId", new { UserId = userId });
+                "SELECT UsedCapacity, Capacity FROM Account {noLock} WHERE UserId = @UserId", new { UserId = userId });
             if (currentStorage == null)
                 throw new ArgumentException("User not found.", nameof(userId));
             int newUsedCapacity = (currentStorage.UsedCapacity ?? 0) + fileSize;

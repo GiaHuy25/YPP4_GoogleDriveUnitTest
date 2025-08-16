@@ -15,16 +15,26 @@ namespace GoogleDriveUnittestWithDapper.Repositories.FolderRepo
 
         public FolderDto? GetFolderById(int folderId)
         {
+            bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
+            var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
+
+            var sql = @"
+                SELECT 
+                    fl.FolderId,
+                    fl.FolderName,
+                    fl.FolderPath,
+                    c.ColorName,
+                    a.UserName
+                FROM Folder fl {{NOLOCK}}
+                JOIN Account a {{NOLOCK}} ON fl.OwnerId = a.UserId
+                JOIN Color c {{NOLOCK}} ON fl.ColorId = c.ColorId
+                WHERE fl.FolderId = @folderId";
+
             return _connection.QuerySingleOrDefault<FolderDto>(
-                "SELECT fl.FolderId, " +
-                    "fl.FolderName, " +
-                    "fl.FolderPath, " +
-                    "c.ColorName, " +
-                    "a.UserName  " +
-                "FROM Folder fl   " +
-                "JOIN Account a   on fl.OwnerId = a.UserId  " +
-                "JOIN Color c   on fl.ColorId = c.ColorId " +
-                "WHERE FolderId = @folderId", new { folderId });
+                sql.Replace("{{NOLOCK}}", noLock),
+                new { folderId });
         }
+
+
     }
 }

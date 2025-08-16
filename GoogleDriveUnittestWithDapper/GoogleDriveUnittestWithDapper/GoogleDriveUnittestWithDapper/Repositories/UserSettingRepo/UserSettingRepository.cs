@@ -14,19 +14,25 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserSettingRepo
 
         public IEnumerable<UserSetting> GetUserSettingsByUserId(int userId)
         {
-            var query = @"SELECT * FROM UserSetting   WHERE UserId = @userId";
+            bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
+            var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
+            var query = @"SELECT * FROM UserSetting {noLock}   WHERE UserId = @userId".Replace("{noLock}", noLock);
             return _connection.Query<UserSetting>(query, new { userId });
         }
 
         public AppSettingKey? GetAppSettingKeyById(int settingId)
         {
-            var query = @"SELECT * FROM AppSettingKey   WHERE SettingId = @settingId";
+            bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
+            var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
+            var query = @"SELECT * FROM AppSettingKey {noLock}   WHERE SettingId = @settingId".Replace("{noLock}", noLock);
             return _connection.QuerySingleOrDefault<AppSettingKey>(query, new { settingId });
         }
 
         public AppSettingOption? GetAppSettingOptionById(int optionId)
         {
-            var query = @"SELECT * FROM AppSettingOption   WHERE AppSettingOptionId = @optionId";
+            bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
+            var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
+            var query = @"SELECT * FROM AppSettingOption {noLock} WHERE AppSettingOptionId = @optionId".Replace("{noLock}", noLock);
             return _connection.QuerySingleOrDefault<AppSettingOption>(query, new { optionId });
         }
     }

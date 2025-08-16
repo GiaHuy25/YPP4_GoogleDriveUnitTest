@@ -15,13 +15,15 @@ namespace GoogleDriveUnittestWithDapper.Repositories.AccountRepo
 
         public AccountDto? GetUserByIdAsync(int userId)
         {
+            bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
+            var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
             var query = @"
                 SELECT 
                     a.UserName AS UserName,
                     a.Email AS Email,
                     a.UserImg AS UserImg
-                FROM Account a  
-                WHERE a.UserId = @userId";
+                FROM Account a {noLock} 
+                WHERE a.UserId = @userId".Replace("{noLock}", noLock);
 
             return  _connection.QuerySingleOrDefault<AccountDto>(query, new { userId });
         }

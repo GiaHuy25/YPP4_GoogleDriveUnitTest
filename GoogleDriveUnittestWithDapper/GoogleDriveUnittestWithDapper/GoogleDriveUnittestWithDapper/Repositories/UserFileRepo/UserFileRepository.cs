@@ -15,6 +15,8 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserFileRepo
 
         public IEnumerable<FileDto> GetFilesByUserId(int userId)
         {
+            bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
+            var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
             var sql = @"
                 SELECT 
                     ft.Icon AS FileTypeIcon,
@@ -22,10 +24,10 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserFileRepo
                     uf.UserFilePath AS FilePath,
                     uf.Size AS fileSize,
                     a.UserName AS fileowner
-                FROM UserFile uf  
-                LEFT JOIN FileType ft   ON uf.FileTypeId = ft.FileTypeId
-                LEFT JOIN Account a   ON uf.OwnerId = a.UserId
-                WHERE uf.OwnerId = @userId";
+                FROM UserFile uf  {noLock}
+                LEFT JOIN FileType ft {noLock} ON uf.FileTypeId = ft.FileTypeId
+                LEFT JOIN Account a {noLock} ON uf.OwnerId = a.UserId
+                WHERE uf.OwnerId = @userId".Replace("{noLock}", noLock);
 
             return _connection.Query<FileDto>(sql, new { userId });
         }
