@@ -13,7 +13,7 @@ namespace GoogleDriveUnittestWithDapper.Repositories.AccountRepo
             _connection = connection;
         }
 
-        public AccountDto? GetUserByIdAsync(int userId)
+        public async Task<AccountDto> GetUserByIdAsync(int userId)
         {
             bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
             var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
@@ -25,7 +25,49 @@ namespace GoogleDriveUnittestWithDapper.Repositories.AccountRepo
                 FROM Account a {noLock} 
                 WHERE a.UserId = @userId".Replace("{noLock}", noLock);
 
-            return  _connection.QuerySingleOrDefault<AccountDto>(query, new { userId });
+            return await _connection.QuerySingleOrDefaultAsync<AccountDto>(query, new { userId });
+        }
+        public async Task<CreateAccountDto> AddUserAsync(CreateAccountDto createAccountDto)
+        {
+            var query = @"
+                INSERT INTO Account (UserName, Email, PasswordHash, UserImg)
+                VALUES (@UserName, @Email, @PasswordHash, @UserImg);
+                SELECT last_insert_rowid() AS UserId;";
+
+            var parameters = new
+            {
+                createAccountDto.UserName,
+                createAccountDto.Email,
+                createAccountDto.PasswordHash,
+                createAccountDto.UserImg
+            };
+
+            var userId = await _connection.ExecuteScalarAsync<int>(query, parameters);
+            createAccountDto.UserId = userId;
+            return createAccountDto;
+        }
+
+        public async Task<bool> DeleteUserAsync(int userId)
+        {
+            var query = @"
+                DELETE FROM Account 
+                WHERE UserId = @userId;";
+
+            var rowsAffected = await _connection.ExecuteAsync(query, new { userId });
+            return rowsAffected > 0;
+        }
+
+        public async Task<AccountDto?> UpdateUserAsync(AccountDto accountDto)
+        {
+            var query = @"
+                UPDATE Account 
+                SET UserName = @UserName,
+                    Email = @Email,
+                    UserImg = @UserImg
+                WHERE UserId = @UserId;";
+
+            var rowsAffected = await _connection.ExecuteAsync(query, accountDto);
+            return rowsAffected > 0 ? accountDto : null;
         }
     }
 }

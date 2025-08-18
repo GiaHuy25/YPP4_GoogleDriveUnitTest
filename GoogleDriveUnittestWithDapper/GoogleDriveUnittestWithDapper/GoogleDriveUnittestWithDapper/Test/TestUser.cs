@@ -38,7 +38,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             _connection?.Dispose();
         }
         [TestMethod]
-        public void UserService_GetUserById_ValidUserId_ReturnsCorrectUserDto()
+        public async void UserService_GetUserById_ValidUserId_ReturnsCorrectUserDto()
         {
             // Arrange
             int userId = 1;
@@ -50,8 +50,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             };
 
             // Act
-            var result = _accountController?.GetUserById(userId);
-
+            var result = await _accountController.GetUserByIdAsync(userId);
             // Assert
             Assert.IsNotNull(result, "UserDto should not be null for valid userId");
             Assert.AreEqual(expected.UserName, result.UserName, "UserName does not match");
@@ -60,16 +59,86 @@ namespace GoogleDriveUnittestWithDapper.Test
         }
 
         [TestMethod]
-        public void UserService_GetUserById_InvalidUserId_ReturnsNull()
+        public async Task UserController_GetUserByIdAsync_InvalidUserId_ReturnsNull()
         {
             // Arrange
-            int invalidUserId = 999; // Non-existent UserId
+            int invalidUserId = 999;
 
             // Act
-            var result = _accountController?.GetUserById(invalidUserId);
+            var result = await _accountController!.GetUserByIdAsync(invalidUserId);
 
             // Assert
             Assert.IsNull(result, "UserDto should be null for invalid UserId");
         }
+        [TestMethod]
+        public async Task UserController_AddUserAsync_ValidInput_ReturnsCreatedUserDto()
+        {
+            // Arrange
+            var newUser = new CreateAccountDto
+            {
+                UserName = "Alice",
+                Email = "alice@example.com",
+                UserImg = "alice.jpg",
+                PasswordHash = "hash999"
+            };
+
+            // Act
+            var result = await _accountController!.AddUserAsync(newUser);
+
+            // Assert
+            Assert.IsNotNull(result, "UserDto should not be null for valid input");
+            Assert.IsTrue(result.UserId > 0, "UserId should be assigned and positive");
+            Assert.AreEqual(newUser.UserName, result.UserName, "UserName does not match");
+            Assert.AreEqual(newUser.Email, result.Email, "Email does not match");
+            Assert.AreEqual(newUser.UserImg, result.UserImg, "UserImg does not match");
+
+            // Verify in database
+            var dbUser = await _accountController!.GetUserByIdAsync(result.UserId);
+            Assert.IsNotNull(dbUser, "User should exist in database");
+            Assert.AreEqual(newUser.UserName, dbUser.UserName, "Database UserName does not match");
+        }
+
+
+        [TestMethod]
+        public async Task UserController_DeleteUserAsync_InvalidUserId_ReturnsFalse()
+        {
+            // Arrange
+            int invalidUserId = 999;
+
+            // Act
+            var result = await _accountController!.DeleteUserAsync(invalidUserId);
+
+            // Assert
+            Assert.IsFalse(result, "Delete should return false for invalid UserId");
+        }
+
+        [TestMethod]
+        public async Task UserController_UpdateUserAsync_ValidUserDto_ReturnsUpdatedUserDto()
+        {
+            // Arrange
+            var updatedUser = new AccountDto
+            {
+                UserId = 1,
+                UserName = "JohnUpdated",
+                Email = "john.updated@example.com",
+                UserImg = "updated.jpg"
+            };
+
+            // Act
+            var result = await _accountController!.UpdateUserAsync(updatedUser);
+
+            // Assert
+            Assert.IsNotNull(result, "UserDto should not be null for valid update");
+            Assert.AreEqual(updatedUser.UserId, result.UserId, "UserId does not match");
+            Assert.AreEqual(updatedUser.UserName, result.UserName, "UserName does not match");
+            Assert.AreEqual(updatedUser.Email, result.Email, "Email does not match");
+            Assert.AreEqual(updatedUser.UserImg, result.UserImg, "UserImg does not match");
+
+            // Verify in database
+            var dbUser = await _accountController!.GetUserByIdAsync(updatedUser.UserId);
+            Assert.IsNotNull(dbUser, "User should exist in database");
+            Assert.AreEqual(updatedUser.UserName, dbUser.UserName, "Database UserName does not match");
+        }
+
     }
 }
