@@ -31,28 +31,39 @@ namespace DIImplementByMyself
         }
         private object Resolve(Type type)
         {
-            if (!_registration.TryGetValue(type, out var impltype))
-            { 
-                throw new Exception($"Type {type.Name} is not registered.");
-            }
+            var implType = _registration.TryGetValue(type, out var registeredType)
+                ? registeredType
+                : throw new Exception($"Type {type.Name} is not registered.");
+
             var lifetime = _lifetime[type];
-            if (lifetime == Lifetime.Singleton && _singleton.TryGetValue(type, out var instance))
-            { 
-                return instance;
-            }
-            var ctor = impltype.GetConstructors().FirstOrDefault();
-            var parameters = ctor.GetParameters();
-            var args = parameters.Select(p => Resolve(p.ParameterType)).ToArray();
-            instance =ctor.Invoke(args);
-            if (lifetime == Lifetime.Singleton)
-            { 
-                _singleton[type] = instance;
-            }
+
+            var instance = (lifetime, _singleton.TryGetValue(type, out var existing))
+                switch
+            {
+                (Lifetime.Singleton, true) => existing,
+                _ => CreateInstance(implType, lifetime, type)
+            };
+
             return instance;
         }
-        public T Resolve<T>()
-        { 
-            return (T)Resolve(typeof(T));
+
+        private object CreateInstance(Type implType, Lifetime lifetime, Type originalType)
+        {
+            var ctor = implType.GetConstructors().FirstOrDefault()
+                ?? throw new Exception($"No public constructor found for {implType.Name}");
+
+            var parameters = ctor.GetParameters();
+            var args = parameters.Select(p => Resolve(p.ParameterType)).ToArray();
+
+            var instance = ctor.Invoke(args);
+
+            _ = lifetime == Lifetime.Singleton
+                ? _singleton[originalType] = instance
+                : instance;
+
+            return instance;
         }
+
+        public T Resolve<T>() => (T)Resolve(typeof(T));
     }
 }

@@ -3,7 +3,6 @@ using GoogleDriveUnittestWithDapper.Controller;
 using GoogleDriveUnittestWithDapper.Dto;
 using GoogleDriveUnittestWithDapper.Repositories.TrashRepo;
 using GoogleDriveUnittestWithDapper.Services.TrashService;
-using Microsoft.Data.Sqlite;
 using System.Data;
 
 namespace GoogleDriveUnittestWithDapper.Test
@@ -19,16 +18,15 @@ namespace GoogleDriveUnittestWithDapper.Test
         [TestInitialize]
         public void Setup()
         {
-            // Set up in-memory SQLite database
-            _dbConnection = new SqliteConnection("Data Source=:memory:");
+            var container = DIConfig.ConfigureServices();
+            _dbConnection = container.Resolve<IDbConnection>();
             _dbConnection.Open();
             TestDatabaseSchema.CreateSchema(_dbConnection);
             TestDatabaseSchema.InsertSampleData(_dbConnection);
 
-            // Initialize repository and service with real database
-            _trashRepository = new TrashRepository(_dbConnection);
-            _trashService = new TrashService(_trashRepository);
-            _trashController = new TrashController(_trashService);
+            _trashRepository = container.Resolve<ITrashRepository>();
+            _trashService = container.Resolve<ITrashService>();
+            _trashController = container.Resolve<TrashController>();
         }
 
         [TestCleanup]

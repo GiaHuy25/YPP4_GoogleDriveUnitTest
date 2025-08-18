@@ -2,7 +2,6 @@
 using GoogleDriveUnittestWithDapper.Dto;
 using GoogleDriveUnittestWithDapper.Repositories.BannedUserRepo;
 using GoogleDriveUnittestWithDapper.Services.BannedUserService;
-using Microsoft.Data.Sqlite;
 using System.Data;
 
 namespace GoogleDriveUnittestWithDapper.Test
@@ -17,17 +16,17 @@ namespace GoogleDriveUnittestWithDapper.Test
         [TestInitialize]
         public void Setup()
         {
-            // Use in-memory SQLite database
-            _connection = new SqliteConnection("Data Source=:memory:");
+            var container = DIConfig.ConfigureServices();
+            _connection = container.Resolve<IDbConnection>();
             _connection.Open();
 
             // Create schema and insert sample data
             TestDatabaseSchema.CreateSchema(_connection);
             TestDatabaseSchema.InsertSampleData(_connection);
 
-            _bannedUserRepository = new BannedUserRepository(_connection);
-            _bannedUserService = new BannedUserService(_bannedUserRepository);
-            _bannedUserController = new BannedUserController(_bannedUserService);
+            _bannedUserRepository = container.Resolve<IBannedUserRepository>();
+            _bannedUserService = container.Resolve<IBannedUserService>();
+            _bannedUserController = container.Resolve<BannedUserController>();
         }
 
         [TestCleanup]

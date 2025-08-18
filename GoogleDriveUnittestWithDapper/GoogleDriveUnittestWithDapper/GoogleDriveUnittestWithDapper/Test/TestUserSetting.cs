@@ -16,18 +16,18 @@ namespace GoogleDriveUnittestWithDapper.Test
         private UserSettingController? _userSettingController;
         [TestInitialize]
         public void Setup()
-        { 
-            // Use in-memory SQLite database
-            _connection = new SqliteConnection("Data Source=:memory:");
+        {
+            var container = DIConfig.ConfigureServices();
+            _connection = container.Resolve<IDbConnection>();
             _connection.Open();
 
             // Create schema and insert sample data
             TestDatabaseSchema.CreateSchema(_connection);
             TestDatabaseSchema.InsertSampleData(_connection);
 
-            _userSettingRepository = new UserSettingRepository(_connection);
-            _userSettingService = new UserSettingService(_userSettingRepository);
-            _userSettingController = new UserSettingController(_userSettingService);
+            _userSettingRepository = container.Resolve<IUserSettingRepository>();
+            _userSettingService = container.Resolve<IUserSettingService>();
+            _userSettingController = container.Resolve<UserSettingController>();
         }
 
         [TestCleanup]

@@ -17,8 +17,9 @@ namespace GoogleDriveUnittestWithDapper.Test
         [TestInitialize]
         public void Setup()
         {
+            var container = DIConfig.ConfigureServices();
             // Use in-memory SQLite database
-            _connection = new SqliteConnection("Data Source=:memory:");
+            _connection = container.Resolve<IDbConnection>();
             _connection.Open();
 
             // Create schema and insert sample data
@@ -26,9 +27,9 @@ namespace GoogleDriveUnittestWithDapper.Test
             TestDatabaseSchema.InsertSampleData(_connection);
 
             // Initialize repository and service
-            _AccountRepository = new AccountRepository(_connection);
-            _AccountService = new AccountService(_AccountRepository);
-            _accountController = new AccountController(_AccountService);
+            _AccountRepository = container.Resolve<IAccountRepository>();
+            _AccountService = container.Resolve<IAccountService>();
+            _accountController = container.Resolve<AccountController>();
         }
 
         [TestCleanup]

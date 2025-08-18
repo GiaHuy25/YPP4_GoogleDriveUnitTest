@@ -16,14 +16,15 @@ namespace GoogleDriveUnittestWithDapper.Test
         [TestInitialize]
         public void Setup()
         {
-            _dbConnection = new SqliteConnection("Data Source=:memory:");
+            var container = DIConfig.ConfigureServices();
+            _dbConnection = container.Resolve<IDbConnection>();
             _dbConnection.Open();
             TestDatabaseSchema.CreateSchema(_dbConnection);
             TestDatabaseSchema.InsertSampleData(_dbConnection);
 
-            _shareRepository = new ShareRepository(_dbConnection);
-            _shareService = new ShareService(_shareRepository);
-            _shareObjectController = new ShareObjectController(_shareService);
+            _shareRepository = container.Resolve<IShareRepository>();
+            _shareService = container.Resolve<IShareService>();
+            _shareObjectController = container.Resolve<ShareObjectController>();
         }
 
         [TestCleanup]

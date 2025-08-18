@@ -18,16 +18,15 @@ namespace GoogleDriveUnittestWithDapper.Test
         [TestInitialize]
         public void Setup()
         {
-            // Set up in-memory SQLite database
-            _dbConnection = new SqliteConnection("Data Source=:memory:");
+            var container = DIConfig.ConfigureServices();
+            _dbConnection = container.Resolve<IDbConnection>();
             _dbConnection.Open();
             TestDatabaseSchema.CreateSchema(_dbConnection);
             TestDatabaseSchema.InsertSampleData(_dbConnection);
 
-            // Initialize repository and service with real database
-            _storageRepository = new StorageRepository(_dbConnection);
-            _storageService = new StorageService(_storageRepository);
-            _storageController = new StorageController(_storageService);
+            _storageRepository = container.Resolve<IStorageRepository>();
+            _storageService = container.Resolve<IStorageService>();
+            _storageController = container.Resolve<StorageController>();
         }
 
         [TestCleanup]

@@ -4,13 +4,14 @@ using GoogleDriveUnittestWithDapper.Repositories.UserProductRepo;
 using GoogleDriveUnittestWithDapper.Services.UserProductService;
 using Microsoft.Data.Sqlite;
 using System.Data;
+using System.Data.Common;
 
 namespace GoogleDriveUnittestWithDapper.Test
 {
     [TestClass]
     public class TestUserProduct
     {
-        private IDbConnection? _dbConnection; 
+        private IDbConnection? _connection; 
         private IUserProductRepository? _userProductRepository; 
         private IUserProductService? _userProductService; 
         private UserProductController? _userProductController;
@@ -18,21 +19,22 @@ namespace GoogleDriveUnittestWithDapper.Test
         [TestInitialize]
         public void Setup()
         {
-            _dbConnection = new SqliteConnection("Data Source=:memory:");
-            _dbConnection.Open();
-            TestDatabaseSchema.CreateSchema(_dbConnection);
-            TestDatabaseSchema.InsertSampleData(_dbConnection);
+            var container = DIConfig.ConfigureServices();
+            _connection = container.Resolve<IDbConnection>();
+            _connection.Open();
+            TestDatabaseSchema.CreateSchema(_connection);
+            TestDatabaseSchema.InsertSampleData(_connection);
 
-            _userProductRepository = new UserProductRepository(_dbConnection);
-            _userProductService = new UserProductService(_userProductRepository);
-            _userProductController = new UserProductController(_userProductService);
+            _userProductRepository = container.Resolve<IUserProductRepository>();
+            _userProductService = container.Resolve<IUserProductService>();
+            _userProductController = container.Resolve<UserProductController>();
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            _dbConnection?.Close();
-            _dbConnection?.Dispose();
+            _connection?.Close();
+            _connection?.Dispose();
         }
         [TestMethod]
         public async Task GetUserProductsByUserIdAsync_ValidUserId_ReturnsMultipleUserProductItemDtos()
