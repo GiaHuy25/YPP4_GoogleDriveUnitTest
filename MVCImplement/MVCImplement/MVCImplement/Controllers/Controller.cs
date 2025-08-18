@@ -1,7 +1,6 @@
 ﻿using MVCImplement.Dtos;
 using MVCImplement.Services.AuthenService;
 using MVCImplement.Services.NewsService;
-using System.Net;
 using System.Text;
 
 namespace MVCImplement.Controllers

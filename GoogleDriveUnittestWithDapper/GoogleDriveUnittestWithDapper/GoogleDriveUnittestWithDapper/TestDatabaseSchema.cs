@@ -5,6 +5,7 @@ namespace GoogleDriveUnittestWithDapper
 {
     public static class TestDatabaseSchema
     {
+        public static string ConnectionString { get; } = "Data Source=:memory:";
         public static void CreateSchema(IDbConnection connection)
         {
             connection.Execute("PRAGMA foreign_keys = ON;");
