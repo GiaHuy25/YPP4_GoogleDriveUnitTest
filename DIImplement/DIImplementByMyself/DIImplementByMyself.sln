@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DIImplementByMyself", "DIImplementByMyself\DIImplementByMyself.csproj", "{02815EFC-1B2F-46A8-8461-96F7E071D795}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DIImplementByMyself", "DIImplementByMyself\DIImplementByMyself.csproj", "{02815EFC-1B2F-46A8-8461-96F7E071D795}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DITest", "DITest\DITest.csproj", "{E6676487-AB44-4862-A537-89572F73EEEF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{02815EFC-1B2F-46A8-8461-96F7E071D795}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{02815EFC-1B2F-46A8-8461-96F7E071D795}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{02815EFC-1B2F-46A8-8461-96F7E071D795}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6676487-AB44-4862-A537-89572F73EEEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6676487-AB44-4862-A537-89572F73EEEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6676487-AB44-4862-A537-89572F73EEEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6676487-AB44-4862-A537-89572F73EEEF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
