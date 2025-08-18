@@ -14,23 +14,17 @@ namespace GoogleDriveUnittestWithDapper.Services.UserFileFolderService
 
         public IEnumerable<UserFileAndFolderDto> GetFilesAndFoldersByUserId(int userId)
         {
-            if (userId <= 0)
-                throw new ArgumentException("UserId must be a positive integer.", nameof(userId));
-
+            _ = userId > 0 ? 0 : throw new ArgumentException("UserId must be a positive integer.", nameof(userId));
             return _userFileAndFolderRepository.GetFilesAndFoldersByUserId(userId) ?? new List<UserFileAndFolderDto>();
         }
         public IEnumerable<FileDto> GetFilesByUserId(int userId)
         {
-            if (userId <= 0)
-                throw new ArgumentException("UserId must be a positive integer.", nameof(userId));
-
+            _ = userId > 0 ? 0 : throw new ArgumentException("UserId must be a positive integer.", nameof(userId));
             return _userFileAndFolderRepository.GetFilesByUserId(userId);
         }
         public IEnumerable<FolderDto>? GetFolderById(int folderId)
         {
-            if (folderId <= 0)
-                throw new ArgumentException("FolderId must be a positive integer.", nameof(folderId));
-
+            _ = folderId > 0 ? 0 : throw new ArgumentException("FolderId must be a positive integer.", nameof(folderId));
             return _userFileAndFolderRepository.GetFolderById(folderId);
         }
         public IEnumerable<FavoriteObjectOfUserDto> GetFavoritesByUserId(int userId)

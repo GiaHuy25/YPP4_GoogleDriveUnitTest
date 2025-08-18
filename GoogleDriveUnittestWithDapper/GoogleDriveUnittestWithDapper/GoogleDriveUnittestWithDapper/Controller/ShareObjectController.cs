@@ -14,11 +14,6 @@ namespace GoogleDriveUnittestWithDapper.Controller
 
         public async Task<IEnumerable<ShareObjectDto>> GetSharedObjectsByUserIdAsync(int userId)
         {
-            if (userId <= 0)
-            {
-                throw new ArgumentException("UserId must be a positive integer.", nameof(userId));
-            }
-
             var sharedObjects = await _shareService.GetSharedObjectsByUserIdAsync(userId);
             return sharedObjects;
         }

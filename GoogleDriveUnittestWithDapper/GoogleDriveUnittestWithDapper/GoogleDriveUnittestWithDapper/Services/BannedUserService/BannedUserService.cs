@@ -12,9 +12,7 @@ namespace GoogleDriveUnittestWithDapper.Services.BannedUserService
         }
         public IEnumerable<BannedUserDto> GetBannedUserByUserId(int userId)
         {
-            if (userId < 0) { 
-                throw new ArgumentException(nameof(userId), "User ID cannot be negative.");
-            }
+           _= userId > 0 ? 0 : throw new ArgumentException("UserId must be a positive integer.", nameof(userId));
             return _bannedUserRepository.GetBannedUserByUserId(userId);
         }
     }
