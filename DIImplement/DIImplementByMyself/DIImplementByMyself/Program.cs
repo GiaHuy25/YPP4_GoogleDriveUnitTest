@@ -1,7 +1,6 @@
 ﻿using DIImplementByMyself;
 using DIImplementByMyself.Logger;
 using DIImplementByMyself.Worker;
-using System;
 class Program
 {
     static void Main(string[] args)
