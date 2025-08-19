@@ -150,7 +150,6 @@ namespace GoogleDriveUnittestWithDapper.Repositories
             return ("1=1", new { });
         }
 
-        // Corrected method without generic constraint
         public async Task<IQueryable<BannedUserDto>> GetBannedUsersByUserIdAsync(int userId)
         {
             using (var connection = Connection)
