@@ -1,10 +1,6 @@
 ﻿using GoogleDriveUnittestWithDapper.Controller;
 using GoogleDriveUnittestWithDapper.Dto;
-using GoogleDriveUnittestWithDapper.Repositories.UserProductRepo;
-using GoogleDriveUnittestWithDapper.Services.UserProductService;
-using Microsoft.Data.Sqlite;
 using System.Data;
-using System.Data.Common;
 
 namespace GoogleDriveUnittestWithDapper.Test
 {

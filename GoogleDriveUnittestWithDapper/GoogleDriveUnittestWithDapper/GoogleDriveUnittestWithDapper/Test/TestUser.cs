@@ -1,7 +1,5 @@
 ﻿using GoogleDriveUnittestWithDapper.Controller;
 using GoogleDriveUnittestWithDapper.Dto;
-using GoogleDriveUnittestWithDapper.Repositories.AccountRepo;
-using GoogleDriveUnittestWithDapper.Services.AccountService;
 using System.Data;
 
 namespace GoogleDriveUnittestWithDapper.Test

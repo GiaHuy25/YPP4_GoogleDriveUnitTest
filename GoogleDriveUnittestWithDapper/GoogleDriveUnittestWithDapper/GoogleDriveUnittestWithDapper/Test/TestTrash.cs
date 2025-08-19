@@ -1,8 +1,6 @@
 ﻿using Dapper;
 using GoogleDriveUnittestWithDapper.Controller;
 using GoogleDriveUnittestWithDapper.Dto;
-using GoogleDriveUnittestWithDapper.Repositories.TrashRepo;
-using GoogleDriveUnittestWithDapper.Services.TrashService;
 using System.Data;
 
 namespace GoogleDriveUnittestWithDapper.Test

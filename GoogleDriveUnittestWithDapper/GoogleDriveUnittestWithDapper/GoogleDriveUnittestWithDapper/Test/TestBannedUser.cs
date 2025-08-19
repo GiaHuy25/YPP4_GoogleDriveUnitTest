@@ -1,7 +1,5 @@
 ﻿using GoogleDriveUnittestWithDapper.Controller;
 using GoogleDriveUnittestWithDapper.Dto;
-using GoogleDriveUnittestWithDapper.Repositories.BannedUserRepo;
-using GoogleDriveUnittestWithDapper.Services.BannedUserService;
 using System.Data;
 
 namespace GoogleDriveUnittestWithDapper.Test
