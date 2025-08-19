@@ -13,7 +13,7 @@ namespace GoogleDriveUnittestWithDapper.Repositories.AccountRepo
             _connection = connection;
         }
 
-        public async Task<AccountDto> GetUserByIdAsync(int userId)
+        public async Task<AccountDto?> GetUserByIdAsync(int userId)
         {
             bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
             var noLock = isSqlServer ? "WITH (NOLOCK)" : "";

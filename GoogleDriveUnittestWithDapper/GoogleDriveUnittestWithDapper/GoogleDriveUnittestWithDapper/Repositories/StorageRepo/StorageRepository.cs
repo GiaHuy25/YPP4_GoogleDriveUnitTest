@@ -17,8 +17,9 @@ namespace GoogleDriveUnittestWithDapper.Repositories.StorageRepo
         {
             bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
             var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
-            if (userId < 0)
-                throw new ArgumentException("UserId cannot be negative.", nameof(userId));
+            _ = userId < 0
+                ? throw new ArgumentException("UserId cannot be negative.", nameof(userId))
+                : userId;
 
             string sql = @"
                 SELECT 
@@ -40,19 +41,24 @@ namespace GoogleDriveUnittestWithDapper.Repositories.StorageRepo
         {
             bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
             var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
-            if (userId < 0)
-                throw new ArgumentException("UserId cannot be negative.", nameof(userId));
-            if (fileSize < 0)
-                throw new ArgumentException("FileSize cannot be negative.", nameof(fileSize));
+            _ = userId < 0
+                ? throw new ArgumentException("UserId cannot be negative.", nameof(userId))
+                : userId;
 
-            // Check current used capacity and capacity limit
+            _ = fileSize < 0
+                ? throw new ArgumentException("FileSize cannot be negative.", nameof(fileSize))
+                : fileSize;
+
             var currentStorage = await _connection.QuerySingleOrDefaultAsync<dynamic>(
                 "SELECT UsedCapacity, Capacity FROM Account {noLock} WHERE UserId = @UserId", new { UserId = userId });
-            if (currentStorage == null)
-                throw new ArgumentException("User not found.", nameof(userId));
+            _ = currentStorage == null
+                 ? throw new ArgumentException("User not found.", nameof(userId))
+                 : currentStorage;
+
             int newUsedCapacity = (currentStorage.UsedCapacity ?? 0) + fileSize;
-            if (newUsedCapacity > currentStorage.Capacity)
-                throw new ArgumentException("Insufficient storage capacity.", nameof(fileSize));
+            _ = newUsedCapacity > currentStorage.Capacity
+               ? throw new ArgumentException("Insufficient storage capacity.", nameof(fileSize))
+               : newUsedCapacity;
 
             const string sql = @"
                 UPDATE Account 
@@ -65,14 +71,21 @@ namespace GoogleDriveUnittestWithDapper.Repositories.StorageRepo
 
         public async Task<int> AddFileToStorageAsync(StorageDto storage)
         {
-            if (storage == null)
-                throw new ArgumentNullException(nameof(storage), "Storage object cannot be null.");
-            if (string.IsNullOrEmpty(storage.FileName))
-                throw new ArgumentException("FileName is required.", nameof(storage));
-            if (storage.FileSize < 0)
-                throw new ArgumentException("FileSize cannot be negative.", nameof(storage));
-            if (string.IsNullOrEmpty(storage.FileType))
-                throw new ArgumentException("FileType is required.", nameof(storage));
+            _ = storage == null
+                ? throw new ArgumentNullException(nameof(storage), "Storage object cannot be null.")
+                : storage;
+
+            _ = string.IsNullOrEmpty(storage.FileName)
+                ? throw new ArgumentException("FileName is required.", nameof(storage))
+                : storage.FileName;
+
+            _ = storage.FileSize < 0
+                ? throw new ArgumentException("FileSize cannot be negative.", nameof(storage))
+                : storage.FileSize;
+
+            _ = string.IsNullOrEmpty(storage.FileType)
+                ? throw new ArgumentException("FileType is required.", nameof(storage))
+                : storage.FileType;
 
             // Check and update used capacity
             await UpdateUsedCapacityAsync(storage.UserCapacity, storage.FileSize); 
