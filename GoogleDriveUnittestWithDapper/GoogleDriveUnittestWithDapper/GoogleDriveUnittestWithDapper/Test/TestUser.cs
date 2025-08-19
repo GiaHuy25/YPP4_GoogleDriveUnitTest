@@ -37,7 +37,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             _connection?.Dispose();
         }
         [TestMethod]
-        public async void UserService_GetUserById_ValidUserId_ReturnsCorrectUserDto()
+        public async Task UserService_GetUserById_ValidUserId_ReturnsCorrectUserDto()
         {
             // Arrange
             int userId = 1;
@@ -86,7 +86,7 @@ namespace GoogleDriveUnittestWithDapper.Test
 
             // Assert
             Assert.IsNotNull(result, "UserDto should not be null for valid input");
-            Assert.IsTrue(result.UserId > 0, "UserId should be assigned and positive");
+            Assert.IsGreaterThan(0, result.UserId, "UserId should be assigned and positive");
             Assert.AreEqual(newUser.UserName, result.UserName, "UserName does not match");
             Assert.AreEqual(newUser.Email, result.Email, "Email does not match");
             Assert.AreEqual(newUser.UserImg, result.UserImg, "UserImg does not match");
