@@ -34,7 +34,7 @@ namespace MVCTest.Test
 
             // Assert
             Assert.IsNotNull(result);
-            Assert.AreEqual(2, result.Count);
+            Assert.HasCount(2, result);
             Assert.AreEqual("News 1", result[0].Title);
             Assert.AreEqual(new DateTime(2025, 8, 16), result[0].CreatedAt);
         }

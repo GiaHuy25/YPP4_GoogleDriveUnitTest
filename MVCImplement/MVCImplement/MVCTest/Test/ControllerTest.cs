@@ -57,8 +57,8 @@ namespace MVCTest.Test
             output.Position = 0;
             var reader = new StreamReader(output);
             var responseBody = reader.ReadToEnd();
-            Assert.IsTrue(responseBody.Contains("News 1"));
-            Assert.IsTrue(responseBody.Contains("Content 1"));
+            Assert.Contains("News 1", responseBody);
+            Assert.Contains("Content 1", responseBody);
         }
 
 
