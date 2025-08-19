@@ -18,10 +18,6 @@ namespace GoogleDriveUnittestWithDapper.Controller
             {
                 return await _accountService.GetUserByIdAsync(userId);
             }
-            catch (ArgumentException ex)
-            {
-                throw; 
-            }
             catch (Exception ex)
             {
                 throw new Exception($"Error retrieving user with ID {userId}: {ex.Message}", ex);
