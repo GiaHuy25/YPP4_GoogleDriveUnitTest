@@ -11,8 +11,6 @@ namespace GoogleDriveUnittestWithDapper.Test
     public class TestUserFileFolder
     {
         private SqliteConnection? _connection;
-        private IUserFileFolderRepository? _userFileFolderRepository;
-        private IUserFileFolderService? _userFileFolderService;
         private UserFileFolderController? _userFileFolderController;
         [TestInitialize]
         public void Setup()
@@ -25,9 +23,6 @@ namespace GoogleDriveUnittestWithDapper.Test
             TestDatabaseSchema.CreateSchema(_connection);
             TestDatabaseSchema.InsertSampleData(_connection);
 
-            // Initialize repository and service
-            _userFileFolderRepository = container.Resolve<IUserFileFolderRepository>();
-            _userFileFolderService = container.Resolve<IUserFileFolderService>();
             _userFileFolderController = container.Resolve<UserFileFolderController>();
         }
 

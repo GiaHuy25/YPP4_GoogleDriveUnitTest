@@ -10,8 +10,6 @@ namespace GoogleDriveUnittestWithDapper.Test
     public class TestBannedUser
     {
         private IDbConnection? _connection;
-        private IBannedUserRepository? _bannedUserRepository;
-        private IBannedUserService? _bannedUserService;
         private BannedUserController? _bannedUserController;
         [TestInitialize]
         public void Setup()
@@ -24,8 +22,6 @@ namespace GoogleDriveUnittestWithDapper.Test
             TestDatabaseSchema.CreateSchema(_connection);
             TestDatabaseSchema.InsertSampleData(_connection);
 
-            _bannedUserRepository = container.Resolve<IBannedUserRepository>();
-            _bannedUserService = container.Resolve<IBannedUserService>();
             _bannedUserController = container.Resolve<BannedUserController>();
         }
 

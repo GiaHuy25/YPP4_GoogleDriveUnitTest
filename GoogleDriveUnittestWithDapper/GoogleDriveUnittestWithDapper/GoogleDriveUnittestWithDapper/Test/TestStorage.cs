@@ -11,8 +11,6 @@ namespace GoogleDriveUnittestWithDapper.Test
     public class TestStorage
     {
         private IDbConnection? _dbConnection; 
-        private IStorageRepository? _storageRepository; 
-        private IStorageService? _storageService; 
         private StorageController? _storageController;
 
         [TestInitialize]
@@ -24,8 +22,6 @@ namespace GoogleDriveUnittestWithDapper.Test
             TestDatabaseSchema.CreateSchema(_dbConnection);
             TestDatabaseSchema.InsertSampleData(_dbConnection);
 
-            _storageRepository = container.Resolve<IStorageRepository>();
-            _storageService = container.Resolve<IStorageService>();
             _storageController = container.Resolve<StorageController>();
         }
 

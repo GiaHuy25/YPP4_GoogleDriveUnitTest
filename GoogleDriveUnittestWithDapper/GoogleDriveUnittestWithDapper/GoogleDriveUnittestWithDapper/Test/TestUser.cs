@@ -10,8 +10,6 @@ namespace GoogleDriveUnittestWithDapper.Test
     public class TestUser
     {
         private IDbConnection? _connection;
-        private IAccountRepository? _AccountRepository;
-        private IAccountService? _AccountService;
         private AccountController? _accountController;
         [TestInitialize]
         public void Setup()
@@ -25,9 +23,6 @@ namespace GoogleDriveUnittestWithDapper.Test
             TestDatabaseSchema.CreateSchema(_connection);
             TestDatabaseSchema.InsertSampleData(_connection);
 
-            // Initialize repository and service
-            _AccountRepository = container.Resolve<IAccountRepository>();
-            _AccountService = container.Resolve<IAccountService>();
             _accountController = container.Resolve<AccountController>();
         }
 

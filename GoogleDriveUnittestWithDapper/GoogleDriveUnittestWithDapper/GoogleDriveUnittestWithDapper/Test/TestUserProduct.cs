@@ -11,9 +11,7 @@ namespace GoogleDriveUnittestWithDapper.Test
     [TestClass]
     public class TestUserProduct
     {
-        private IDbConnection? _connection; 
-        private IUserProductRepository? _userProductRepository; 
-        private IUserProductService? _userProductService; 
+        private IDbConnection? _connection;
         private UserProductController? _userProductController;
 
         [TestInitialize]
@@ -25,8 +23,6 @@ namespace GoogleDriveUnittestWithDapper.Test
             TestDatabaseSchema.CreateSchema(_connection);
             TestDatabaseSchema.InsertSampleData(_connection);
 
-            _userProductRepository = container.Resolve<IUserProductRepository>();
-            _userProductService = container.Resolve<IUserProductService>();
             _userProductController = container.Resolve<UserProductController>();
         }
 
@@ -43,7 +39,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             int userId = 1; // John
 
             // Act
-            var result = await _userProductService!.GetUserProductsByUserIdAsync(userId); 
+            var result = await _userProductController!.GetUserProductsByUserIdAsync(userId); 
 
             // Assert
             Assert.IsNotNull(result, "Result should not be null.");

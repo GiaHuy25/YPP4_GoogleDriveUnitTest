@@ -11,8 +11,6 @@ namespace GoogleDriveUnittestWithDapper.Test
     public class TestTrash
     {
         private IDbConnection? _dbConnection; 
-        private ITrashRepository? _trashRepository; 
-        private ITrashService? _trashService; 
         private TrashController? _trashController;
 
         [TestInitialize]
@@ -24,8 +22,6 @@ namespace GoogleDriveUnittestWithDapper.Test
             TestDatabaseSchema.CreateSchema(_dbConnection);
             TestDatabaseSchema.InsertSampleData(_dbConnection);
 
-            _trashRepository = container.Resolve<ITrashRepository>();
-            _trashService = container.Resolve<ITrashService>();
             _trashController = container.Resolve<TrashController>();
         }
 
@@ -63,7 +59,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             // Act & Assert
             try
             {
-                _trashService!.AddToTrashAsync(trash).Wait(); // Wait synchronously
+                _trashController!.AddToTrashAsync(trash).Wait(); // Wait synchronously
                 Assert.Fail("Should have thrown ArgumentException.");
             }
             catch (AggregateException ex)
@@ -81,7 +77,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             // Act & Assert
             try
             {
-                _trashService!.AddToTrashAsync(trash).Wait();
+                _trashController!.AddToTrashAsync(trash).Wait();
                 Assert.Fail("Should have thrown ArgumentException.");
             }
             catch (AggregateException ex)
@@ -97,13 +93,13 @@ namespace GoogleDriveUnittestWithDapper.Test
             // First add some trash items
             var trash1 = new TrashDto { FileName = "Doc1.pdf", UserName = "John" };
             var trash2 = new TrashDto { FolderName = "RootFolder", UserName = "John" };
-            await _trashService!.AddToTrashAsync(trash1);
-            await _trashService!.AddToTrashAsync(trash2);
+            await _trashController!.AddToTrashAsync(trash1);
+            await _trashController!.AddToTrashAsync(trash2);
             int userId = 1; // John
             var initialCount = (await _dbConnection!.QueryAsync<int>("SELECT COUNT(*) FROM Trash WHERE UserId = @UserId AND IsPermanent = 0", new { UserId = userId })).Single();
 
             // Act
-            int affectedRows = await _trashService!.ClearTrashAsync(userId);
+            int affectedRows = await _trashController!.ClearTrashAsync(userId);
 
             // Assert
             Assert.AreEqual(initialCount, affectedRows, $"Should clear {initialCount} trash items.");
@@ -120,7 +116,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             // Act & Assert
             try
             {
-                _trashService!.ClearTrashAsync(invalidUserId).Wait(); // Wait synchronously
+                _trashController!.ClearTrashAsync(invalidUserId).Wait(); // Wait synchronously
                 Assert.Fail("Should have thrown ArgumentException.");
             }
             catch (AggregateException ex)
@@ -136,7 +132,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             int userId = 1; // John
 
             // Act
-            var result = await _trashService!.GetTrashByUserIdAsync(userId);
+            var result = await _trashController!.GetTrashByUserIdAsync(userId);
 
             // Assert
             Assert.IsNotNull(result, "Result should not be null.");
@@ -156,7 +152,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             // Act & Assert
             try
             {
-                _trashService!.GetTrashByUserIdAsync(invalidUserId).Wait(); // Wait synchronously
+                _trashController!.GetTrashByUserIdAsync(invalidUserId).Wait(); // Wait synchronously
                 Assert.Fail("Should have thrown ArgumentException.");
             }
             catch (AggregateException ex)
@@ -170,11 +166,11 @@ namespace GoogleDriveUnittestWithDapper.Test
         {
             // Arrange
             var trash = new TrashDto { FileName = "Doc1.pdf", UserName = "John" };
-            int trashId = await _trashService!.AddToTrashAsync(trash);
+            int trashId = await _trashController!.AddToTrashAsync(trash);
             int userId = 1; // John
 
             // Act
-            int affectedRows = await _trashService!.PermanentlyDeleteFromTrashAsync(trashId, userId);
+            int affectedRows = await _trashController!.PermanentlyDeleteFromTrashAsync(trashId, userId);
 
             // Assert
             Assert.AreEqual(1, affectedRows, "Should affect 1 row.");
@@ -193,7 +189,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             // Act & Assert
             try
             {
-                _trashService!.PermanentlyDeleteFromTrashAsync(invalidTrashId, userId).Wait(); // Wait synchronously
+                _trashController!.PermanentlyDeleteFromTrashAsync(invalidTrashId, userId).Wait(); // Wait synchronously
                 Assert.Fail("Should have thrown ArgumentException.");
             }
             catch (AggregateException ex)
@@ -207,11 +203,11 @@ namespace GoogleDriveUnittestWithDapper.Test
         {
             // Arrange
             var trash = new TrashDto { FileName = "Doc1.pdf", UserName = "John" };
-            int trashId = await _trashService!.AddToTrashAsync(trash);
+            int trashId = await _trashController!.AddToTrashAsync(trash);
             int userId = 1; // John
 
             // Act
-            int affectedRows = await _trashService!.RestoreFromTrashAsync(trashId, userId);
+            int affectedRows = await _trashController!.RestoreFromTrashAsync(trashId, userId);
 
             // Assert
             Assert.AreEqual(1, affectedRows, "Should affect 1 row.");
@@ -229,7 +225,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             // Act & Assert
             try
             {
-                _trashService!.RestoreFromTrashAsync(invalidTrashId, userId).Wait(); // Wait synchronously
+                _trashController!.RestoreFromTrashAsync(invalidTrashId, userId).Wait(); // Wait synchronously
                 Assert.Fail("Should have thrown ArgumentException.");
             }
             catch (AggregateException ex)

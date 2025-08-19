@@ -10,8 +10,6 @@ namespace GoogleDriveUnittestWithDapper.Test
     public class TestShare
     {
         private IDbConnection _dbConnection;
-        private IShareRepository _shareRepository;
-        private IShareService _shareService;
         private ShareObjectController _shareObjectController;
         [TestInitialize]
         public void Setup()
@@ -22,8 +20,6 @@ namespace GoogleDriveUnittestWithDapper.Test
             TestDatabaseSchema.CreateSchema(_dbConnection);
             TestDatabaseSchema.InsertSampleData(_dbConnection);
 
-            _shareRepository = container.Resolve<IShareRepository>();
-            _shareService = container.Resolve<IShareService>();
             _shareObjectController = container.Resolve<ShareObjectController>();
         }
 
@@ -41,7 +37,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             int userId = 2;
 
             // Act
-            var result = await _shareService.GetSharedObjectsByUserIdAsync(userId);
+            var result = await _shareObjectController.GetSharedObjectsByUserIdAsync(userId);
 
             // Assert
             Assert.IsNotNull(result, "Result should not be null.");
@@ -61,7 +57,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             int nonExistentUserId = 999; // Non-existent user ID
 
             // Act
-            var result = await _shareService.GetSharedObjectsByUserIdAsync(nonExistentUserId);
+            var result = await _shareObjectController.GetSharedObjectsByUserIdAsync(nonExistentUserId);
 
             // Assert
             Assert.IsNotNull(result, "Result should not be null.");
@@ -75,7 +71,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             int userIdWithNoShares = 1;
 
             // Act
-            var result = await _shareService.GetSharedObjectsByUserIdAsync(userIdWithNoShares);
+            var result = await _shareObjectController.GetSharedObjectsByUserIdAsync(userIdWithNoShares);
 
             // Assert
             Assert.IsNotNull(result, "Result should not be null.");

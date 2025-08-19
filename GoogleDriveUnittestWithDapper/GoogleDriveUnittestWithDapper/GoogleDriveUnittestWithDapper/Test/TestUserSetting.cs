@@ -11,8 +11,6 @@ namespace GoogleDriveUnittestWithDapper.Test
     public class TestUserSetting
     {
         private IDbConnection? _connection;
-        private IUserSettingRepository? _userSettingRepository;
-        private IUserSettingService? _userSettingService;
         private UserSettingController? _userSettingController;
         [TestInitialize]
         public void Setup()
@@ -25,8 +23,6 @@ namespace GoogleDriveUnittestWithDapper.Test
             TestDatabaseSchema.CreateSchema(_connection);
             TestDatabaseSchema.InsertSampleData(_connection);
 
-            _userSettingRepository = container.Resolve<IUserSettingRepository>();
-            _userSettingService = container.Resolve<IUserSettingService>();
             _userSettingController = container.Resolve<UserSettingController>();
         }
 

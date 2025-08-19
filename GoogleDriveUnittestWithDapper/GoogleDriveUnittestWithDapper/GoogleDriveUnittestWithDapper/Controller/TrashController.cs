@@ -24,6 +24,11 @@ namespace GoogleDriveUnittestWithDapper.Controller
         {
             return await _trashService.GetTrashByIdAsync(trashId);
         }
+        public async Task<int> AddToTrashAsync(TrashDto trash)
+        {
+           
+            return await _trashService.AddToTrashAsync(trash);
+        }
 
         public async Task<int> PermanentlyDeleteFromTrashAsync(int trashId, int userId)
         {
