@@ -58,11 +58,12 @@ namespace DITest
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(InvalidOperationException))]
         public void Resolve_UnregisteredType_ThrowsException()
         {
             var container = new SimpleContainer();
             container.Resolve<IService>();
         }
+
     }
 }

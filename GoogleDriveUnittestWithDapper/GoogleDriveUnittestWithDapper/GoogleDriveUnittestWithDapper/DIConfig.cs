@@ -26,7 +26,8 @@ namespace GoogleDriveUnittestWithDapper
         {
             var container = new SimpleContainer();
             container.Register<IDbConnection, SqliteConnection>(Lifetime.Singleton);
-            container.Register<SqliteConnection>(Lifetime.Singleton, () => new SqliteConnection("Data Source=:memory:"));
+            container.RegisterFactory(() => new SqliteConnection("Data Source=:memory:"), Lifetime.Singleton);
+
 
             container.Register<IAccountRepository, AccountRepository>(Lifetime.Transient);
             container.Register<IAccountService, AccountService>(Lifetime.Transient);

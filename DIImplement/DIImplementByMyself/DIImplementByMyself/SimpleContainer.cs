@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 
 namespace DIImplementByMyself
 {
@@ -11,59 +10,47 @@ namespace DIImplementByMyself
         Transient,
         Singleton
     }
+
     public class SimpleContainer
     {
-        private readonly Dictionary<Type, Type> _registration = new();
-        private readonly Dictionary<Type, object> _singleton = new();
-        private readonly Dictionary<Type, Lifetime> _lifetime = new();
+        private readonly Dictionary<Type, (Type ImplType, Lifetime Lifetime)> _registrations = new();
+        private readonly Dictionary<Type, object> _singletons = new();
+        private readonly Dictionary<Type, ConstructorInfo> _ctorCache = new();
 
-        public void Register<TInterface, TImplementation>(Lifetime lifetime = Lifetime.Transient) where TImplementation : TInterface
-        { 
-            var interfaceType = typeof(TInterface);
-            _registration[interfaceType] = typeof(TImplementation);
-            _lifetime[interfaceType] = lifetime;
-        }
-        public void Register<TImplementation>(Lifetime lifetime = Lifetime.Transient)
-        { 
-            var type = typeof(TImplementation);
-            _registration[type] = type;
-            _lifetime[type] = lifetime;
-        }
-        private object Resolve(Type type)
-        {
-            var implType = _registration.TryGetValue(type, out var registeredType)
-                ? registeredType
-                : throw new Exception($"Type {type.Name} is not registered.");
+        public void Register<TInterface, TImplementation>(Lifetime lifetime = Lifetime.Transient)
+            where TImplementation : TInterface =>
+            _registrations[typeof(TInterface)] = (typeof(TImplementation), lifetime);
 
-            var lifetime = _lifetime[type];
-
-            var instance = (lifetime, _singleton.TryGetValue(type, out var existing))
-                switch
-            {
-                (Lifetime.Singleton, true) => existing,
-                _ => CreateInstance(implType, lifetime, type)
-            };
-
-            return instance;
-        }
-
-        private object CreateInstance(Type implType, Lifetime lifetime, Type originalType)
-        {
-            var ctor = implType.GetConstructors().FirstOrDefault()
-                ?? throw new Exception($"No public constructor found for {implType.Name}");
-
-            var parameters = ctor.GetParameters();
-            var args = parameters.Select(p => Resolve(p.ParameterType)).ToArray();
-
-            var instance = ctor.Invoke(args);
-
-            _ = lifetime == Lifetime.Singleton
-                ? _singleton[originalType] = instance
-                : instance;
-
-            return instance;
-        }
+        public void Register<TImplementation>(Lifetime lifetime = Lifetime.Transient) =>
+            _registrations[typeof(TImplementation)] = (typeof(TImplementation), lifetime);
 
         public T Resolve<T>() => (T)Resolve(typeof(T));
+
+        private object Resolve(Type type)
+        {
+            return !_registrations.TryGetValue(type, out var entry)
+                ? throw new InvalidOperationException($"Type {type.Name} is not registered.")
+                : entry.Lifetime switch
+                {
+                    Lifetime.Singleton when _singletons.TryGetValue(type, out var existing) => existing,
+                    Lifetime.Singleton => _singletons[type] = CreateInstance(entry.ImplType),
+                    Lifetime.Transient => CreateInstance(entry.ImplType),
+                    _ => throw new InvalidOperationException("Unsupported lifetime")
+                };
+        }
+
+        private object CreateInstance(Type implType)
+        {
+            var ctor = _ctorCache.TryGetValue(implType, out var cachedCtor)
+                ? cachedCtor
+                : _ctorCache[implType] = implType.GetConstructors().FirstOrDefault()
+                    ?? throw new InvalidOperationException($"No public constructor found for {implType.Name}");
+
+            var args = ctor.GetParameters()
+                           .Select(p => Resolve(p.ParameterType))
+                           .ToArray();
+
+            return ctor.Invoke(args);
+        }
     }
 }
