@@ -35,17 +35,6 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserProductRepo
 
         public async Task<int> AddUserProductAsync(UserProductItemDto userProduct)
         {
-            if (userProduct == null)
-                throw new ArgumentNullException(nameof(userProduct), "UserProduct object cannot be null.");
-            if (string.IsNullOrEmpty(userProduct.UserName))
-                throw new ArgumentException("UserName is required.", nameof(userProduct));
-            if (string.IsNullOrEmpty(userProduct.ProductName))
-                throw new ArgumentException("ProductName is required.", nameof(userProduct));
-            if (userProduct.Cost < 0)
-                throw new ArgumentException("Cost cannot be negative.", nameof(userProduct));
-            if (userProduct.Duration < 0)
-                throw new ArgumentException("Duration cannot be negative.", nameof(userProduct));
-
             const string sql = @"
                 INSERT INTO UserProduct (UserId, ProductId, PayingDatetime, IsFirstPaying, PromotionId, EndDatetime)
                 VALUES (
@@ -70,16 +59,7 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserProductRepo
         }
 
         public async Task<int> UpdateUserProductAsync(UserProductItemDto userProduct)
-        {
-            if (userProduct == null)
-                throw new ArgumentNullException(nameof(userProduct), "UserProduct object cannot be null.");
-            if (string.IsNullOrEmpty(userProduct.UserName))
-                throw new ArgumentException("UserName is required.", nameof(userProduct));
-            if (string.IsNullOrEmpty(userProduct.ProductName))
-                throw new ArgumentException("ProductName is required.", nameof(userProduct));
-            if (userProduct.Cost < 0)
-                throw new ArgumentException("Cost cannot be negative.", nameof(userProduct));
-
+        { 
             const string sql = @"
                 UPDATE UserProduct up
                 JOIN Account a ON up.UserId = a.UserId
