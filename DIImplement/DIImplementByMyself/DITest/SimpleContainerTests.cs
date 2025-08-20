@@ -65,5 +65,58 @@ namespace DITest
             container.Resolve<IService>();
         }
 
+        [TestMethod]
+        public void Resolve_Scoped_ReturnsSameInstanceWithinScope()
+        {
+            var container = new SimpleContainer();
+            container.Register<IService, Service>(Lifetime.Scoped);
+
+            using var scope = container.CreateScope();
+            var s1 = scope.Resolve<IService>();
+            var s2 = scope.Resolve<IService>();
+
+            Assert.AreSame(s1, s2);
+        }
+
+        [TestMethod]
+        public void Resolve_Scoped_ReturnsDifferentInstancesAcrossScopes()
+        {
+            var container = new SimpleContainer();
+            container.Register<IService, Service>(Lifetime.Scoped);
+
+            using var scope1 = container.CreateScope();
+            using var scope2 = container.CreateScope();
+
+            var s1 = scope1.Resolve<IService>();
+            var s2 = scope2.Resolve<IService>();
+
+            Assert.AreNotSame(s1, s2);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void Resolve_ScopedWithoutScope_ThrowsException()
+        {
+            var container = new SimpleContainer();
+            container.Register<IService, Service>(Lifetime.Scoped);
+
+            container.Resolve<IService>(); 
+        }
+
+        [TestMethod]
+        public void Resolve_Scoped_DisposedScope_ThrowsObjectDisposedException()
+        {
+            var container = new SimpleContainer();
+            container.Register<IService, Service>(Lifetime.Scoped);
+
+            var scope = container.CreateScope();
+            var s1 = scope.Resolve<IService>();
+            Assert.IsNotNull(s1);
+
+            scope.Dispose();
+
+            Assert.ThrowsException<ObjectDisposedException>(() => scope.Resolve<IService>());
+        }
+
     }
 }

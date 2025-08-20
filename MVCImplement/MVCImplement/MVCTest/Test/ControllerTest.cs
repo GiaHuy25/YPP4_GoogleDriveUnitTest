@@ -68,7 +68,7 @@ namespace MVCTest.Test
             // Arrange
             var context = new Mock<IHttpContextWrapper>();
             var response = new Mock<IHttpResponseWrapper>();
-            response.SetupAllProperties(); // 👈 cho phép lưu StatusCode, ContentType,...
+            response.SetupAllProperties();
             var output = new MemoryStream();
             response.Setup(r => r.OutputStream).Returns(output);
             context.Setup(c => c.Response).Returns(response.Object);
