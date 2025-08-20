@@ -1,11 +1,17 @@
 ﻿using System.Reflection;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace GoogleDriveUnittestWithDapper
 {
     public enum Lifetime
     {
         Transient,
-        Singleton
+        Singleton,
+        Scoped
+    }
+    public interface IScope : IDisposable
+    {
+        T Resolve<T>();
     }
 
     public class SimpleContainer
@@ -29,36 +35,68 @@ namespace GoogleDriveUnittestWithDapper
             _factories[type] = () => factory()!;
         }
 
-        public T Resolve<T>() => (T)Resolve(typeof(T));
+        public T Resolve<T>() => (T)Resolve(typeof(T), null);
 
-        private object Resolve(Type type)
+        public IScope CreateScope() => new Scope(this);
+        private object Resolve(Type type, Scope scope)
         {
-            return !_registrations.TryGetValue(type, out var entry)
-                ? throw new InvalidOperationException($"Type {type.Name} is not registered.")
-                : entry.Lifetime switch
-                {
-                    Lifetime.Singleton when _singletons.TryGetValue(type, out var existing) => existing,
-                    Lifetime.Singleton => _singletons[type] = CreateInstance(entry.ImplType, type),
-                    Lifetime.Transient => CreateInstance(entry.ImplType, type),
-                    _ => throw new InvalidOperationException("Unsupported lifetime")
-                };
+            if (!_registrations.TryGetValue(type, out var entry))
+                throw new InvalidOperationException($"Type {type.Name} is not registered.");
+
+            return entry.Lifetime switch
+            {
+                Lifetime.Singleton when _singletons.TryGetValue(type, out var existing) => existing,
+                Lifetime.Singleton => _singletons[type] = CreateInstance(entry.ImplType, scope),
+                Lifetime.Scoped => scope?.GetOrCreateScopedInstance(type, () => CreateInstance(entry.ImplType, scope))
+                    ?? throw new InvalidOperationException("Scoped service resolution requires an active scope"),
+                Lifetime.Transient => CreateInstance(entry.ImplType, scope),
+                _ => throw new InvalidOperationException("Unsupported lifetime")
+            };
         }
 
-        private object CreateInstance(Type implType, Type originalType)
+        private object CreateInstance(Type implType, Scope scope)
         {
-            if (_factories.TryGetValue(originalType, out var factory))
-                return factory();
-
             var ctor = _ctorCache.TryGetValue(implType, out var cachedCtor)
                 ? cachedCtor
                 : _ctorCache[implType] = implType.GetConstructors().FirstOrDefault()
                     ?? throw new InvalidOperationException($"No public constructor found for {implType.Name}");
 
             var args = ctor.GetParameters()
-                           .Select(p => Resolve(p.ParameterType))
+                           .Select(p => Resolve(p.ParameterType, scope))
                            .ToArray();
 
             return ctor.Invoke(args);
+        }
+
+        private class Scope : IScope
+        {
+            private readonly SimpleContainer _container;
+            private readonly Dictionary<Type, object> _scopedInstances = new();
+            private bool _disposed;
+
+            public Scope(SimpleContainer container)
+            {
+                _container = container;
+            }
+
+            public T Resolve<T>() => (T)_container.Resolve(typeof(T), this);
+
+            public object GetOrCreateScopedInstance(Type type, Func<object> factory)
+            {
+                if (_disposed)
+                    throw new ObjectDisposedException(nameof(Scope));
+
+                if (!_scopedInstances.TryGetValue(type, out var instance))
+                    _scopedInstances[type] = instance = factory();
+
+                return instance;
+            }
+
+            public void Dispose()
+            {
+                _disposed = true;
+                _scopedInstances.Clear();
+            }
         }
     }
 }

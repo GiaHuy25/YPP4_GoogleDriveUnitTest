@@ -12,7 +12,7 @@ namespace MVCImplement
     class Program
     {
         private static readonly IServiceProvider _serviceProvider;
-
+        
         static Program()
         {
             var services = new ServiceCollection()
