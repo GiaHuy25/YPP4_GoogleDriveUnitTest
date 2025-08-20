@@ -1,6 +1,7 @@
 ﻿using GoogleDriveUnittestWithDapper.Controller;
 using GoogleDriveUnittestWithDapper.Repositories.AccountRepo;
 using GoogleDriveUnittestWithDapper.Repositories.BannedUserRepo;
+using GoogleDriveUnittestWithDapper.Repositories.SearchRepo;
 using GoogleDriveUnittestWithDapper.Repositories.ShareObjectRepo;
 using GoogleDriveUnittestWithDapper.Repositories.StorageRepo;
 using GoogleDriveUnittestWithDapper.Repositories.TrashRepo;
@@ -9,6 +10,7 @@ using GoogleDriveUnittestWithDapper.Repositories.UserProductRepo;
 using GoogleDriveUnittestWithDapper.Repositories.UserSettingRepo;
 using GoogleDriveUnittestWithDapper.Services.AccountService;
 using GoogleDriveUnittestWithDapper.Services.BannedUserService;
+using GoogleDriveUnittestWithDapper.Services.SearchService;
 using GoogleDriveUnittestWithDapper.Services.ShareObjectService;
 using GoogleDriveUnittestWithDapper.Services.StorageService;
 using GoogleDriveUnittestWithDapper.Services.TrashService;
@@ -60,6 +62,10 @@ namespace GoogleDriveUnittestWithDapper
             container.Register<IUserSettingRepository, UserSettingRepository>(Lifetime.Transient);
             container.Register<IUserSettingService, UserSettingService>(Lifetime.Transient);
             container.Register<UserSettingController>(Lifetime.Transient);
+
+            container.Register<ISearchRepository, SearchRepository>(Lifetime.Transient);
+            container.Register<ISearchService, SearchService>(Lifetime.Transient);
+            container.Register<SearchController>(Lifetime.Transient);
 
             return container;
         }
