@@ -17,7 +17,7 @@ namespace MVCImplement
         {
             var services = new ServiceCollection()
                 .AddSingleton<NewsDb>()
-                .AddSingleton<IRepository<NewsModel>, Repository<NewsModel>>()
+                .AddSingleton<IRepository<News>, Repository<News>>()
                 .AddScoped<INewsService, NewsService>()
                 .AddScoped<IAuthenService, AuthenService>()
                 .AddTransient<IUserService, UserService>()

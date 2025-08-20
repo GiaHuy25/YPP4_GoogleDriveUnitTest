@@ -6,9 +6,9 @@ namespace MVCImplement.Services.NewsService
 {
     public class NewsService : INewsService
     {
-        private readonly IRepository<NewsModel> _newsRepository = new Repository<NewsModel>();
+        private readonly IRepository<News> _newsRepository = new Repository<News>();
 
-        public NewsService(IRepository<NewsModel> newsRepository)
+        public NewsService(IRepository<News> newsRepository)
         {
             _newsRepository = newsRepository;
         }
