@@ -7,7 +7,6 @@ namespace GoogleDriveUnittestWithDapper.Repositories.TrashRepo
     public class TrashRepository : ITrashRepository
     {
         private readonly IDbConnection _connection;
-        private readonly Dictionary<int, IEnumerable<TrashDto>> _cache = new();
 
         public TrashRepository(IDbConnection connection)
         {

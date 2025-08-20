@@ -6,6 +6,7 @@ namespace GoogleDriveUnittestWithDapper.Services.UserProductService
     public class UserProductService : IUserProductService
     {
         private readonly IUserProductRepository _userProductRepository;
+        private readonly Dictionary<int, IEnumerable<UserProductItemDto>> _cache = new();
 
         public UserProductService(IUserProductRepository userProductRepository)
         {
@@ -15,9 +16,11 @@ namespace GoogleDriveUnittestWithDapper.Services.UserProductService
         public async Task<IEnumerable<UserProductItemDto>> GetUserProductsByUserIdAsync(int userId)
         {
             _ = userId >= 0 ? 0 : throw new ArgumentException("UserId cannot be negative.", nameof(userId));
-            var products = await _userProductRepository.GetUserProductsByUserIdAsync(userId);
-            _ = products != null && products.Any() ? 0 : throw new ArgumentException("No products found for the user.", nameof(userId));
-            return products;
+
+            return await Task.FromResult(_cache.TryGetValue(userId, out var cachedResult)
+                ? cachedResult
+                : _cache[userId] = (await _userProductRepository.GetUserProductsByUserIdAsync(userId)).ToList())
+                .ContinueWith(t => t.Result.Any() ? t.Result : throw new ArgumentException("No products found for the user.", nameof(userId)));
         }
 
         public async Task<int> AddUserProductAsync(UserProductItemDto userProduct)

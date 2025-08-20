@@ -6,6 +6,7 @@ namespace GoogleDriveUnittestWithDapper.Services.UserFileFolderService
     public class UserFileFolderService : IUserFileFolderService
     {
         private readonly IUserFileFolderRepository _userFileAndFolderRepository;
+        private readonly Dictionary<int, IEnumerable<FavoriteObjectOfUserDto>> _favoriteCache = new();
 
         public UserFileFolderService(IUserFileFolderRepository userFileAndFolderRepository)
         {
@@ -29,7 +30,11 @@ namespace GoogleDriveUnittestWithDapper.Services.UserFileFolderService
         }
         public IEnumerable<FavoriteObjectOfUserDto> GetFavoritesByUserId(int userId)
         {
-            return _userFileAndFolderRepository.GetFavoritesByUserId(userId);
+            _ = userId > 0 ? 0 : throw new ArgumentException("UserId must be a positive integer.", nameof(userId));
+
+            return _favoriteCache.TryGetValue(userId, out var cachedFavorites)
+                ? cachedFavorites
+                : _favoriteCache[userId] = _userFileAndFolderRepository.GetFavoritesByUserId(userId);
         }
     }
 }
