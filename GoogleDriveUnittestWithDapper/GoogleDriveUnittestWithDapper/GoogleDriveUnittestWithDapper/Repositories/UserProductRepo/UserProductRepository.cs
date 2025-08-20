@@ -14,13 +14,9 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserProductRepo
         }
         public async Task<IEnumerable<UserProductItemDto>> GetUserProductsByUserIdAsync(int userId)
         {
-            if (_cache.TryGetValue(userId, out var cachedResult))
-            {
-                return cachedResult;
-            }
-            bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
-            var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
-            string sql = @"
+            return _cache.TryGetValue(userId, out var cachedResult)
+                ? cachedResult
+                : (_cache[userId] = (await _connection.QueryAsync<UserProductItemDto>(@"
                 SELECT 
                     p.ProductName,
                     p.Cost,
@@ -33,12 +29,11 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserProductRepo
                 JOIN Account a {noLock} ON up.UserId = a.UserId
                 JOIN ProductItem p {noLock} ON up.ProductId = p.ProductId
                 LEFT JOIN Promotion pr {noLock} ON up.PromotionId = pr.PromotionId
-                WHERE a.UserId = @UserId".Replace("{noLock}", noLock);
-
-            var result = await _connection.QueryAsync<UserProductItemDto>(sql, new { UserId = userId });
-            _cache[userId] = result.ToList();
-            return result;
+                WHERE a.UserId = @UserId"
+                    .Replace("{noLock}", _connection.GetType().Name.Contains("SqlConnection") ? "WITH (NOLOCK)" : ""),
+                    new { UserId = userId })).ToList());
         }
+
 
         public async Task<int> AddUserProductAsync(UserProductItemDto userProduct)
         {

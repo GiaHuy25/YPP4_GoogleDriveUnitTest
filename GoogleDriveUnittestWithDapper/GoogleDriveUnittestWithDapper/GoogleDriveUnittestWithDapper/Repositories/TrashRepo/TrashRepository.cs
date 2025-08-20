@@ -48,10 +48,6 @@ namespace GoogleDriveUnittestWithDapper.Repositories.TrashRepo
         }
         public async Task<IEnumerable<TrashDto>> GetTrashByUserIdAsync(int userId)
         {
-            if (_cache.TryGetValue(userId, out var cachedTrash))
-            {
-                return cachedTrash;
-            }
             bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
             var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
             string sql = @"
@@ -79,9 +75,7 @@ namespace GoogleDriveUnittestWithDapper.Repositories.TrashRepo
                 LEFT JOIN FileType ft {noLock} ON uf.FileTypeId = ft.FileTypeId
                 WHERE t.UserId = @UserId AND t.IsPermanent = 0".Replace("{noLock}", noLock);
 
-            var result =  await _connection.QueryAsync<TrashDto>(sql, new { UserId = userId });
-            _cache[userId] = result.ToList();
-            return result;
+            return await _connection.QueryAsync<TrashDto>(sql, new { UserId = userId });
         }
         public async Task<IEnumerable<TrashDto>> GetTrashByIdAsync(int trashId)
         {

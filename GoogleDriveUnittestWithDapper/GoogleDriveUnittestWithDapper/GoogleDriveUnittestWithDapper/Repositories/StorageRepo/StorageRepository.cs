@@ -7,7 +7,6 @@ namespace GoogleDriveUnittestWithDapper.Repositories.StorageRepo
     public class StorageRepository : IStorageRepository
     {
         private readonly IDbConnection _connection;
-        private readonly Dictionary<int, IEnumerable<StorageDto>> _cache = new();
 
         public StorageRepository(IDbConnection connection)
         {
@@ -16,10 +15,6 @@ namespace GoogleDriveUnittestWithDapper.Repositories.StorageRepo
 
         public async Task<IEnumerable<StorageDto>> GetStorageByUserIdAsync(int userId)
         {
-            if (_cache.TryGetValue(userId, out var cachedStorage))
-            {
-                return cachedStorage;
-            }
             bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
             var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
             _ = userId < 0
@@ -39,11 +34,7 @@ namespace GoogleDriveUnittestWithDapper.Repositories.StorageRepo
                 LEFT JOIN FileType ft {noLock} ON uf.FileTypeId = ft.FileTypeId
                 WHERE a.UserId = @UserId".Replace("{noLock}", noLock);
 
-            var result = await _connection.QueryAsync<StorageDto>(sql, new { UserId = userId });
-
-            _cache.Add(userId, result.ToList());
-
-            return result;
+            return await _connection.QueryAsync<StorageDto>(sql, new { UserId = userId });
         }
 
         public async Task<int> UpdateUsedCapacityAsync(int userId, int fileSize)
