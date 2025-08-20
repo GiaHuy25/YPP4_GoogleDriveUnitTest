@@ -7,6 +7,7 @@ namespace GoogleDriveUnittestWithDapper.Repositories.TrashRepo
     public class TrashRepository : ITrashRepository
     {
         private readonly IDbConnection _connection;
+        private readonly Dictionary<int, IEnumerable<TrashDto>> _cache = new();
 
         public TrashRepository(IDbConnection connection)
         {
@@ -47,6 +48,10 @@ namespace GoogleDriveUnittestWithDapper.Repositories.TrashRepo
         }
         public async Task<IEnumerable<TrashDto>> GetTrashByUserIdAsync(int userId)
         {
+            if (_cache.TryGetValue(userId, out var cachedTrash))
+            {
+                return cachedTrash;
+            }
             bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
             var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
             string sql = @"
@@ -74,7 +79,9 @@ namespace GoogleDriveUnittestWithDapper.Repositories.TrashRepo
                 LEFT JOIN FileType ft {noLock} ON uf.FileTypeId = ft.FileTypeId
                 WHERE t.UserId = @UserId AND t.IsPermanent = 0".Replace("{noLock}", noLock);
 
-            return await _connection.QueryAsync<TrashDto>(sql, new { UserId = userId });
+            var result =  await _connection.QueryAsync<TrashDto>(sql, new { UserId = userId });
+            _cache[userId] = result.ToList();
+            return result;
         }
         public async Task<IEnumerable<TrashDto>> GetTrashByIdAsync(int trashId)
         {

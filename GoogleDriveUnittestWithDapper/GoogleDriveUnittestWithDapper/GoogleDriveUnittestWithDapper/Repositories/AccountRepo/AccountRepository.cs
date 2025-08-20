@@ -7,6 +7,7 @@ namespace GoogleDriveUnittestWithDapper.Repositories.AccountRepo
     public class AccountRepository : IAccountRepository
     {
         private readonly IDbConnection _connection;
+        private readonly Dictionary<int, AccountDto> _cache = new();
 
         public AccountRepository(IDbConnection connection)
         {
@@ -15,6 +16,10 @@ namespace GoogleDriveUnittestWithDapper.Repositories.AccountRepo
 
         public async Task<AccountDto?> GetUserByIdAsync(int userId)
         {
+            if (_cache.TryGetValue(userId, out var cachedUser))
+            {
+                return cachedUser;                
+            }
             bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
             var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
             var query = @"
@@ -25,8 +30,15 @@ namespace GoogleDriveUnittestWithDapper.Repositories.AccountRepo
                 FROM Account a {noLock} 
                 WHERE a.UserId = @userId".Replace("{noLock}", noLock);
 
-            return await _connection.QuerySingleOrDefaultAsync<AccountDto>(query, new { userId });
+            var user = await _connection.QuerySingleOrDefaultAsync<AccountDto>(query, new { userId });
+            if (user != null)
+            {
+                user.UserId = userId; 
+                _cache[userId] = user; 
+            }
+            return user;
         }
+
         public async Task<CreateAccountDto> AddUserAsync(CreateAccountDto createAccountDto)
         {
             var query = @"

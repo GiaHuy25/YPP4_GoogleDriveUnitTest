@@ -7,12 +7,17 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserProductRepo
     public class UserProductRepository : IUserProductRepository
     {
         private readonly IDbConnection _connection;
+        private readonly Dictionary<int, IEnumerable<UserProductItemDto>> _cache = new();
         public UserProductRepository(IDbConnection connection)
         {
             _connection = connection;
         }
         public async Task<IEnumerable<UserProductItemDto>> GetUserProductsByUserIdAsync(int userId)
         {
+            if (_cache.TryGetValue(userId, out var cachedResult))
+            {
+                return cachedResult;
+            }
             bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
             var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
             string sql = @"
@@ -30,7 +35,9 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserProductRepo
                 LEFT JOIN Promotion pr {noLock} ON up.PromotionId = pr.PromotionId
                 WHERE a.UserId = @UserId".Replace("{noLock}", noLock);
 
-            return await _connection.QueryAsync<UserProductItemDto>(sql, new { UserId = userId });
+            var result = await _connection.QueryAsync<UserProductItemDto>(sql, new { UserId = userId });
+            _cache[userId] = result.ToList();
+            return result;
         }
 
         public async Task<int> AddUserProductAsync(UserProductItemDto userProduct)

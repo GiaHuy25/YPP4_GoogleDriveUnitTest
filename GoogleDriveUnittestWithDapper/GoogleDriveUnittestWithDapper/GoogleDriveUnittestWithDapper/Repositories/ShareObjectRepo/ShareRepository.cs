@@ -7,12 +7,15 @@ namespace GoogleDriveUnittestWithDapper.Repositories.ShareObjectRepo
     public class ShareRepository : IShareRepository
     {
         private readonly IDbConnection _connection;
+        private readonly Dictionary<int, IEnumerable<ShareObjectDto>> _cache = new();
         public ShareRepository(IDbConnection connection)
         {
             _connection = connection;
         }
         public async Task<IEnumerable<ShareObjectDto>> GetSharedObjectsByUserIdAsync(int userId)
         {
+            if (_cache.TryGetValue(userId, out var cachedResult))
+                return cachedResult;
             bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
             var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
             string sql = @"
@@ -52,7 +55,11 @@ namespace GoogleDriveUnittestWithDapper.Repositories.ShareObjectRepo
                 INNER JOIN Permission p   ON su.PermissionId = p.PermissionId
                 WHERE su.UserId = @UserId".Replace("{noLock}", noLock);
 
-            return await _connection.QueryAsync<ShareObjectDto>(sql, new { UserId = userId });
+            var result = await _connection.QueryAsync<ShareObjectDto>(sql, new { UserId = userId });
+
+            _cache[userId] = result.ToList();
+
+            return result;
         }
     }
 }

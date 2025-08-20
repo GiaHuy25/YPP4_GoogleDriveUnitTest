@@ -7,6 +7,10 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserFileFolderRepo
     public class UserFileFolderRepository : IUserFileFolderRepository
     {
         private readonly IDbConnection _connection;
+        private readonly Dictionary<int, IEnumerable<UserFileAndFolderDto>> _cache = new();
+        private readonly Dictionary<int, IEnumerable<FileDto>> _fileCache = new();
+        private readonly Dictionary<int, IEnumerable<FolderDto>> _folderCache = new();
+        private readonly Dictionary<int, IEnumerable<FavoriteObjectOfUserDto>> _favoriteCache = new();
 
         public UserFileFolderRepository(IDbConnection connection)
         {
@@ -14,6 +18,10 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserFileFolderRepo
         }
         public IEnumerable<UserFileAndFolderDto> GetFilesAndFoldersByUserId(int userId)
         {
+            if (_cache.TryGetValue(userId, out var cachedResult))
+            {
+                return cachedResult;
+            }
             bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
             var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
             var sql = @"
@@ -43,10 +51,16 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserFileFolderRepo
                 LEFT JOIN Account a {noLock} ON f.OwnerId = a.UserId
                 WHERE f.OwnerId = @userId".Replace("{noLock}", noLock);
 
-            return _connection.Query<UserFileAndFolderDto>(sql, new { userId });
+            var result = _connection.Query<UserFileAndFolderDto>(sql, new { userId });
+            _cache[userId] = result.ToList();
+            return result;
         }
         public IEnumerable<FileDto> GetFilesByUserId(int userId)
         {
+            if (_fileCache.TryGetValue(userId, out var cachedFiles))
+            {
+                return cachedFiles;
+            }
             bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
             var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
             var sql = @"
@@ -61,10 +75,16 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserFileFolderRepo
                 LEFT JOIN Account a {noLock} ON uf.OwnerId = a.UserId
                 WHERE uf.OwnerId = @userId".Replace("{noLock}", noLock);
 
-            return _connection.Query<FileDto>(sql, new { userId });
+            var result = _connection.Query<FileDto>(sql, new { userId });
+            _fileCache[userId] = result.ToList();
+            return result;
         }
         public IEnumerable<FolderDto> GetFolderById(int folderId)
         {
+            if (_folderCache.TryGetValue(folderId, out var cachedFolders))
+            {
+                return cachedFolders;
+            }
             bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
             var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
 
@@ -80,10 +100,16 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserFileFolderRepo
                 JOIN Color c {{NOLOCK}} ON fl.ColorId = c.ColorId
                 WHERE fl.FolderId = @folderId".Replace("{{NOLOCK}}", noLock);
 
-            return _connection.Query<FolderDto>(sql, new { folderId });
+            var result = _connection.Query<FolderDto>(sql, new { folderId });
+            _folderCache[folderId] = result.ToList();
+            return result;
         }
         public IEnumerable<FavoriteObjectOfUserDto> GetFavoritesByUserId(int userId)
         {
+            if (_favoriteCache.TryGetValue(userId, out var cachedFavorites))
+            {
+                return cachedFavorites;
+            }
             bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
             var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
             var sql = @"
@@ -106,7 +132,9 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserFileFolderRepo
                 LEFT JOIN ObjectType ot {noLock} ON fav.ObjectTypeId = ot.ObjectTypeId
                 WHERE fav.OwnerId = @userId".Replace("{noLock}", noLock);
 
-            return _connection.Query<FavoriteObjectOfUserDto>(sql, new { userId });
+            var result = _connection.Query<FavoriteObjectOfUserDto>(sql, new { userId });
+            _favoriteCache[userId] = result.ToList();
+            return result;
         }
     }
 }

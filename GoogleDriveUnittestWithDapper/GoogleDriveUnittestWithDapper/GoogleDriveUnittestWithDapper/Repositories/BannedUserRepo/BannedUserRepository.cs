@@ -7,12 +7,17 @@ namespace GoogleDriveUnittestWithDapper.Repositories.BannedUserRepo
     public class BannedUserRepository : IBannedUserRepository
     {
         private readonly IDbConnection _connection;
+        private readonly Dictionary<int, IEnumerable<BannedUserDto>> _cache = new();
         public BannedUserRepository(IDbConnection connection)
         {
             _connection = connection;
         }
         public IEnumerable<BannedUserDto>GetBannedUserByUserId(int userId)
         {
+            if (_cache.TryGetValue(userId, out var cachedResult))
+            {
+                return cachedResult;
+            }    
             bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
             var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
             var query = @"
@@ -25,7 +30,9 @@ namespace GoogleDriveUnittestWithDapper.Repositories.BannedUserRepo
                     LEFT JOIN Account a {noLock} ON bu.BannedUserId = a.UserId
                     WHERE bu.UserId = @userId"
             .Replace("{noLock}", noLock);
-            return _connection.Query<BannedUserDto>(query, new { userId });
+            var result = _connection.Query<BannedUserDto>(query, new { userId });
+            _cache[userId] = result.ToList();
+            return result;
         }
     }
 }
