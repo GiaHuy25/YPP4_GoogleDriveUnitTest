@@ -1,10 +1,4 @@
-﻿using GoogleDriveUnittestWithDapper.Repositories.SearchRepo;
-using GoogleDriveUnittestWithDapper.Services.SearchService;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using GoogleDriveUnittestWithDapper.Services.SearchService;
 using static GoogleDriveUnittestWithDapper.Dto.SearchDto;
 
 namespace GoogleDriveUnittestWithDapper.Controller
