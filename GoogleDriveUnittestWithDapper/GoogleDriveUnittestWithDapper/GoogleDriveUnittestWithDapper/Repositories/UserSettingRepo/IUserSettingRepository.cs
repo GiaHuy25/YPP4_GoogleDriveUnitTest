@@ -4,9 +4,9 @@ namespace GoogleDriveUnittestWithDapper.Repositories.UserSettingRepo
 {
     public interface IUserSettingRepository
     {
-        IEnumerable<UserSetting> GetUserSettingsByUserId(int userId);
-        AppSettingKey? GetAppSettingKeyById(int settingId);
-        AppSettingOption? GetAppSettingOptionById(int optionId);
+        IQueryable<UserSetting> GetUserSettingsByUserId(int userId);
+        IQueryable<AppSettingKey?> GetAppSettingKeyById(int settingId);
+        IQueryable<AppSettingOption?> GetAppSettingOptionById(int optionId);
 
     }
 }

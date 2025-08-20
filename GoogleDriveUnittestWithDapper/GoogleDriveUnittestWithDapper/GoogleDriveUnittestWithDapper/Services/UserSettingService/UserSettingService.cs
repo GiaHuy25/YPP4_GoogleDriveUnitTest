@@ -19,9 +19,9 @@ namespace GoogleDriveUnittestWithDapper.Services.UserSettingService
 
             foreach (var us in userSettings)
             {
-                var key = _userSettingRepository.GetAppSettingKeyById(us.AppSettingKeyId);
+                var key = _userSettingRepository.GetAppSettingKeyById(us.AppSettingKeyId).FirstOrDefault();
                 var option = us.AppSettingOptionId.HasValue
-                    ? _userSettingRepository.GetAppSettingOptionById(us.AppSettingOptionId.Value)
+                    ? _userSettingRepository.GetAppSettingOptionById(us.AppSettingOptionId.Value).FirstOrDefault()
                     : null;
 
                 if (key != null)
@@ -37,5 +37,6 @@ namespace GoogleDriveUnittestWithDapper.Services.UserSettingService
 
             return result;
         }
+
     }
 }
