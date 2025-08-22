@@ -18,6 +18,22 @@ namespace MVCImplement
             {
                 await handler(context);
             }
+            else if (path.StartsWith("/user/") && path.Length > 6) // Check for /user/ followed by username
+            {
+                var username = path.Substring(6); // Extract username after /user/
+                var wrapper = new HttpContextWrapper(context); // Create wrapper
+                wrapper.Items["username"] = username; // Set username in wrapper's Items
+                if (_routes.TryGetValue("/user/", out var userHandler))
+                {
+                    // Pass the original context, but the wrapper is used in the controller via Program.cs
+                    await userHandler(context);
+                }
+                else
+                {
+                    context.Response.StatusCode = 404;
+                    await WriteResponse(context, "Not Found");
+                }
+            }
             else
             {
                 context.Response.StatusCode = 404;

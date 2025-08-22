@@ -20,10 +20,11 @@ namespace MVCImplement
                 .AddSingleton<IRepository<News>, Repository<News>>()
                 .AddScoped<INewsService, NewsService>()
                 .AddScoped<IAuthenService, AuthenService>()
-                .AddTransient<IUserService, UserService>()
+                .AddSingleton<IUserService>(UserService.Instance)
                 .AddTransient<Controller>(sp => new Controller(
                     sp.GetRequiredService<INewsService>(),
-                    sp.GetRequiredService<IAuthenService>()
+                    sp.GetRequiredService<IAuthenService>(),
+                    sp.GetRequiredService<IUserService>()
                 ));
 
             _serviceProvider = services.BuildServiceProvider();
@@ -35,6 +36,7 @@ namespace MVCImplement
 
             var server = new HttpServer("http://localhost:8080/");
             server._router.AddRoute("/news", async context => await controller.Index(new HttpContextWrapper(context)));
+            server._router.AddRoute("/user/", async context => await controller.GetUserInfo(new HttpContextWrapper(context)));
 
             await server.StartAsync();
         }
