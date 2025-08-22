@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace DIImplementByMyself
 {
@@ -23,10 +20,21 @@ namespace DIImplementByMyself
         private readonly Dictionary<Type, object> _singletons = new();
         private readonly Dictionary<Type, ConstructorInfo> _ctorCache = new();
 
+        /***
+         * Registers a service with a specific lifetime.
+         * @param TInterface The interface type to register.
+         * @param TImplementation The implementation type to register.
+         * @param lifetime The lifetime of the service (default is Transient).
+         */
         public void Register<TInterface, TImplementation>(Lifetime lifetime = Lifetime.Transient)
             where TImplementation : TInterface =>
             _registrations[typeof(TInterface)] = (typeof(TImplementation), lifetime);
 
+        /***
+         * Registers a service implementation with a specific lifetime.
+         * @param TImplementation The implementation type to register.
+         * @param lifetime The lifetime of the service (default is Transient).
+         */
         public void Register<TImplementation>(Lifetime lifetime = Lifetime.Transient) =>
             _registrations[typeof(TImplementation)] = (typeof(TImplementation), lifetime);
 
@@ -34,6 +42,12 @@ namespace DIImplementByMyself
 
         public IScope CreateScope() => new Scope(this);
 
+        /***
+         * Resolves a service type, creating an instance based on its lifetime.
+         * @param type The type to resolve.
+         * @param scope The current scope, if any.
+         * @return An instance of the requested type.
+         */
         private object Resolve(Type type, Scope scope)
         {
             if (!_registrations.TryGetValue(type, out var entry))
@@ -50,6 +64,12 @@ namespace DIImplementByMyself
             };
         }
 
+        /***
+         * Creates an instance of the implementation type using its constructor.
+         * @param implType The implementation type to create.
+         * @param scope The current scope, if any.
+         * @return An instance of the implementation type.
+         */
         private object CreateInstance(Type implType, Scope scope)
         {
             var ctor = _ctorCache.TryGetValue(implType, out var cachedCtor)
@@ -77,6 +97,12 @@ namespace DIImplementByMyself
 
             public T Resolve<T>() => (T)_container.Resolve(typeof(T), this);
 
+            /***
+             * Gets or creates a scoped instance of the specified type.
+             * @param type The type to get or create.
+             * @param factory A factory function to create the instance if it doesn't exist.
+             * @return An instance of the specified type.
+             */
             public object GetOrCreateScopedInstance(Type type, Func<object> factory)
             {
                 if (_disposed)
