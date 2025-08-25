@@ -4,6 +4,7 @@ using MVCImplement.Controllers;
 using MVCImplement.Dtos;
 using MVCImplement.Services.AuthenService;
 using MVCImplement.Services.NewsService;
+using MVCImplement.Services.UserService;
 
 namespace MVCTest.Test
 {
@@ -15,12 +16,13 @@ namespace MVCTest.Test
         {
             var mockNewsService = new Mock<INewsService>();
             var mockAuthService = new Mock<IAuthenService>();
+            var mockUserService = new Mock<IUserService>();
 
             typeof(Controller).GetField("_instance", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
                 ?.SetValue(null, null);
 
 
-            var controller = new Controller(mockNewsService.Object, mockAuthService.Object);
+            var controller = new Controller(mockNewsService.Object, mockAuthService.Object, mockUserService.Object);
 
             typeof(Controller).GetField("_instance", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
                 ?.SetValue(null, controller);
@@ -82,6 +84,41 @@ namespace MVCTest.Test
 
             // Assert
             Assert.AreEqual(401, response.Object.StatusCode);
+        }
+
+        [TestMethod]
+        public async Task Get_ValidId_ReturnsNews()
+        {
+            var context = new Mock<IHttpContextWrapper>();
+            var response = new Mock<IHttpResponseWrapper>();
+            response.SetupAllProperties(); 
+
+            var output = new MemoryStream();
+            response.Setup(r => r.OutputStream).Returns(output);
+            context.Setup(c => c.Response).Returns(response.Object);
+
+            var controller = Controller.Instance;
+            var mockNewsService = Mock.Get(controller.GetNewsService());
+
+            var newsItem = new NewsDto
+            {
+                Id = 1,
+                Title = "Sample News 1",
+                Content = "This is the content of Sample News 1",
+                CreatedAt = DateTime.Now
+            };
+            mockNewsService.Setup(n => n.GetNewsById(1)).Returns(newsItem);
+
+            // Act
+            await controller.Get(context.Object, 1);
+
+            // Assert
+            Assert.AreEqual(200, response.Object.StatusCode); 
+            output.Position = 0;
+            var reader = new StreamReader(output);
+            var responseBody = reader.ReadToEnd();
+            Assert.Contains("Sample News 1", responseBody); 
+            Assert.Contains("This is the content of Sample News 1", responseBody); 
         }
     }
 }

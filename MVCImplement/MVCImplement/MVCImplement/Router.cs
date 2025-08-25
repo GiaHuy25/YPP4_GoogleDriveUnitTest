@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using MVCImplement.Controllers;
+using System.Net;
 
 namespace MVCImplement
 {
@@ -14,25 +15,17 @@ namespace MVCImplement
         public async Task HandleRequest(HttpListenerContext context)
         {
             var path = context.Request.Url.AbsolutePath;
+
+            if (path.StartsWith("/News/Get/") && int.TryParse(path.Substring(11), out var id))
+            {
+                var wrapper = new HttpContextWrapper(context);
+                await Controller.Instance.Get(wrapper, id);
+                return;
+            }
+
             if (_routes.TryGetValue(path, out var handler))
             {
                 await handler(context);
-            }
-            else if (path.StartsWith("/user/") && path.Length > 6) // Check for /user/ followed by username
-            {
-                var username = path.Substring(6); // Extract username after /user/
-                var wrapper = new HttpContextWrapper(context); // Create wrapper
-                wrapper.Items["username"] = username; // Set username in wrapper's Items
-                if (_routes.TryGetValue("/user/", out var userHandler))
-                {
-                    // Pass the original context, but the wrapper is used in the controller via Program.cs
-                    await userHandler(context);
-                }
-                else
-                {
-                    context.Response.StatusCode = 404;
-                    await WriteResponse(context, "Not Found");
-                }
             }
             else
             {

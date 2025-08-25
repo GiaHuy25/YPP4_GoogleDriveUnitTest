@@ -39,5 +39,20 @@ namespace MVCImplement.Services.NewsService
                 CreatedAt = newsModel.CreatedAt
             };
         }
+
+        public void AddNews(News news)
+        {
+            _newsRepository.Add(news);
+        }
+
+        public void UpdateNews(News news)
+        {
+            _newsRepository.Update(news);
+        }
+
+        public void DeleteNews(int id)
+        {
+            _newsRepository.Delete(id);
+        }
     }
 }

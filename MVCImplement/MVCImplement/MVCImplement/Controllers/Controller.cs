@@ -1,4 +1,5 @@
 ﻿using MVCImplement.Dtos;
+using MVCImplement.Models;
 using MVCImplement.Services.AuthenService;
 using MVCImplement.Services.NewsService;
 using MVCImplement.Services.UserService;
@@ -40,6 +41,7 @@ namespace MVCImplement.Controllers
         {
             var news = _newsService.GetAllNews();
             context.Response.ContentType = "text/plain";
+            var content = RenderNewsView(news);
             using var writer = new StreamWriter(context.Response.OutputStream, Encoding.UTF8);
             foreach (var item in news)
             {
@@ -81,6 +83,88 @@ namespace MVCImplement.Controllers
             using var writer = new StreamWriter(context.Response.OutputStream, Encoding.UTF8);
             await writer.WriteLineAsync(userInfo);
             context.Response.Close();
+        }
+
+        public async Task Get(IHttpContextWrapper context, int id)
+        {
+            var news = _newsService.GetNewsById(id);
+            if (news == null)
+            {
+                await WriteResponse(context.Response, "News not found", 404);
+                return;
+            }
+
+            var content = RenderNewsView(new List<NewsDto> { news });
+            await WriteResponse(context.Response, content, 200);
+        }
+
+        public async Task Post(IHttpContextWrapper context, NewsDto newNews)
+        {
+            try
+            {
+                var news = new News
+                {
+                    Title = newNews.Title,
+                    Content = newNews.Content,
+                    CreatedAt = DateTime.Now
+                };
+
+                _newsService.AddNews(news);
+                await WriteResponse(context.Response, "News created successfully", 201);
+            }
+            catch (Exception ex)
+            {
+                await WriteResponse(context.Response, $"Error: {ex.Message}", 500);
+            }
+        }
+
+        public async Task Put(IHttpContextWrapper context, int id, NewsDto updatedNews)
+        {
+            var existingNews = _newsService.GetNewsById(id);
+            if (existingNews == null)
+            {
+                await WriteResponse(context.Response, "News not found", 404);
+                return;
+            }
+
+            try
+            {
+                var newsToUpdate = new News
+                {
+                    Id = existingNews.Id,
+                    Title = updatedNews.Title,
+                    Content = updatedNews.Content,
+                    CreatedAt = existingNews.CreatedAt
+                };
+
+                _newsService.UpdateNews(newsToUpdate);
+
+                await WriteResponse(context.Response, "News updated successfully", 200);
+            }
+            catch (Exception ex)
+            {
+                await WriteResponse(context.Response, $"Error: {ex.Message}", 500);
+            }
+        }
+
+        public async Task Delete(IHttpContextWrapper context, int id)
+        {
+            var existingNews = _newsService.GetNewsById(id);
+            if (existingNews == null)
+            {
+                await WriteResponse(context.Response, "News not found", 404);
+                return;
+            }
+
+            try
+            {
+                _newsService.DeleteNews(id);
+                await WriteResponse(context.Response, "News deleted successfully", 200);
+            }
+            catch (Exception ex)
+            {
+                await WriteResponse(context.Response, $"Error: {ex.Message}", 500);
+            }
         }
     }
 }

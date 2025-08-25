@@ -25,6 +25,20 @@ namespace MVCImplement.Data
                 );
             ";
             command.ExecuteNonQuery();
+
+            command.CommandText = @"
+                INSERT INTO News (Title, Content, CreatedAt)
+                SELECT 'Sample News 1', 'This is the content of Sample News 1', DATETIME('now')
+                WHERE NOT EXISTS (SELECT 1 FROM News);
+            ";
+            command.ExecuteNonQuery();
+
+            command.CommandText = @"
+                INSERT INTO News (Title, Content, CreatedAt)
+                SELECT 'Sample News 2', 'This is the content of Sample News 2', DATETIME('now')
+                WHERE NOT EXISTS (SELECT 1 FROM News WHERE Title = 'Sample News 2');
+            ";
+            command.ExecuteNonQuery();
         }
 
         public string ConnectionString => _connectionString;
