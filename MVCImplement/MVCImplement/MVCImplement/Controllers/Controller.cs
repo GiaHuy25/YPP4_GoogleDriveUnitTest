@@ -43,36 +43,46 @@ namespace MVCImplement.Controllers
         {
             try
             {
+                // Check authentication
+                if (!_authService.Authenticate("user", "pass"))
+                {
+                    context.Response.StatusCode = 401;
+                    context.Response.ContentType = "application/json";
+                    var error = JsonSerializer.Serialize(new { error = "Unauthorized" });
+                    await WriteResponse(context.Response, error, 401);
+                    return;
+                }
+
                 var news = _newsService.GetAllNews();
-                Console.WriteLine($"News count: {news.Count}"); 
-                context.Response.ContentType = "application/json"; 
+                context.Response.ContentType = "application/json";
+                context.Response.StatusCode = 200;
 
                 var json = JsonSerializer.Serialize(news, new JsonSerializerOptions
                 {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase, 
-                    WriteIndented = true 
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    WriteIndented = true
                 });
 
                 using var writer = new StreamWriter(context.Response.OutputStream, Encoding.UTF8);
                 await writer.WriteAsync(json);
-                await writer.FlushAsync(); 
-                context.Response.Close();
+                await writer.FlushAsync();
+                //context.Response.Close();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in Index: {ex.Message}");
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = 500;
                 var error = JsonSerializer.Serialize(new { error = ex.Message });
                 using var writer = new StreamWriter(context.Response.OutputStream, Encoding.UTF8);
                 await writer.WriteAsync(error);
                 await writer.FlushAsync();
-                context.Response.Close();
+                //context.Response.Close();
             }
         }
 
 
-        
+
+
         private string RenderNewsView(List<NewsDto> news)
         {
             var sb = new StringBuilder();
@@ -94,7 +104,7 @@ namespace MVCImplement.Controllers
             context.Response.StatusCode = 200;
             using var writer = new StreamWriter(context.Response.OutputStream, Encoding.UTF8);
             await writer.WriteLineAsync(userInfo);
-            context.Response.Close();
+            //context.Response.Close();
         }
 
         public async Task Get(IHttpContextWrapper context, int id)

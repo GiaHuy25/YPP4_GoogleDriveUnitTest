@@ -77,7 +77,7 @@ namespace MVCImplement
                                 var buffer = Encoding.UTF8.GetBytes(error);
                                 await context.Response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
                                 await context.Response.OutputStream.FlushAsync();
-                                context.Response.Close();
+                                //context.Response.Close();
                             }
                         }
                         else
@@ -93,7 +93,7 @@ namespace MVCImplement
                             await context.Response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
                             await context.Response.OutputStream.FlushAsync();
                             Console.WriteLine($"Route handler: Sent 400 response for invalid ID format at {DateTime.Now}");
-                            context.Response.Close();
+                            //context.Response.Close();
                         }
                     }
                     else
@@ -109,7 +109,7 @@ namespace MVCImplement
                         await context.Response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
                         await context.Response.OutputStream.FlushAsync();
                         Console.WriteLine($"Route handler: Sent 404 response for invalid route at {DateTime.Now}");
-                        context.Response.Close();
+                        //context.Response.Close();
                     }
                 }
                 catch (HttpListenerException ex)
@@ -126,7 +126,7 @@ namespace MVCImplement
                     var buffer = Encoding.UTF8.GetBytes(error);
                     await context.Response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
                     await context.Response.OutputStream.FlushAsync();
-                    context.Response.Close();
+                    //context.Response.Close();
                 }
             });
             await server.StartAsync();
