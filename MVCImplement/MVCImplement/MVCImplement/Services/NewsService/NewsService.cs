@@ -28,16 +28,26 @@ namespace MVCImplement.Services.NewsService
 
         public NewsDto GetNewsById(int id)
         {
-            var newsQuery = _newsRepository.GetById(id);
-            var newsModel = newsQuery.FirstOrDefault();
-            if (newsModel == null) return null;
-            return new NewsDto
+            Console.WriteLine($"NewsService.GetNewsById called with ID: {id} at {DateTime.Now}");
+            try
             {
-                Id = newsModel.Id,
-                Title = newsModel.Title,
-                Content = newsModel.Content,
-                CreatedAt = newsModel.CreatedAt
-            };
+                var newsQuery = _newsRepository.GetById(id);
+                var newsModel = newsQuery.FirstOrDefault();
+                Console.WriteLine($"NewsService.GetNewsById({id}): {(newsModel != null ? $"Found: {newsModel.Title}" : "Not found")} at {DateTime.Now}");
+                if (newsModel == null) return null;
+                return new NewsDto
+                {
+                    Id = newsModel.Id,
+                    Title = newsModel.Title,
+                    Content = newsModel.Content,
+                    CreatedAt = newsModel.CreatedAt
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in NewsService.GetNewsById({id}): {ex.Message}, StackTrace: {ex.StackTrace}, Time: {DateTime.Now}");
+                return null;
+            }
         }
 
         public void AddNews(News news)

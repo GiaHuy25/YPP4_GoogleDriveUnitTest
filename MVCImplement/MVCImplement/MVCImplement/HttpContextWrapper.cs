@@ -6,22 +6,20 @@ namespace MVCImplement
     public interface IHttpContextWrapper
     {
         IHttpResponseWrapper Response { get; }
+        NameValueCollection Items { get; }
     }
 
     public class HttpContextWrapper : IHttpContextWrapper
     {
         private readonly HttpListenerContext _context;
-        private NameValueCollection _items;
 
         public HttpContextWrapper(HttpListenerContext context)
         {
             _context = context;
-            _items = new NameValueCollection();
         }
 
         public IHttpResponseWrapper Response => new HttpResponseWrapper(_context.Response);
-        public HttpListenerRequest Request => _context.Request;
-        public NameValueCollection Items => _items;
-    }
 
+        public NameValueCollection Items => _context.Request.QueryString;
+    }
 }

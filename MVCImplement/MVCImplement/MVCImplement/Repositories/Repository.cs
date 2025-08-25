@@ -27,13 +27,22 @@ namespace MVCImplement.Repositories
 
         public IQueryable<T> GetById(int id)
         {
-            bool isSqlServer = _connectionString.GetType().Name.Contains("SqlConnection");
-            var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
-            using var connection = new SqliteConnection(_connectionString);
-            var tableName = typeof(T).Name;
-            var query = $"SELECT * FROM {tableName} {noLock} WHERE Id = @Id";
-            var result = connection.Query<T>(query, new { Id = id });
-            return result.AsQueryable();
+            Console.WriteLine($"Repository.GetById called with ID: {id} at {DateTime.Now}");
+            try
+            {
+                using var connection = new SqliteConnection(_connectionString);
+                connection.Open();
+                var tableName = typeof(T).Name;
+                var query = $"SELECT * FROM {tableName} WHERE Id = @Id";
+                var result = connection.Query<T>(query, new { Id = id });
+                Console.WriteLine($"Repository.GetById({id}): {(result.Any() ? "Found" : "Not found")}, Count: {result.Count()} at {DateTime.Now}");
+                return result.AsQueryable();
+            }
+            catch (SqliteException ex)
+            {
+                Console.WriteLine($"SqliteException in GetById: {ex.Message}, StackTrace: {ex.StackTrace}, Time: {DateTime.Now}");
+                return Enumerable.Empty<T>().AsQueryable();
+            }
         }
 
         public void Add(T entity)
