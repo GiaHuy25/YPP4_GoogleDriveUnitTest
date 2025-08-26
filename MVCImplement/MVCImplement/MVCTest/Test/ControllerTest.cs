@@ -34,7 +34,7 @@ namespace MVCTest.Test
             _response = new Mock<IHttpResponseWrapper>();
             _response.SetupAllProperties();
             _response.Setup(r => r.OutputStream).Returns(_output);
-            _response.Setup(r => r.Close()).Callback(() => { /* do nothing in test */ });
+            _response.Setup(r => r.Close()).Callback(() => {});
 
             _context = new Mock<IHttpContextWrapper>();
             _context.Setup(c => c.Response).Returns(_response.Object);

@@ -44,23 +44,23 @@ namespace MVCImplement
 
             var server = new HttpServer("http://localhost:8080/");
 
+            // Root route
+            server._router.AddRoute("/", async context =>
+                await WriteResponse(new HttpResponseWrapper(context.Response), "Welcome to the API", 200, "text/plain"));
+
             // News routes
             server._router.AddRoute("/news", async context =>
                 await newsController.GetAll(new HttpContextWrapper(context)));
 
-            server._router.AddRoute("/news/get/", async context =>
+            server._router.AddDynamicRoute("/news/{id}", async (idStr, context) =>
             {
-                var path = context.Request.Url.AbsolutePath;
-                if (path.StartsWith("/news/get/", StringComparison.OrdinalIgnoreCase))
+                var wrapper = new HttpContextWrapper(context);
+                if (int.TryParse(idStr, out var id))
+                    await newsController.Get(wrapper, id);
+                else
                 {
-                    var idStr = path.Substring("/news/get/".Length).Trim('/');
-                    if (int.TryParse(idStr, out var id))
-                        await newsController.Get(new HttpContextWrapper(context), id);
-                    else
-                    {
-                        var responseWrapper = new HttpResponseWrapper(context.Response);
-                        await newsController.WriteResponse(responseWrapper, "{\"error\":\"Invalid ID\"}", 400);
-                    }
+                    var response = new HttpResponseWrapper(context.Response);
+                    await new BaseController().WriteResponse(response, "{\"error\":\"Invalid ID\"}", 400);
                 }
             });
 
@@ -75,16 +75,15 @@ namespace MVCImplement
             server._router.AddRoute("/users", async context =>
                 await userController.GetAllUsers(new HttpContextWrapper(context)));
 
-            server._router.AddRoute("/users/", async context =>
+            server._router.AddDynamicRoute("/users/{id}", async (idStr, context) =>
             {
-                var path = context.Request.Url.AbsolutePath;
-                var idStr = path.Substring("/users/".Length).Trim('/');
+                var wrapper = new HttpContextWrapper(context);
                 if (int.TryParse(idStr, out var id))
-                    await userController.GetUserById(new HttpContextWrapper(context), id);
+                    await userController.GetUserById(wrapper, id);
                 else
                 {
-                    var responseWrapper = new HttpResponseWrapper(context.Response);
-                    await userController.WriteResponse(responseWrapper, "{\"error\":\"Invalid ID\"}", 400);
+                    var response = new HttpResponseWrapper(context.Response);
+                    await new BaseController().WriteResponse(response, "{\"error\":\"Invalid ID\"}", 400);
                 }
             });
 
@@ -102,20 +101,28 @@ namespace MVCImplement
                 await userController.UpdateUser(new HttpContextWrapper(context), dto);
             });
 
-            server._router.AddRoute("/users/delete/{id}", async context =>
+            server._router.AddDynamicRoute("/users/delete/{id}", async (idStr, context) =>
             {
-                var path = context.Request.Url.AbsolutePath;
-                var idStr = path.Substring("/users/delete/".Length).Trim('/');
+                var wrapper = new HttpContextWrapper(context);
                 if (int.TryParse(idStr, out var id))
-                    await userController.DeleteUser(new HttpContextWrapper(context), id);
+                    await userController.DeleteUser(wrapper, id);
                 else
                 {
-                    var responseWrapper = new HttpResponseWrapper(context.Response);
-                    await userController.WriteResponse(responseWrapper, "{\"error\":\"Invalid ID\"}", 400);
+                    var response = new HttpResponseWrapper(context.Response);
+                    await new BaseController().WriteResponse(response, "{\"error\":\"Invalid ID\"}", 400);
                 }
             });
 
             await server.StartAsync();
+        }
+
+        // Helper method to write response
+        private static async Task WriteResponse(HttpResponseWrapper response, string content, int statusCode, string contentType)
+        {
+            response.StatusCode = statusCode;
+            response.ContentType = contentType;
+            await response.OutputStream.WriteAsync(System.Text.Encoding.UTF8.GetBytes(content));
+            await response.OutputStream.FlushAsync();
         }
     }
 }
