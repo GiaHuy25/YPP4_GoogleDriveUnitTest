@@ -1,7 +1,7 @@
 ﻿using GoogleDriveUnittestWithDapper.Dto;
 using GoogleDriveUnittestWithDapper.Services.StorageService;
 
-namespace GoogleDriveUnittestWithDapper.Controller
+namespace GoogleDriveUnittestWithDapper.Controllers
 {
     public class StorageController
     {

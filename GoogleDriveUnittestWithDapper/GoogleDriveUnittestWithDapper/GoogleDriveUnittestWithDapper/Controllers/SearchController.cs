@@ -1,7 +1,7 @@
 ﻿using GoogleDriveUnittestWithDapper.Services.SearchService;
 using static GoogleDriveUnittestWithDapper.Dto.SearchDto;
 
-namespace GoogleDriveUnittestWithDapper.Controller
+namespace GoogleDriveUnittestWithDapper.Controllers
 {
     public class SearchController
     {

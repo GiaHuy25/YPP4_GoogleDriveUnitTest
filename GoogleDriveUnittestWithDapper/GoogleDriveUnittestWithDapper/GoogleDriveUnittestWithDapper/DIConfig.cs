@@ -1,4 +1,4 @@
-﻿using GoogleDriveUnittestWithDapper.Controller;
+﻿using GoogleDriveUnittestWithDapper.Controllers;
 using GoogleDriveUnittestWithDapper.Repositories.AccountRepo;
 using GoogleDriveUnittestWithDapper.Repositories.BannedUserRepo;
 using GoogleDriveUnittestWithDapper.Repositories.SearchRepo;
@@ -27,8 +27,10 @@ namespace GoogleDriveUnittestWithDapper
         public static SimpleContainer ConfigureServices()
         {
             var container = new SimpleContainer();
-            container.Register<IDbConnection, SqliteConnection>(Lifetime.Singleton);
-            container.RegisterFactory(() => new SqliteConnection("Data Source=:memory:"), Lifetime.Singleton);
+            container.RegisterFactory<IDbConnection>(
+            () => new SqliteConnection("Data Source=:memory:"),
+            Lifetime.Singleton
+        );
 
 
             container.Register<IAccountRepository, AccountRepository>(Lifetime.Transient);

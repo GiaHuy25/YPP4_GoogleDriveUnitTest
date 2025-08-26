@@ -34,13 +34,13 @@
 
     <div class="input-group">
         <label for="newsId">News ID:</label>
-        <input type="number" id="newsId" min="1" placeholder="Enter News ID">
+        <input type="number" id="newsId" min="1" placeholder="Enter News ID (leave blank for all)">
         <button onclick="fetchNews()">Get News Item</button>
     </div>
 
     <div class="input-group">
         <label for="userId">User ID:</label>
-        <input type="number" id="userId" min="1" placeholder="Enter User ID">
+        <input type="number" id="userId" min="1" placeholder="Enter User ID (leave blank for all)">
         <button onclick="fetchUser()">Get User</button>
     </div>
 
@@ -49,12 +49,9 @@
     <script>
         async function fetchNews() {
             const newsId = document.getElementById('newsId').value;
-            if (!newsId) {
-                displayError("Please enter a News ID");
-                return;
-            }
+            const url = newsId ? `http://localhost:8080/news/${newsId}` : `http://localhost:8080/news`;
             try {
-                const response = await fetch(`http://localhost:8080/news/${newsId}`);
+                const response = await fetch(url);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
                 displayData(data, 'News');
@@ -65,12 +62,9 @@
 
         async function fetchUser() {
             const userId = document.getElementById('userId').value;
-            if (!userId) {
-                displayError("Please enter a User ID");
-                return;
-            }
+            const url = userId ? `http://localhost:8080/users/${userId}` : `http://localhost:8080/users`;
             try {
-                const response = await fetch(`http://localhost:8080/users/${userId}`);
+                const response = await fetch(url);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
                 displayData(data, 'User');

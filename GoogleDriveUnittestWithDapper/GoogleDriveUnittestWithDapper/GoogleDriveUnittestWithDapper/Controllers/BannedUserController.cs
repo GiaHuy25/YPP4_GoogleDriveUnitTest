@@ -1,7 +1,7 @@
 ﻿using GoogleDriveUnittestWithDapper.Dto;
 using GoogleDriveUnittestWithDapper.Services.BannedUserService;
 
-namespace GoogleDriveUnittestWithDapper.Controller
+namespace GoogleDriveUnittestWithDapper.Controllers
 {
     public class BannedUserController
     {

@@ -1,7 +1,7 @@
 ﻿using GoogleDriveUnittestWithDapper.Dto;
 using GoogleDriveUnittestWithDapper.Services.ShareObjectService;
 
-namespace GoogleDriveUnittestWithDapper.Controller
+namespace GoogleDriveUnittestWithDapper.Controllers
 {
     public class ShareObjectController
     {

@@ -1,5 +1,6 @@
-﻿using GoogleDriveUnittestWithDapper.Controller;
+﻿using GoogleDriveUnittestWithDapper.Controllers;
 using GoogleDriveUnittestWithDapper.Dto;
+using GoogleDriveUnittestWithDapper.Services.AccountService;
 using System.Data;
 
 namespace GoogleDriveUnittestWithDapper.Test
@@ -8,7 +9,7 @@ namespace GoogleDriveUnittestWithDapper.Test
     public class TestUser
     {
         private IDbConnection? _connection;
-        private AccountController? _accountController;
+        private AccountService? _accountService;
         [TestInitialize]
         public void Setup()
         {
@@ -21,7 +22,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             TestDatabaseSchema.CreateSchema(_connection);
             TestDatabaseSchema.InsertSampleData(_connection);
 
-            _accountController = container.Resolve<AccountController>();
+            _accountService = container.Resolve<AccountService>();
         }
 
         [TestCleanup]
@@ -42,7 +43,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             };
 
             // Act
-            var result = await _accountController.GetUserByIdAsync(userId);
+            var result = await _accountService.GetUserByIdAsync(userId);
             // Assert
             Assert.IsNotNull(result, "UserDto should not be null for valid userId");
             Assert.AreEqual(expected.UserName, result.UserName, "UserName does not match");
@@ -57,7 +58,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             int invalidUserId = 999;
 
             // Act
-            var result = await _accountController!.GetUserByIdAsync(invalidUserId);
+            var result = await _accountService!.GetUserByIdAsync(invalidUserId);
 
             // Assert
             Assert.IsNull(result, "UserDto should be null for invalid UserId");
@@ -75,7 +76,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             };
 
             // Act
-            var result = await _accountController!.AddUserAsync(newUser);
+            var result = await _accountService!.AddUserAsync(newUser);
 
             // Assert
             Assert.IsNotNull(result, "UserDto should not be null for valid input");
@@ -85,7 +86,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             Assert.AreEqual(newUser.UserImg, result.UserImg, "UserImg does not match");
 
             // Verify in database
-            var dbUser = await _accountController!.GetUserByIdAsync(result.UserId);
+            var dbUser = await _accountService!.GetUserByIdAsync(result.UserId);
             Assert.IsNotNull(dbUser, "User should exist in database");
             Assert.AreEqual(newUser.UserName, dbUser.UserName, "Database UserName does not match");
         }
@@ -98,7 +99,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             int invalidUserId = 999;
 
             // Act
-            var result = await _accountController!.DeleteUserAsync(invalidUserId);
+            var result = await _accountService!.DeleteUserAsync(invalidUserId);
 
             // Assert
             Assert.IsFalse(result, "Delete should return false for invalid UserId");
@@ -117,7 +118,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             };
 
             // Act
-            var result = await _accountController!.UpdateUserAsync(updatedUser);
+            var result = await _accountService!.UpdateUserAsync(updatedUser);
 
             // Assert
             Assert.IsNotNull(result, "UserDto should not be null for valid update");
@@ -127,7 +128,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             Assert.AreEqual(updatedUser.UserImg, result.UserImg, "UserImg does not match");
 
             // Verify in database
-            var dbUser = await _accountController!.GetUserByIdAsync(updatedUser.UserId);
+            var dbUser = await _accountService!.GetUserByIdAsync(updatedUser.UserId);
             Assert.IsNotNull(dbUser, "User should exist in database");
             Assert.AreEqual(updatedUser.UserName, dbUser.UserName, "Database UserName does not match");
         }

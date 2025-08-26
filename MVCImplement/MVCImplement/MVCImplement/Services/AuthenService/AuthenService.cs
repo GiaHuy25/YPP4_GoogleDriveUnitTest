@@ -10,7 +10,7 @@
 
         public bool Authenticate(string username, string password)
         {
-            return username == "user" && password == "pass"; // Mock auth
+            return username == "user" && password == "pass";
         }
     }
 }
