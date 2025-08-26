@@ -46,8 +46,19 @@ namespace MVCImplement
 
             // Root route
             server._router.AddRoute("/", async context =>
-                await WriteResponse(new HttpResponseWrapper(context.Response), "Welcome to the API", 200, "text/plain"));
-
+            {
+                string htmlFilePath = @"E:\BBV\YPP4\YPP4_GoogleDriveUnitTest\MVCImplement\MVCImplement\MVCImplement\View\index.html";
+                Console.WriteLine($"Checking file: {htmlFilePath}, Exists: {File.Exists(htmlFilePath)}");
+                if (File.Exists(htmlFilePath))
+                {
+                    var htmlContent = File.ReadAllText(htmlFilePath);
+                    await WriteResponse(new HttpResponseWrapper(context.Response), htmlContent, 200, "text/html");
+                }
+                else
+                {
+                    await WriteResponse(new HttpResponseWrapper(context.Response), "HTML file not found at " + htmlFilePath, 404, "text/plain");
+                }
+            });
             // News routes
             server._router.AddRoute("/news", async context =>
                 await newsController.GetAll(new HttpContextWrapper(context)));

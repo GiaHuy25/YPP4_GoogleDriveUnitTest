@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Data Viewer</title>
+    <style>
+        .data-container {
+            margin: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .input-group {
+            margin: 10px 0;
+        }
+
+            .input-group label {
+                margin-right: 10px;
+            }
+
+            .input-group input {
+                padding: 5px;
+            }
+    </style>
+</head>
+<body>
+    <h1>API Data</h1>
+
+    <div class="input-group">
+        <label for="newsId">News ID:</label>
+        <input type="number" id="newsId" min="1" placeholder="Enter News ID">
+        <button onclick="fetchNews()">Get News Item</button>
+    </div>
+
+    <div class="input-group">
+        <label for="userId">User ID:</label>
+        <input type="number" id="userId" min="1" placeholder="Enter User ID">
+        <button onclick="fetchUser()">Get User</button>
+    </div>
+
+    <div id="data-container" class="data-container"></div>
+
+    <script>
+        async function fetchNews() {
+            const newsId = document.getElementById('newsId').value;
+            if (!newsId) {
+                displayError("Please enter a News ID");
+                return;
+            }
+            try {
+                const response = await fetch(`http://localhost:8080/news/${newsId}`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                displayData(data, 'News');
+            } catch (error) {
+                displayError(error.message);
+            }
+        }
+
+        async function fetchUser() {
+            const userId = document.getElementById('userId').value;
+            if (!userId) {
+                displayError("Please enter a User ID");
+                return;
+            }
+            try {
+                const response = await fetch(`http://localhost:8080/users/${userId}`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                displayData(data, 'User');
+            } catch (error) {
+                displayError(error.message);
+            }
+        }
+
+        function displayData(data, type) {
+            const container = document.getElementById('data-container');
+            container.innerHTML = `<h2>${type} Data</h2><pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+
+        function displayError(message) {
+            const container = document.getElementById('data-container');
+            container.innerHTML = `<p class="error">Error: ${message}</p>`;
+        }
+    </script>
+</body>
+</html>
