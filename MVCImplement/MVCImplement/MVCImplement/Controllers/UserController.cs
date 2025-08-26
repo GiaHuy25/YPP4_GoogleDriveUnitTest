@@ -1,10 +1,12 @@
-﻿using MVCImplement.Services.AuthenService;
+﻿using MVCImplement.Dtos;
+using MVCImplement.Services.AuthenService;
 using MVCImplement.Services.UserService;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace MVCImplement.Controllers
@@ -20,13 +22,68 @@ namespace MVCImplement.Controllers
             _authenService = authenService;
         }
 
-        public async Task GetUserInfo(IHttpContextWrapper context)
+        public async Task GetAllUsers(IHttpContextWrapper context)
         {
-            var items = context.GetType().GetProperty("Items")?.GetValue(context) as NameValueCollection;
-            var username = items?["username"] ?? "Unknown";
-            var userInfo = _userService.GetUserInfo(username);
+            var users = _userService.GetAllUsers();
+            var jsonResponse = JsonSerializer.Serialize(users);
+            await WriteResponse(context.Response, jsonResponse, 200, "application/json");
+        }
 
-            await WriteResponse(context.Response, userInfo, 200, "text/html");
+        public async Task GetUserById(IHttpContextWrapper context, int id)
+        {
+            var user = _userService.GetUserById(id);
+            if (user == null)
+            {
+                await WriteResponse(context.Response, $"User with Id {id} not found", 404, "text/plain");
+                return;
+            }
+
+            var jsonResponse = JsonSerializer.Serialize(user);
+            await WriteResponse(context.Response, jsonResponse, 200, "application/json");
+        }
+
+        public async Task AddUser(IHttpContextWrapper context, UserDto userDto)
+        {
+            if (userDto == null || string.IsNullOrEmpty(userDto.Username) || string.IsNullOrEmpty(userDto.Email))
+            {
+                await WriteResponse(context.Response, "Invalid user data", 400, "text/plain");
+                return;
+            }
+
+            _userService.AddUser(userDto);
+            await WriteResponse(context.Response, "User added successfully", 201, "text/plain");
+        }
+
+        public async Task UpdateUser(IHttpContextWrapper context, UserDto userDto)
+        {
+            if (userDto == null || userDto.Id <= 0)
+            {
+                await WriteResponse(context.Response, "Invalid user data", 400, "text/plain");
+                return;
+            }
+
+            var existing = _userService.GetUserById(userDto.Id);
+            if (existing == null)
+            {
+                await WriteResponse(context.Response, $"User with Id {userDto.Id} not found", 404, "text/plain");
+                return;
+            }
+
+            _userService.UpdateUser(userDto);
+            await WriteResponse(context.Response, "User updated successfully", 200, "text/plain");
+        }
+
+        public async Task DeleteUser(IHttpContextWrapper context, int id)
+        {
+            var existing = _userService.GetUserById(id);
+            if (existing == null)
+            {
+                await WriteResponse(context.Response, $"User with Id {id} not found", 404, "text/plain");
+                return;
+            }
+
+            _userService.DeleteUser(id);
+            await WriteResponse(context.Response, "User deleted successfully", 200, "text/plain");
         }
     }
 }

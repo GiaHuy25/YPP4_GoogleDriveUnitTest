@@ -13,15 +13,16 @@ namespace MVCImplement
     class Program
     {
         private static readonly IServiceProvider _serviceProvider;
-        
+
         static Program()
         {
             var services = new ServiceCollection()
                 .AddSingleton<NewsDb>()
                 .AddSingleton<IRepository<News>, Repository<News>>()
+                .AddSingleton<IRepository<Users>, Repository<Users>>()
                 .AddScoped<INewsService, NewsService>()
                 .AddScoped<IAuthenService, AuthenService>()
-                .AddSingleton<IUserService>(UserService.Instance)
+                .AddScoped<IUserService, UserService>()
 
                 // Register controllers
                 .AddTransient<NewsController>(sp => new NewsController(
@@ -59,9 +60,7 @@ namespace MVCImplement
                     {
                         var responseWrapper = new HttpResponseWrapper(context.Response);
                         await newsController.WriteResponse(responseWrapper, "{\"error\":\"Invalid ID\"}", 400);
-
                     }
-
                 }
             });
 
@@ -73,9 +72,48 @@ namespace MVCImplement
             });
 
             // User routes
-            server._router.AddRoute("/user/info", async context =>
-                await userController.GetUserInfo(new HttpContextWrapper(context)));
+            server._router.AddRoute("/users", async context =>
+                await userController.GetAllUsers(new HttpContextWrapper(context)));
 
+            server._router.AddRoute("/users/", async context =>
+            {
+                var path = context.Request.Url.AbsolutePath;
+                var idStr = path.Substring("/users/".Length).Trim('/');
+                if (int.TryParse(idStr, out var id))
+                    await userController.GetUserById(new HttpContextWrapper(context), id);
+                else
+                {
+                    var responseWrapper = new HttpResponseWrapper(context.Response);
+                    await userController.WriteResponse(responseWrapper, "{\"error\":\"Invalid ID\"}", 400);
+                }
+            });
+
+            server._router.AddRoute("/users/add", async context =>
+            {
+                // TODO: parse body -> UserDto
+                var dto = new UserDto { Username = "testuser", Email = "test@example.com", FullName = "Test User" };
+                await userController.AddUser(new HttpContextWrapper(context), dto);
+            });
+
+            server._router.AddRoute("/users/update", async context =>
+            {
+                // TODO: parse body -> UserDto
+                var dto = new UserDto { Id = 1, Username = "updateduser", Email = "updated@example.com", FullName = "Updated User" };
+                await userController.UpdateUser(new HttpContextWrapper(context), dto);
+            });
+
+            server._router.AddRoute("/users/delete/{id}", async context =>
+            {
+                var path = context.Request.Url.AbsolutePath;
+                var idStr = path.Substring("/users/delete/".Length).Trim('/');
+                if (int.TryParse(idStr, out var id))
+                    await userController.DeleteUser(new HttpContextWrapper(context), id);
+                else
+                {
+                    var responseWrapper = new HttpResponseWrapper(context.Response);
+                    await userController.WriteResponse(responseWrapper, "{\"error\":\"Invalid ID\"}", 400);
+                }
+            });
 
             await server.StartAsync();
         }

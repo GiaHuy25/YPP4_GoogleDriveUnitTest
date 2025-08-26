@@ -8,10 +8,12 @@ namespace MVCImplement.Repositories
     public class Repository<T> : IRepository<T> where T : class
     {
         private readonly string _connectionString;
+        private readonly string _tableName;
 
         public Repository()
         {
             _connectionString = new NewsDb().ConnectionString;
+            _tableName = typeof(T).Name;
         }
 
         public IQueryable<T> GetAll()
@@ -19,8 +21,7 @@ namespace MVCImplement.Repositories
             bool isSqlServer = _connectionString.GetType().Name.Contains("SqlConnection");
             var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
             using var connection = new SqliteConnection(_connectionString);
-            var tableName = typeof(T).Name;
-            var query = $"SELECT * FROM {tableName} {noLock} ";
+            var query = $"SELECT * FROM {_tableName} {noLock} ";
             var result = connection.Query<T>(query);
             return result.AsQueryable();
         }
@@ -32,8 +33,7 @@ namespace MVCImplement.Repositories
             {
                 using var connection = new SqliteConnection(_connectionString);
                 connection.Open();
-                var tableName = typeof(T).Name;
-                var query = $"SELECT * FROM {tableName} WHERE Id = @Id";
+                var query = $"SELECT * FROM {_tableName} WHERE Id = @Id";
                 var result = connection.Query<T>(query, new { Id = id });
                 Console.WriteLine($"Repository.GetById({id}): {(result.Any() ? "Found" : "Not found")}, Count: {result.Count()} at {DateTime.Now}");
                 return result.AsQueryable();
@@ -50,10 +50,9 @@ namespace MVCImplement.Repositories
             bool isSqlServer = _connectionString.GetType().Name.Contains("SqlConnection");
             var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
             using var connection = new SqliteConnection(_connectionString);
-            var tableName = typeof(T).Name;
             var columns = string.Join(", ", typeof(T).GetProperties().Select(p => p.Name));
             var values = string.Join(", ", typeof(T).GetProperties().Select(p => $"@{p.Name}"));
-            var query = $"INSERT INTO {tableName} {noLock} ({columns}) VALUES ({values})";
+            var query = $"INSERT INTO {_tableName} {noLock} ({columns}) VALUES ({values})";
             connection.Execute(query, entity);
         }
 
@@ -62,9 +61,8 @@ namespace MVCImplement.Repositories
             bool isSqlServer = _connectionString.GetType().Name.Contains("SqlConnection");
             var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
             using var connection = new SqliteConnection(_connectionString);
-            var tableName = typeof(T).Name;
             var setClause = string.Join(", ", typeof(T).GetProperties().Select(p => $"{p.Name} = @{p.Name}"));
-            var query = $"UPDATE {tableName} {noLock} SET {setClause} WHERE Id = @Id";
+            var query = $"UPDATE {_tableName} {noLock} SET {setClause} WHERE Id = @Id";
             connection.Execute(query, entity);
         }
 
@@ -73,8 +71,7 @@ namespace MVCImplement.Repositories
             bool isSqlServer = _connectionString.GetType().Name.Contains("SqlConnection");
             var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
             using var connection = new SqliteConnection(_connectionString);
-            var tableName = typeof(T).Name;
-            var query = $"DELETE FROM {tableName} {noLock} WHERE Id = @Id";
+            var query = $"DELETE FROM {_tableName} {noLock} WHERE Id = @Id";
             connection.Execute(query, new { Id = id });
         }
     }

@@ -1,7 +1,13 @@
-﻿namespace MVCImplement.Services.UserService
+﻿using MVCImplement.Dtos;
+
+namespace MVCImplement.Services.UserService
 {
     public interface IUserService
     {
-        string GetUserInfo(string username);
+        IEnumerable<UserDto> GetAllUsers();
+        UserDto? GetUserById(int id);
+        void AddUser(UserDto userDto);
+        void UpdateUser(UserDto userDto);
+        void DeleteUser(int id);
     }
 }
