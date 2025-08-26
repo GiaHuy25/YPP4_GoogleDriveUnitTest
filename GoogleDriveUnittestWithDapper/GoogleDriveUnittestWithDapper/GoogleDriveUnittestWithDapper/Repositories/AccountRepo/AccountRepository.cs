@@ -28,6 +28,22 @@ namespace GoogleDriveUnittestWithDapper.Repositories.AccountRepo
             return await _connection.QuerySingleOrDefaultAsync<AccountDto>(query, new { userId });
         }
 
+        public async Task<IEnumerable<AccountDto>> GetAllUsersAsync()
+        {
+            bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
+            var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
+            var query = $@"
+                        SELECT 
+                            a.UserId,
+                            a.UserName,
+                            a.Email,
+                            a.UserImg
+                        FROM Account a {noLock}";
+
+            return await _connection.QueryAsync<AccountDto>(query);
+        }
+
+
         public async Task<CreateAccountDto> AddUserAsync(CreateAccountDto createAccountDto)
         {
             var query = @"

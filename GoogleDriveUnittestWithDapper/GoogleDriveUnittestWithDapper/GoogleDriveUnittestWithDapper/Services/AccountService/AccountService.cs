@@ -11,6 +11,11 @@ namespace GoogleDriveUnittestWithDapper.Services.AccountService
             _accountRepository = accountRepository ?? throw new ArgumentNullException(nameof(accountRepository));
         }
 
+        public async Task<IEnumerable<AccountDto>> GetAllUsersAsync()
+        {
+            return await _accountRepository.GetAllUsersAsync();
+        }
+
         public async Task<AccountDto> GetUserByIdAsync(int userId)
         {
             _ = userId > 0 ? 0 : throw new ArgumentException("UserId must be a positive integer.", nameof(userId));

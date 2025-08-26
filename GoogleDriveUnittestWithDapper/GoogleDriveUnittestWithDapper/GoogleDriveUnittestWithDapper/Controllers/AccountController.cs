@@ -31,6 +31,19 @@ namespace GoogleDriveUnittestWithDapper.Controllers
             catch (Exception ex) { return StatusCode(500, new { error = ex.Message }); }
         }
 
+        // GET: api/account
+        [HttpGet("")]
+        public async Task<IActionResult> GetUserAsync()
+        {
+            try
+            {
+                var user = await _accountService.GetAllUsersAsync();
+                return Ok(user);
+            }
+            catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
+            catch (Exception ex) { return StatusCode(500, new { error = ex.Message }); }
+        }
+
         // POST: api/account
         [HttpPost]
         public async Task<IActionResult> AddUserAsync([FromBody] CreateAccountDto accountDto)
@@ -38,9 +51,7 @@ namespace GoogleDriveUnittestWithDapper.Controllers
             try
             {
                 var created = await _accountService.AddUserAsync(accountDto);
-                return CreatedAtAction(nameof(GetUserByIdAsync),
-                                       new { userId = created.UserId },
-                                       created);
+                return Ok(created);
             }
             catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
             catch (Exception ex) { return StatusCode(500, new { error = ex.Message }); }
