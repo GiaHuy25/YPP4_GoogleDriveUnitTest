@@ -1,34 +1,31 @@
-﻿using GoogleDriveUnittestWithDapper.Controllers;
-using GoogleDriveUnittestWithDapper.Dto;
+﻿using GoogleDriveUnittestWithDapper.Dto;
 using GoogleDriveUnittestWithDapper.Services.BannedUserService;
-using System.Data;
+using GoogleDriveUnittestWithDapper.Repositories.BannedUserRepo;
+using Moq;
 
 namespace GoogleDriveUnittestWithDapper.Test
 {
     [TestClass]
     public class TestBannedUser
     {
-        private IDbConnection? _connection;
+        private Mock<IBannedUserRepository>? _mockRepo;
         private IBannedUserService? _bannedUserService;
+
         [TestInitialize]
         public void Setup()
         {
-            var container = DIConfig.ConfigureServices();
-            _connection = container.Resolve<IDbConnection>();
-            _connection.Open();
+            _mockRepo = new Mock<IBannedUserRepository>();
 
-            // Create schema and insert sample data
-            TestDatabaseSchema.CreateSchema(_connection);
-            TestDatabaseSchema.InsertSampleData(_connection);
+            _mockRepo.Setup(r => r.GetBannedUserByUserId(1))
+                .ReturnsAsync(new List<BannedUserDto>
+                {
+                    new BannedUserDto { UserId = 1, BannedUserId = 2, BannedUserName = "Jane" },
+                    new BannedUserDto { UserId = 1, BannedUserId = 3, BannedUserName = "Bob" }
+                });
 
-            _bannedUserService = container.Resolve<IBannedUserService>();
+            _bannedUserService = new BannedUserService(_mockRepo.Object);
         }
 
-        [TestCleanup]
-        public void Cleanup()
-        {
-            _connection?.Dispose();
-        }
         [TestMethod]
         public async Task GetBannedUserByUserId_MultipleBannedUsers_ReturnsAllMatching()
         {
@@ -44,16 +41,18 @@ namespace GoogleDriveUnittestWithDapper.Test
             var result = await _bannedUserService!.GetBannedUserByUserId(userId);
 
             // Assert
-            Assert.IsNotNull(result, "Result should not be null for valid userId with multiple records");
+            Assert.IsNotNull(result, "Result should not be null");
             var resultList = result.ToList();
             Assert.AreEqual(expected.Count, resultList.Count, "Number of banned users does not match");
+
             for (int i = 0; i < expected.Count; i++)
             {
-                Assert.AreEqual(expected[i].UserId, resultList[i].UserId, $"UserId does not match at index {i}");
-                Assert.AreEqual(expected[i].BannedUserId, resultList[i].BannedUserId, $"BannedUserId does not match at index {i}");
-                Assert.AreEqual(expected[i].BannedUserName, resultList[i].BannedUserName, $"BannedUserName does not match at index {i}");
+                Assert.AreEqual(expected[i].UserId, resultList[i].UserId, $"UserId mismatch at index {i}");
+                Assert.AreEqual(expected[i].BannedUserId, resultList[i].BannedUserId, $"BannedUserId mismatch at index {i}");
+                Assert.AreEqual(expected[i].BannedUserName, resultList[i].BannedUserName, $"BannedUserName mismatch at index {i}");
             }
-        }
 
+            _mockRepo!.Verify(r => r.GetBannedUserByUserId(userId), Times.Once);
+        }
     }
 }
