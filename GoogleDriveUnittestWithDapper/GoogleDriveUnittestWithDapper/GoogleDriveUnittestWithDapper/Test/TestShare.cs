@@ -1,4 +1,5 @@
 ﻿using GoogleDriveUnittestWithDapper.Controllers;
+using GoogleDriveUnittestWithDapper.Services.ShareObjectService;
 using System.Data;
 
 namespace GoogleDriveUnittestWithDapper.Test
@@ -7,7 +8,7 @@ namespace GoogleDriveUnittestWithDapper.Test
     public class TestShare
     {
         private IDbConnection _dbConnection;
-        private ShareObjectController _shareObjectController;
+        private IShareService _shareObjectService;
         [TestInitialize]
         public void Setup()
         {
@@ -17,7 +18,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             TestDatabaseSchema.CreateSchema(_dbConnection);
             TestDatabaseSchema.InsertSampleData(_dbConnection);
 
-            _shareObjectController = container.Resolve<ShareObjectController>();
+            _shareObjectService = container.Resolve<IShareService>();
         }
 
         [TestCleanup]
@@ -34,7 +35,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             int userId = 2;
 
             // Act
-            var result = await _shareObjectController.GetSharedObjectsByUserIdAsync(userId);
+            var result = await _shareObjectService.GetSharedObjectsByUserIdAsync(userId);
 
             // Assert
             Assert.IsNotNull(result, "Result should not be null.");
@@ -54,7 +55,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             int nonExistentUserId = 999; // Non-existent user ID
 
             // Act
-            var result = await _shareObjectController.GetSharedObjectsByUserIdAsync(nonExistentUserId);
+            var result = await _shareObjectService.GetSharedObjectsByUserIdAsync(nonExistentUserId);
 
             // Assert
             Assert.IsNotNull(result, "Result should not be null.");
@@ -68,7 +69,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             int userIdWithNoShares = 1;
 
             // Act
-            var result = await _shareObjectController.GetSharedObjectsByUserIdAsync(userIdWithNoShares);
+            var result = await _shareObjectService.GetSharedObjectsByUserIdAsync(userIdWithNoShares);
 
             // Assert
             Assert.IsNotNull(result, "Result should not be null.");
