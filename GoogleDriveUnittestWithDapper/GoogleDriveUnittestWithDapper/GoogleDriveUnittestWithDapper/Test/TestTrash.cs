@@ -20,7 +20,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             TestDatabaseSchema.CreateSchema(_dbConnection);
             TestDatabaseSchema.InsertSampleData(_dbConnection);
 
-            _trashService = container.Resolve<ITrashService>(); // 🔥 gọi service thay vì controller
+            _trashService = container.Resolve<ITrashService>(); 
         }
 
         [TestCleanup]
