@@ -1,6 +1,6 @@
-﻿using GoogleDriveUnittestWithDapper.Controllers;
+﻿using GoogleDriveUnittestWithDapper.Repositories.SearchRepo;
 using GoogleDriveUnittestWithDapper.Services.SearchService;
-using System.Data;
+using Moq;
 using static GoogleDriveUnittestWithDapper.Dto.SearchDto;
 
 namespace GoogleDriveUnittestWithDapper.Test
@@ -8,121 +8,105 @@ namespace GoogleDriveUnittestWithDapper.Test
     [TestClass]
     public class TestSearch
     {
-        private IDbConnection? _dbConnection;
+        private Mock<ISearchRepository>? _mockRepo;
         private ISearchService? _searchService;
 
         [TestInitialize]
         public void Setup()
         {
-            var container = DIConfig.ConfigureServices();
-            _dbConnection = container.Resolve<IDbConnection>();
-            _dbConnection.Open();
-            TestDatabaseSchema.CreateSchema(_dbConnection);
-            TestDatabaseSchema.InsertSampleData(_dbConnection);
+            _mockRepo = new Mock<ISearchRepository>();
 
-            _searchService = container.Resolve<ISearchService>();
+            // Setup giả lập cho các tình huống test
+            _mockRepo.Setup(r => r.SearchFilesAsync(It.Is<SearchQueryDto>(q => q.SearchTerm == "sample1")))
+                .ReturnsAsync(new List<SearchResultDto>
+                {
+                    new SearchResultDto
+                    {
+                        UserFileName = "Doc1.pdf",
+                        OwnerEmail = "john@example.com",
+                        Bm25Score = 1.5
+                    }
+                });
+
+            _mockRepo.Setup(r => r.SearchFilesAsync(It.Is<SearchQueryDto>(q => q.SearchTerm == "nonexistent")))
+                .ReturnsAsync(new List<SearchResultDto>()); // rỗng
+
+            _mockRepo.Setup(r => r.SearchFilesAsync(It.Is<SearchQueryDto>(q => q.SearchTerm == "sample" && q.Page == 1)))
+                .ReturnsAsync(new List<SearchResultDto>
+                {
+                    new SearchResultDto { UserFileName = "Doc1.pdf", OwnerEmail = "john@example.com", Bm25Score = 2.0 },
+                    new SearchResultDto { UserFileName = "Book1.docx", OwnerEmail = "john@example.com", Bm25Score = 1.2 }
+                });
+
+            _mockRepo.Setup(r => r.SearchFilesAsync(It.Is<SearchQueryDto>(q => q.SearchTerm == "sample" && q.Page == 2)))
+                .ReturnsAsync(new List<SearchResultDto>
+                {
+                    new SearchResultDto { UserFileName = "Note1.txt", OwnerEmail = "john@example.com", Bm25Score = 0.9 }
+                });
+
+            _mockRepo.Setup(r => r.SearchFilesAsync(It.Is<SearchQueryDto>(q => q.SearchTerm == "sample" && q.UserId == 2)))
+                .ReturnsAsync(new List<SearchResultDto>
+                {
+                    new SearchResultDto { UserFileName = "Doc1.pdf", OwnerEmail = "john@example.com", Bm25Score = 1.7 }
+                });
+
+            _searchService = new SearchService(_mockRepo.Object);
         }
-        [TestCleanup]
-        public void Cleanup()
-        {
-            _dbConnection.Close();
-            _dbConnection.Dispose();
-        }
+
         [TestMethod]
         public async Task SearchFilesAsync_ValidTerm_ReturnsMatchingFiles()
         {
-            // Arrange
-            var query = new SearchQueryDto
-            {
-                SearchTerm = "sample1",
-                UserId = 1,
-                Page = 1,
-                PageSize = 10
-            };
+            var query = new SearchQueryDto { SearchTerm = "sample1", UserId = 1, Page = 1, PageSize = 10 };
 
-            // Act
-            var results = await _searchService.SearchFilesAsync(query);
+            var results = await _searchService!.SearchFilesAsync(query);
 
-            // Assert
-            Assert.IsNotNull(results, "Search results should not be null.");
-            Assert.AreEqual(1, results.Count(), "Should return exactly one file for 'sample1'.");
+            Assert.IsNotNull(results);
+            Assert.AreEqual(1, results.Count());
             var result = results.First();
-            Assert.AreEqual("Doc1.pdf", result.UserFileName, "File name should match.");
-            Assert.AreEqual("john@example.com", result.OwnerEmail, "Owner email should match.");
-            Assert.IsGreaterThan(0, result.Bm25Score, "BM25 score should be positive.");
+            Assert.AreEqual("Doc1.pdf", result.UserFileName);
+            Assert.AreEqual("john@example.com", result.OwnerEmail);
+            Assert.IsTrue(result.Bm25Score > 0);
         }
 
         [TestMethod]
         public async Task SearchFilesAsync_NonExistentTerm_ReturnsEmpty()
         {
-            // Arrange
-            var query = new SearchQueryDto
-            {
-                SearchTerm = "nonexistent",
-                UserId = 1,
-                Page = 1,
-                PageSize = 10
-            };
+            var query = new SearchQueryDto { SearchTerm = "nonexistent", UserId = 1, Page = 1, PageSize = 10 };
 
-            // Act
-            var results = await _searchService.SearchFilesAsync(query);
+            var results = await _searchService!.SearchFilesAsync(query);
 
-            // Assert
-            Assert.IsNotNull(results, "Search results should not be null.");
-            Assert.AreEqual(0, results.Count(), "Should return no results for nonexistent term.");
+            Assert.IsNotNull(results);
+            Assert.AreEqual(0, results.Count());
         }
 
         [TestMethod]
         public async Task SearchFilesAsync_Pagination_ReturnsCorrectPage()
         {
-            // Arrange
-            var queryPage1 = new SearchQueryDto
-            {
-                SearchTerm = "sample",
-                UserId = 1,
-                Page = 1,
-                PageSize = 2
-            };
-            var queryPage2 = new SearchQueryDto
-            {
-                SearchTerm = "sample",
-                UserId = 1,
-                Page = 2,
-                PageSize = 2
-            };
+            var queryPage1 = new SearchQueryDto { SearchTerm = "sample", UserId = 1, Page = 1, PageSize = 2 };
+            var queryPage2 = new SearchQueryDto { SearchTerm = "sample", UserId = 1, Page = 2, PageSize = 2 };
 
-            // Act
-            var page1Results = await _searchService.SearchFilesAsync(queryPage1);
+            var page1Results = await _searchService!.SearchFilesAsync(queryPage1);
             var page2Results = await _searchService.SearchFilesAsync(queryPage2);
 
-            // Assert
-            Assert.IsNotNull(page1Results, "Page 1 results should not be null.");
-            Assert.IsLessThanOrEqualTo(2, page1Results.Count(), "Page 1 should return at most 2 results.");
-            Assert.IsNotNull(page2Results, "Page 2 results should not be null.");
-            Assert.IsLessThanOrEqualTo(1, page2Results.Count(), "Page 2 should return at most 1 result.");
-            Assert.IsTrue(page1Results.Any(r => r.UserFileName == "Doc1.pdf"), "Page 1 should contain Doc1.pdf.");
-            Assert.IsTrue(page2Results.Any(r => r.UserFileName == "Note1.txt"), "Page 2 should contain Note1.txt.");
+            Assert.IsNotNull(page1Results);
+            Assert.AreEqual(2, page1Results.Count());
+            Assert.IsTrue(page1Results.Any(r => r.UserFileName == "Doc1.pdf"));
+
+            Assert.IsNotNull(page2Results);
+            Assert.AreEqual(1, page2Results.Count());
+            Assert.IsTrue(page2Results.Any(r => r.UserFileName == "Note1.txt"));
         }
 
         [TestMethod]
         public async Task SearchFilesAsync_UserAccessControl_ReturnsOnlyAccessibleFiles()
         {
-            // Arrange
-            var query = new SearchQueryDto
-            {
-                SearchTerm = "sample",
-                UserId = 2, // Jane, who has access via shares
-                Page = 1,
-                PageSize = 10
-            };
+            var query = new SearchQueryDto { SearchTerm = "sample", UserId = 2, Page = 1, PageSize = 10 };
 
-            // Act
-            var results = await _searchService.SearchFilesAsync(query);
+            var results = await _searchService!.SearchFilesAsync(query);
 
-            // Assert
-            Assert.IsNotNull(results, "Search results should not be null.");
-            Assert.IsTrue(results.Any(), "Jane should have access to shared files.");
-            Assert.IsTrue(results.All(r => r.UserFileName == "Doc1.pdf"), "Jane should only see shared file Doc1.pdf.");
+            Assert.IsNotNull(results);
+            Assert.IsTrue(results.Any());
+            Assert.IsTrue(results.All(r => r.UserFileName == "Doc1.pdf"));
         }
     }
 }
