@@ -71,9 +71,10 @@
     <div id="data-container" class="data-container"></div>
 
     <script>
+        const urlBase = 'http://localhost:8080';
         async function fetchNews() {
             const newsId = document.getElementById('newsId').value;
-            const url = newsId ? `http://localhost:8080/news/${newsId}` : `http://localhost:8080/news`;
+            const url = newsId ? `${urlBase}/news/${newsId}` : `${urlBase}/news`;
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('Network response was not ok');
@@ -86,7 +87,7 @@
 
         async function fetchUser() {
             const userId = document.getElementById('userId').value;
-            const url = userId ? `http://localhost:8080/users/${userId}` : `http://localhost:8080/users`;
+            const url = userId ? `${urlBase}/users/${userId}` : `${urlBase}/users`;
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('Network response was not ok');

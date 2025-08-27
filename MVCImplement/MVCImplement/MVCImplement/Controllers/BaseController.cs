@@ -1,12 +1,4 @@
-﻿using MVCImplement.Dtos;
-using MVCImplement.Models;
-using MVCImplement.Services.AuthenService;
-using MVCImplement.Services.NewsService;
-using MVCImplement.Services.UserService;
-using System.Collections.Specialized;
-using System.Net;
-using System.Text;
-using System.Text.Json;
+﻿using System.Text;
 
 namespace MVCImplement.Controllers
 {
