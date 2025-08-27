@@ -1,5 +1,6 @@
 ﻿using GoogleDriveUnittestWithDapper.Controllers;
 using GoogleDriveUnittestWithDapper.Dto;
+using GoogleDriveUnittestWithDapper.Services.BannedUserService;
 using System.Data;
 
 namespace GoogleDriveUnittestWithDapper.Test
@@ -8,7 +9,7 @@ namespace GoogleDriveUnittestWithDapper.Test
     public class TestBannedUser
     {
         private IDbConnection? _connection;
-        private BannedUserController? _bannedUserController;
+        private IBannedUserService? _bannedUserService;
         [TestInitialize]
         public void Setup()
         {
@@ -20,7 +21,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             TestDatabaseSchema.CreateSchema(_connection);
             TestDatabaseSchema.InsertSampleData(_connection);
 
-            _bannedUserController = container.Resolve<BannedUserController>();
+            _bannedUserService = container.Resolve<IBannedUserService>();
         }
 
         [TestCleanup]
@@ -29,28 +30,18 @@ namespace GoogleDriveUnittestWithDapper.Test
             _connection?.Dispose();
         }
         [TestMethod]
-        public void GetBannedUserByUserId_MultipleBannedUsers_ReturnsAllMatching()
+        public async Task GetBannedUserByUserId_MultipleBannedUsers_ReturnsAllMatching()
         {
             // Arrange
             int userId = 1;
             var expected = new List<BannedUserDto>
             {
-                new BannedUserDto
-                {
-                    UserId = 1,
-                    BannedUserId = 2,
-                    BannedUserName = "Jane"
-                },
-                new BannedUserDto
-                {
-                    UserId = 1,
-                    BannedUserId = 3,
-                    BannedUserName = "Bob"
-                }
+                new BannedUserDto { UserId = 1, BannedUserId = 2, BannedUserName = "Jane" },
+                new BannedUserDto { UserId = 1, BannedUserId = 3, BannedUserName = "Bob" }
             };
 
             // Act
-            var result = _bannedUserController?.GetBannedUserByUserId(userId);
+            var result = await _bannedUserService!.GetBannedUserByUserId(userId);
 
             // Assert
             Assert.IsNotNull(result, "Result should not be null for valid userId with multiple records");
@@ -63,5 +54,6 @@ namespace GoogleDriveUnittestWithDapper.Test
                 Assert.AreEqual(expected[i].BannedUserName, resultList[i].BannedUserName, $"BannedUserName does not match at index {i}");
             }
         }
+
     }
 }

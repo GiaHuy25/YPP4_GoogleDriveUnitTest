@@ -4,6 +4,6 @@ namespace GoogleDriveUnittestWithDapper.Repositories.BannedUserRepo
 {
     public interface IBannedUserRepository
     {
-        IEnumerable<BannedUserDto> GetBannedUserByUserId(int userId);
+        Task<IEnumerable<BannedUserDto>> GetBannedUserByUserId(int userId);
     }
 }

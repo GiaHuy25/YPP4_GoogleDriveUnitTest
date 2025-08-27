@@ -11,21 +11,23 @@ namespace GoogleDriveUnittestWithDapper.Repositories.BannedUserRepo
         {
             _connection = connection;
         }
-        public IEnumerable<BannedUserDto>GetBannedUserByUserId(int userId)
+        public Task<IEnumerable<BannedUserDto>> GetBannedUserByUserId(int userId)
         {
             bool isSqlServer = _connection.GetType().Name.Contains("SqlConnection");
             var noLock = isSqlServer ? "WITH (NOLOCK)" : "";
             var query = @"
-                    SELECT 
-                        bu.UserId,
-                        bu.BannedAt,
-                        bu.BannedUserId,
-                        a.UserName AS BannedUserName
-                    FROM BannedUser bu {noLock}
-                    LEFT JOIN Account a {noLock} ON bu.BannedUserId = a.UserId
-                    WHERE bu.UserId = @userId"
+            SELECT 
+                bu.UserId,
+                bu.BannedAt,
+                bu.BannedUserId,
+                a.UserName AS BannedUserName
+            FROM BannedUser bu {noLock}
+            LEFT JOIN Account a {noLock} ON bu.BannedUserId = a.UserId
+            WHERE bu.UserId = @userId"
             .Replace("{noLock}", noLock);
-            return _connection.Query<BannedUserDto>(query, new { userId });
+
+            return _connection.QueryAsync<BannedUserDto>(query, new { userId });
         }
+
     }
 }

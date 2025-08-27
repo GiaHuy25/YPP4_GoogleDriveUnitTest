@@ -1,9 +1,12 @@
 ﻿using GoogleDriveUnittestWithDapper.Dto;
 using GoogleDriveUnittestWithDapper.Services.BannedUserService;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GoogleDriveUnittestWithDapper.Controllers
 {
-    public class BannedUserController
+    [ApiController]
+    [Route("api/[controller]")]
+    public class BannedUserController : ControllerBase
     {
         private readonly IBannedUserService _bannedService;
 
@@ -11,10 +14,26 @@ namespace GoogleDriveUnittestWithDapper.Controllers
         {
             _bannedService = bannedService ?? throw new ArgumentNullException(nameof(bannedService));
         }
-
-        public IEnumerable<BannedUserDto> GetBannedUserByUserId(int userId)
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<BannedUserDto>> GetBannedUserByUserId(int userId)
         {
-            return _bannedService.GetBannedUserByUserId(userId);
+            try
+            {
+                var user = await _bannedService.GetBannedUserByUserId(userId);
+                if (user == null)
+                    return NotFound(new { message = $"User with ID {userId} not found" });
+
+                return Ok(user);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
+
     }
 }

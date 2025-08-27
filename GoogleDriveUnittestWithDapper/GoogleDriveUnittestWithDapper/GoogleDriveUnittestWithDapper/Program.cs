@@ -1,5 +1,7 @@
 ﻿using GoogleDriveUnittestWithDapper.Repositories.AccountRepo;
+using GoogleDriveUnittestWithDapper.Repositories.BannedUserRepo;
 using GoogleDriveUnittestWithDapper.Services.AccountService;
+using GoogleDriveUnittestWithDapper.Services.BannedUserService;
 using Microsoft.Data.Sqlite;
 using System.Data;
 
@@ -22,9 +24,11 @@ namespace GoogleDriveUnittestWithDapper
 
             // Repository
             builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+            builder.Services.AddScoped<IBannedUserRepository, BannedUserRepository>();
 
             // Service
             builder.Services.AddScoped<IAccountService, AccountService>();
+            builder.Services.AddScoped<IBannedUserService, BannedUserService>();
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
