@@ -100,14 +100,12 @@ namespace MVCImplement
 
             server._router.AddRoute("/users/add", async context =>
             {
-                // TODO: parse body -> UserDto
                 var dto = new UserDto { Username = "testuser", Email = "test@example.com", FullName = "Test User" };
                 await userController.AddUser(new HttpContextWrapper(context), dto);
             });
 
             server._router.AddRoute("/users/update", async context =>
             {
-                // TODO: parse body -> UserDto
                 var dto = new UserDto { Id = 1, Username = "updateduser", Email = "updated@example.com", FullName = "Updated User" };
                 await userController.UpdateUser(new HttpContextWrapper(context), dto);
             });
@@ -126,8 +124,6 @@ namespace MVCImplement
 
             await server.StartAsync();
         }
-
-        // Helper method to write response
         private static async Task WriteResponse(HttpResponseWrapper response, string content, int statusCode, string contentType)
         {
             response.StatusCode = statusCode;

@@ -27,6 +27,30 @@
             .input-group input {
                 padding: 5px;
             }
+
+        .btn {
+            padding: 8px 12px;
+            margin-left: 8px;
+            cursor: pointer;
+            background-color: #278dff;
+            outline: none;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            opacity: 0.8;
+        }
+
+        .input {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 12px;
+            width: 240px;
+            height: 24px;
+        }
     </style>
 </head>
 <body>
@@ -34,14 +58,14 @@
 
     <div class="input-group">
         <label for="newsId">News ID:</label>
-        <input type="number" id="newsId" min="1" placeholder="Enter News ID (leave blank for all)">
-        <button onclick="fetchNews()">Get News Item</button>
+        <input class="input" type="number" id="newsId" min="1" placeholder="Enter News ID (leave blank for all)">
+        <button onclick="fetchNews()" class="btn">Get News Item</button>
     </div>
 
     <div class="input-group">
         <label for="userId">User ID:</label>
-        <input type="number" id="userId" min="1" placeholder="Enter User ID (leave blank for all)">
-        <button onclick="fetchUser()">Get User</button>
+        <input class="input" type="number" id="userId" min="1" placeholder="Enter User ID (leave blank for all)">
+        <button onclick="fetchUser()" class="btn">Get User</button>
     </div>
 
     <div id="data-container" class="data-container"></div>
