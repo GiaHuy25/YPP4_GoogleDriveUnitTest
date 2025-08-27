@@ -1,9 +1,12 @@
 ﻿using GoogleDriveUnittestWithDapper.Services.SearchService;
+using Microsoft.AspNetCore.Mvc;
 using static GoogleDriveUnittestWithDapper.Dto.SearchDto;
 
 namespace GoogleDriveUnittestWithDapper.Controllers
 {
-    public class SearchController
+    [ApiController]
+    [Route("api/[controller]")]
+    public class SearchController : ControllerBase
     {
         private readonly ISearchService _searchService;
 
@@ -12,9 +15,28 @@ namespace GoogleDriveUnittestWithDapper.Controllers
             _searchService = searchService;
         }
 
-        public async Task<IEnumerable<SearchResultDto>> SearchFilesAsync(SearchQueryDto query)
+        [HttpPost("files")]
+        public async Task<ActionResult<IEnumerable<SearchResultDto>>> SearchFiles([FromBody] SearchQueryDto query)
         {
-            return await _searchService.SearchFilesAsync(query);
+            try
+            {
+                var results = await _searchService.SearchFilesAsync(query);
+
+                if (results == null || !results.Any())
+                {
+                    return NotFound(new { message = "No results found." });
+                }
+
+                return Ok(results);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
     }
 }

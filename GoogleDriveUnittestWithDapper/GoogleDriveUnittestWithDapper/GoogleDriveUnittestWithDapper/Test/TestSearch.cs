@@ -1,4 +1,5 @@
 ﻿using GoogleDriveUnittestWithDapper.Controllers;
+using GoogleDriveUnittestWithDapper.Services.SearchService;
 using System.Data;
 using static GoogleDriveUnittestWithDapper.Dto.SearchDto;
 
@@ -8,7 +9,7 @@ namespace GoogleDriveUnittestWithDapper.Test
     public class TestSearch
     {
         private IDbConnection? _dbConnection;
-        private SearchController? _searchController;
+        private ISearchService? _searchService;
 
         [TestInitialize]
         public void Setup()
@@ -19,7 +20,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             TestDatabaseSchema.CreateSchema(_dbConnection);
             TestDatabaseSchema.InsertSampleData(_dbConnection);
 
-            _searchController = container.Resolve<SearchController>();
+            _searchService = container.Resolve<ISearchService>();
         }
         [TestCleanup]
         public void Cleanup()
@@ -40,7 +41,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             };
 
             // Act
-            var results = await _searchController.SearchFilesAsync(query);
+            var results = await _searchService.SearchFilesAsync(query);
 
             // Assert
             Assert.IsNotNull(results, "Search results should not be null.");
@@ -64,7 +65,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             };
 
             // Act
-            var results = await _searchController.SearchFilesAsync(query);
+            var results = await _searchService.SearchFilesAsync(query);
 
             // Assert
             Assert.IsNotNull(results, "Search results should not be null.");
@@ -91,8 +92,8 @@ namespace GoogleDriveUnittestWithDapper.Test
             };
 
             // Act
-            var page1Results = await _searchController.SearchFilesAsync(queryPage1);
-            var page2Results = await _searchController.SearchFilesAsync(queryPage2);
+            var page1Results = await _searchService.SearchFilesAsync(queryPage1);
+            var page2Results = await _searchService.SearchFilesAsync(queryPage2);
 
             // Assert
             Assert.IsNotNull(page1Results, "Page 1 results should not be null.");
@@ -116,7 +117,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             };
 
             // Act
-            var results = await _searchController.SearchFilesAsync(query);
+            var results = await _searchService.SearchFilesAsync(query);
 
             // Assert
             Assert.IsNotNull(results, "Search results should not be null.");
