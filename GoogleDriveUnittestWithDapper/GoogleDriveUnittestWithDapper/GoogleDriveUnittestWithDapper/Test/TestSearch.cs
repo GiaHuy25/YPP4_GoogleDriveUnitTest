@@ -16,7 +16,6 @@ namespace GoogleDriveUnittestWithDapper.Test
         {
             _mockRepo = new Mock<ISearchRepository>();
 
-            // Setup giả lập cho các tình huống test
             _mockRepo.Setup(r => r.SearchFilesAsync(It.Is<SearchQueryDto>(q => q.SearchTerm == "sample1")))
                 .ReturnsAsync(new List<SearchResultDto>
                 {
@@ -29,7 +28,7 @@ namespace GoogleDriveUnittestWithDapper.Test
                 });
 
             _mockRepo.Setup(r => r.SearchFilesAsync(It.Is<SearchQueryDto>(q => q.SearchTerm == "nonexistent")))
-                .ReturnsAsync(new List<SearchResultDto>()); // rỗng
+                .ReturnsAsync(new List<SearchResultDto>());
 
             _mockRepo.Setup(r => r.SearchFilesAsync(It.Is<SearchQueryDto>(q => q.SearchTerm == "sample" && q.Page == 1)))
                 .ReturnsAsync(new List<SearchResultDto>
@@ -65,7 +64,7 @@ namespace GoogleDriveUnittestWithDapper.Test
             var result = results.First();
             Assert.AreEqual("Doc1.pdf", result.UserFileName);
             Assert.AreEqual("john@example.com", result.OwnerEmail);
-            Assert.IsTrue(result.Bm25Score > 0);
+            Assert.IsGreaterThan(0, result.Bm25Score);
         }
 
         [TestMethod]

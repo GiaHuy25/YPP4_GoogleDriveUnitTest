@@ -1,79 +1,74 @@
-﻿using GoogleDriveUnittestWithDapper.Controllers;
+﻿using GoogleDriveUnittestWithDapper.Dto;
+using GoogleDriveUnittestWithDapper.Repositories.ShareObjectRepo;
 using GoogleDriveUnittestWithDapper.Services.ShareObjectService;
-using System.Data;
+using Moq;
 
 namespace GoogleDriveUnittestWithDapper.Test
 {
     [TestClass]
     public class TestShare
     {
-        private IDbConnection _dbConnection;
-        private IShareService _shareObjectService;
+        private Mock<IShareRepository>? _mockRepo;
+        private IShareService? _shareService;
+
         [TestInitialize]
         public void Setup()
         {
-            var container = DIConfig.ConfigureServices();
-            _dbConnection = container.Resolve<IDbConnection>();
-            _dbConnection.Open();
-            TestDatabaseSchema.CreateSchema(_dbConnection);
-            TestDatabaseSchema.InsertSampleData(_dbConnection);
+            _mockRepo = new Mock<IShareRepository>();
+            _mockRepo.Setup(r => r.GetSharedObjectsByUserIdAsync(2))
+                .ReturnsAsync(new List<ShareObjectDto>
+                {
+                    new ShareObjectDto { SharedName = "Jane", FolderName = "RootFolder", PermissionName = "Viewer" },
+                    new ShareObjectDto { SharedName = "Jane", FolderName = "ChildFolder1", PermissionName = "Editor" },
+                    new ShareObjectDto { SharedName = "Jane", FileName = "Doc1.pdf", PermissionName = "Viewer" }
+                });
 
-            _shareObjectService = container.Resolve<IShareService>();
-        }
+            _mockRepo.Setup(r => r.GetSharedObjectsByUserIdAsync(999))
+                .ReturnsAsync(new List<ShareObjectDto>());
 
-        [TestCleanup]
-        public void Cleanup()
-        {
-            _dbConnection.Close();
-            _dbConnection.Dispose();
+            _mockRepo.Setup(r => r.GetSharedObjectsByUserIdAsync(1))
+                .ReturnsAsync(new List<ShareObjectDto>());
+
+            _shareService = new ShareService(_mockRepo.Object);
         }
 
         [TestMethod]
         public async Task GetSharedObjectsByUserIdAsync_ValidUserId_ReturnsSharedObjects()
         {
-            // Arrange
-            int userId = 2;
-
             // Act
-            var result = await _shareObjectService.GetSharedObjectsByUserIdAsync(userId);
+            var result = await _shareService!.GetSharedObjectsByUserIdAsync(2);
 
             // Assert
-            Assert.IsNotNull(result, "Result should not be null.");
+            Assert.IsNotNull(result);
             Assert.IsTrue(result.Any(), "Result should contain shared objects.");
-            Assert.IsTrue(result.All(dto => dto.SharedName == "Jane"), "All shared objects should belong to the specified user.");
-            Assert.IsTrue(result.Any(dto => dto.FolderName == "RootFolder"), "Result should contain shared folder 'RootFolder'.");
-            Assert.IsTrue(result.Any(dto => dto.FolderName == "ChildFolder1"), "Result should contain shared folder 'ChildFolder1'.");
-            Assert.IsTrue(result.Any(dto => dto.FileName == "Doc1.pdf"), "Result should contain file 'Doc1.pdf'.");
-            Assert.IsTrue(result.All(dto => !string.IsNullOrEmpty(dto.PermissionName)), "All shared objects should have a PermissionName.");
-            Assert.IsTrue(result.Any(dto => dto.PermissionName == "Viewer"), "Result should contain objects with Viewer permission.");
+            Assert.IsTrue(result.All(dto => dto.SharedName == "Jane"), "All shared objects should belong to 'Jane'.");
+            Assert.IsTrue(result.Any(dto => dto.FolderName == "RootFolder"));
+            Assert.IsTrue(result.Any(dto => dto.FolderName == "ChildFolder1"));
+            Assert.IsTrue(result.Any(dto => dto.FileName == "Doc1.pdf"));
+            Assert.IsTrue(result.All(dto => !string.IsNullOrEmpty(dto.PermissionName)));
+            Assert.IsTrue(result.Any(dto => dto.PermissionName == "Viewer"));
+
+            _mockRepo!.Verify(r => r.GetSharedObjectsByUserIdAsync(2), Times.Once);
         }
 
         [TestMethod]
         public async Task GetSharedObjectsByUserIdAsync_NonExistentUserId_ReturnsEmptyList()
         {
-            // Arrange
-            int nonExistentUserId = 999; // Non-existent user ID
+            var result = await _shareService!.GetSharedObjectsByUserIdAsync(999);
 
-            // Act
-            var result = await _shareObjectService.GetSharedObjectsByUserIdAsync(nonExistentUserId);
-
-            // Assert
-            Assert.IsNotNull(result, "Result should not be null.");
-            Assert.IsFalse(result.Any(), "Result should be empty for non-existent user.");
+            Assert.IsNotNull(result);
+            Assert.IsFalse(result.Any());
+            _mockRepo!.Verify(r => r.GetSharedObjectsByUserIdAsync(999), Times.Once);
         }
 
         [TestMethod]
         public async Task GetSharedObjectsByUserIdAsync_ExistingUserWithNoShares_ReturnsEmptyList()
         {
-            // Arrange
-            int userIdWithNoShares = 1;
+            var result = await _shareService!.GetSharedObjectsByUserIdAsync(1);
 
-            // Act
-            var result = await _shareObjectService.GetSharedObjectsByUserIdAsync(userIdWithNoShares);
-
-            // Assert
-            Assert.IsNotNull(result, "Result should not be null.");
-            Assert.IsFalse(result.Any(), "Result should be empty for user with no shares.");
+            Assert.IsNotNull(result);
+            Assert.IsFalse(result.Any());
+            _mockRepo!.Verify(r => r.GetSharedObjectsByUserIdAsync(1), Times.Once);
         }
     }
 }
