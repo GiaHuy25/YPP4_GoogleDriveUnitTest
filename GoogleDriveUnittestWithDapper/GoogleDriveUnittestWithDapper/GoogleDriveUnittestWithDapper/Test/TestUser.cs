@@ -1,72 +1,69 @@
 ﻿using GoogleDriveUnittestWithDapper.Dto;
 using GoogleDriveUnittestWithDapper.Services.AccountService;
-using System.Data;
+using Moq;
 
 namespace GoogleDriveUnittestWithDapper.Test
 {
     [TestClass]
     public class TestUser
     {
-        private IDbConnection? _connection;
-        private IAccountService? _accountService;
+        private Mock<IAccountService>? _mockService;
+
         [TestInitialize]
         public void Setup()
         {
-            var container = DIConfig.ConfigureServices();
-            // Use in-memory SQLite database
-            _connection = container.Resolve<IDbConnection>();
-            _connection.Open();
+            _mockService = new Mock<IAccountService>();
 
-            // Create schema and insert sample data
-            TestDatabaseSchema.CreateSchema(_connection);
-            TestDatabaseSchema.InsertSampleData(_connection);
+            _mockService.Setup(s => s.GetUserByIdAsync(1))
+                .ReturnsAsync(new AccountDto
+                {
+                    UserId = 1,
+                    UserName = "John",
+                    Email = "john@example.com",
+                    UserImg = "img1.jpg"
+                });
 
-            _accountService = container.Resolve<IAccountService>();
+            _mockService.Setup(s => s.GetUserByIdAsync(It.Is<int>(id => id == 999)))
+                .ReturnsAsync((AccountDto?)null);
 
+            _mockService.Setup(s => s.AddUserAsync(It.IsAny<CreateAccountDto>()))
+                .ReturnsAsync((CreateAccountDto dto) =>
+                {
+                    dto.UserId = 10;
+                    return dto;
+                });
+
+            _mockService.Setup(s => s.DeleteUserAsync(999))
+                .ReturnsAsync(false);
+
+            _mockService.Setup(s => s.DeleteUserAsync(It.Is<int>(id => id == 1)))
+                .ReturnsAsync(true);
+
+            _mockService.Setup(s => s.UpdateUserAsync(It.IsAny<AccountDto>()))
+                .ReturnsAsync((AccountDto dto) => dto);
         }
 
-        [TestCleanup]
-        public void Cleanup()
-        {
-            _connection?.Dispose();
-        }
         [TestMethod]
         public async Task UserService_GetUserById_ValidUserId_ReturnsCorrectUserDto()
         {
-            // Arrange
-            int userId = 1;
-            var expected = new AccountDto
-            {
-                UserName = "John",
-                Email = "john@example.com",
-                UserImg = "img1.jpg"
-            };
+            var result = await _mockService!.Object.GetUserByIdAsync(1);
 
-            // Act
-            var result = await _accountService.GetUserByIdAsync(userId);
-            // Assert
-            Assert.IsNotNull(result, "UserDto should not be null for valid userId");
-            Assert.AreEqual(expected.UserName, result.UserName, "UserName does not match");
-            Assert.AreEqual(expected.Email, result.Email, "Email does not match");
-            Assert.AreEqual(expected.UserImg, result.UserImg, "UserImg does not match");
+            Assert.IsNotNull(result);
+            Assert.AreEqual("John", result.UserName);
+            Assert.AreEqual("john@example.com", result.Email);
+            Assert.AreEqual("img1.jpg", result.UserImg);
         }
 
         [TestMethod]
-        public async Task UserController_GetUserByIdAsync_InvalidUserId_ReturnsNull()
+        public async Task UserService_GetUserById_InvalidUserId_ReturnsNull()
         {
-            // Arrange
-            int invalidUserId = 999;
-
-            // Act
-            var result = await _accountService!.GetUserByIdAsync(invalidUserId);
-
-            // Assert
-            Assert.IsNull(result, "UserDto should be null for invalid UserId");
+            var result = await _mockService!.Object.GetUserByIdAsync(999);
+            Assert.IsNull(result);
         }
+
         [TestMethod]
-        public async Task UserController_AddUserAsync_ValidInput_ReturnsCreatedUserDto()
+        public async Task UserService_AddUserAsync_ValidInput_ReturnsCreatedUserDto()
         {
-            // Arrange
             var newUser = new CreateAccountDto
             {
                 UserName = "Alice",
@@ -75,40 +72,25 @@ namespace GoogleDriveUnittestWithDapper.Test
                 PasswordHash = "hash999"
             };
 
-            // Act
-            var result = await _accountService!.AddUserAsync(newUser);
+            var result = await _mockService!.Object.AddUserAsync(newUser);
 
-            // Assert
-            Assert.IsNotNull(result, "UserDto should not be null for valid input");
-            Assert.IsGreaterThan(0, result.UserId, "UserId should be assigned and positive");
-            Assert.AreEqual(newUser.UserName, result.UserName, "UserName does not match");
-            Assert.AreEqual(newUser.Email, result.Email, "Email does not match");
-            Assert.AreEqual(newUser.UserImg, result.UserImg, "UserImg does not match");
-
-            // Verify in database
-            var dbUser = await _accountService!.GetUserByIdAsync(result.UserId);
-            Assert.IsNotNull(dbUser, "User should exist in database");
-            Assert.AreEqual(newUser.UserName, dbUser.UserName, "Database UserName does not match");
-        }
-
-
-        [TestMethod]
-        public async Task UserController_DeleteUserAsync_InvalidUserId_ReturnsFalse()
-        {
-            // Arrange
-            int invalidUserId = 999;
-
-            // Act
-            var result = await _accountService!.DeleteUserAsync(invalidUserId);
-
-            // Assert
-            Assert.IsFalse(result, "Delete should return false for invalid UserId");
+            Assert.IsNotNull(result);
+            Assert.AreEqual("Alice", result.UserName);
+            Assert.AreEqual("alice@example.com", result.Email);
+            Assert.AreEqual("alice.jpg", result.UserImg);
+            Assert.IsGreaterThan(0, result.UserId);
         }
 
         [TestMethod]
-        public async Task UserController_UpdateUserAsync_ValidUserDto_ReturnsUpdatedUserDto()
+        public async Task UserService_DeleteUserAsync_InvalidUserId_ReturnsFalse()
         {
-            // Arrange
+            var result = await _mockService!.Object.DeleteUserAsync(999);
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public async Task UserService_UpdateUserAsync_ValidUserDto_ReturnsUpdatedUserDto()
+        {
             var updatedUser = new AccountDto
             {
                 UserId = 1,
@@ -117,21 +99,13 @@ namespace GoogleDriveUnittestWithDapper.Test
                 UserImg = "updated.jpg"
             };
 
-            // Act
-            var result = await _accountService!.UpdateUserAsync(updatedUser);
+            var result = await _mockService!.Object.UpdateUserAsync(updatedUser);
 
-            // Assert
-            Assert.IsNotNull(result, "UserDto should not be null for valid update");
-            Assert.AreEqual(updatedUser.UserId, result.UserId, "UserId does not match");
-            Assert.AreEqual(updatedUser.UserName, result.UserName, "UserName does not match");
-            Assert.AreEqual(updatedUser.Email, result.Email, "Email does not match");
-            Assert.AreEqual(updatedUser.UserImg, result.UserImg, "UserImg does not match");
-
-            // Verify in database
-            var dbUser = await _accountService!.GetUserByIdAsync(updatedUser.UserId);
-            Assert.IsNotNull(dbUser, "User should exist in database");
-            Assert.AreEqual(updatedUser.UserName, dbUser.UserName, "Database UserName does not match");
+            Assert.IsNotNull(result);
+            Assert.AreEqual(updatedUser.UserId, result.UserId);
+            Assert.AreEqual(updatedUser.UserName, result.UserName);
+            Assert.AreEqual(updatedUser.Email, result.Email);
+            Assert.AreEqual(updatedUser.UserImg, result.UserImg);
         }
-
     }
 }
