@@ -1,152 +1,196 @@
-﻿using GoogleDriveUnittestWithDapper.Controllers;
-using GoogleDriveUnittestWithDapper.Dto;
-using System.Data;
+﻿using GoogleDriveUnittestWithDapper.Dto;
+using GoogleDriveUnittestWithDapper.Repositories.UserProductRepo;
+using GoogleDriveUnittestWithDapper.Services.UserProductService;
+using Moq;
 
 namespace GoogleDriveUnittestWithDapper.Test
 {
     [TestClass]
     public class TestUserProduct
     {
-        private IDbConnection? _connection;
-        private UserProductController? _userProductController;
+        private Mock<IUserProductRepository>? _mockRepo;
+        private UserProductService? _service;
 
         [TestInitialize]
         public void Setup()
         {
-            var container = DIConfig.ConfigureServices();
-            _connection = container.Resolve<IDbConnection>();
-            _connection.Open();
-            TestDatabaseSchema.CreateSchema(_connection);
-            TestDatabaseSchema.InsertSampleData(_connection);
+            _mockRepo = new Mock<IUserProductRepository>();
 
-            _userProductController = container.Resolve<UserProductController>();
-        }
+            // Mock GetUserProductsByUserIdAsync
+            _mockRepo.Setup(r => r.GetUserProductsByUserIdAsync(1))
+                .ReturnsAsync(new List<UserProductItemDto>
+                {
+                    new() { ProductName = "Plan1", Cost = 9.99, Duration = 30, UserName = "John" },
+                    new() { ProductName = "Plan2", Cost = 19.99, Duration = 60, UserName = "John" },
+                    new() { ProductName = "Plan3", Cost = 29.99, Duration = 90, UserName = "John" }
+                });
 
-        [TestCleanup]
-        public void Cleanup()
-        {
-            _connection?.Close();
-            _connection?.Dispose();
-        }
-        [TestMethod]
-        public async Task GetUserProductsByUserIdAsync_ValidUserId_ReturnsMultipleUserProductItemDtos()
-        {
-            // Arrange
-            int userId = 1; // John
+            _mockRepo.Setup(r => r.GetUserProductsByUserIdAsync(It.Is<int>(id => id != 1)))
+                .ReturnsAsync(new List<UserProductItemDto>());
 
-            // Act
-            var result = await _userProductController!.GetUserProductsByUserIdAsync(userId); 
+            // Mock AddUserProductAsync
+            _mockRepo.Setup(r => r.AddUserProductAsync(It.IsAny<UserProductItemDto>()))
+                .ReturnsAsync(123);
 
-            // Assert
-            Assert.IsNotNull(result, "Result should not be null.");
-            Assert.IsTrue(result.Any(), "Result should contain products.");
-            Assert.AreEqual(3, result.Count(), "Should return 3 products for John.");
-            var products = result.ToList();
-            Assert.IsTrue(products.Any(p => p.ProductName == "Plan1" && p.Cost == 9.99 && p.Duration == 30)); 
-            Assert.IsTrue(products.Any(p => p.ProductName == "Plan2" && p.Cost == 19.99 && p.Duration == 60));
-            Assert.IsTrue(products.Any(p => p.ProductName == "Plan3" && p.Cost == 29.99 && p.Duration == 90));
-            Assert.AreEqual("John", products[0].UserName, "UserName should match.");
+            // Mock UpdateUserProductAsync
+            _mockRepo.Setup(r => r.UpdateUserProductAsync(It.IsAny<UserProductItemDto>()))
+                .ReturnsAsync(1);
+
+            _service = new UserProductService(_mockRepo.Object);
         }
 
         [TestMethod]
-        public void GetUserProductsByUserNameAsync_NegativeUserId_ThrowsArgumentException()
+        public async Task GetUserProductsByUserIdAsync_ValidUserId_ReturnsProducts()
         {
-            // Arrange
-            int invalidUserId = -1;
+            var result = (await _service!.GetUserProductsByUserIdAsync(1)).ToList();
 
-            // Act & Assert
+            Assert.HasCount(3, result);
+            Assert.IsTrue(result.Any(p => p.ProductName == "Plan1" && p.Cost == 9.99 && p.Duration == 30));
+        }
+
+        [TestMethod]
+        public async Task GetUserProductsByUserIdAsync_NegativeUserId_ThrowsException()
+        {
             try
             {
-                _userProductController!.GetUserProductsByUserIdAsync(invalidUserId).Wait();
-                Assert.Fail("Should have thrown ArgumentException.");
+                await _service!.GetUserProductsByUserIdAsync(-1);
+                Assert.Fail("Expected ArgumentException was not thrown.");
             }
-            catch (AggregateException ex)
+            catch (ArgumentException ex)
             {
-                Assert.IsInstanceOfType(ex.InnerException, typeof(ArgumentException), "Should throw ArgumentException.");
+                StringAssert.Contains(ex.Message, "userId");
             }
         }
 
         [TestMethod]
-        public void AddUserProductAsync_NegativeCost_ThrowsArgumentException()
+        public async Task GetUserProductsByUserIdAsync_NoProductsFound_ThrowsException()
         {
-            // Arrange
+            try
+            {
+                await _service!.GetUserProductsByUserIdAsync(999);
+                Assert.Fail("Expected ArgumentException was not thrown.");
+            }
+            catch (ArgumentException ex)
+            {
+                StringAssert.Contains(ex.Message, "No products found");
+            }
+        }
+
+        [TestMethod]
+        public async Task AddUserProductAsync_ValidProduct_ReturnsId()
+        {
             var userProduct = new UserProductItemDto
             {
                 UserName = "John",
-                ProductName = "Plan4",
+                ProductName = "PlanX",
+                Cost = 49.99,
+                Duration = 120
+            };
+
+            var id = await _service!.AddUserProductAsync(userProduct);
+
+            Assert.AreEqual(123, id);
+        }
+
+        [TestMethod]
+        public async Task AddUserProductAsync_NullUserProduct_ThrowsException()
+        {
+            try
+            {
+                await _service!.AddUserProductAsync(null!);
+                Assert.Fail("Expected ArgumentNullException was not thrown.");
+            }
+            catch (ArgumentNullException ex)
+            {
+                StringAssert.Contains(ex.Message, "userProduct");
+            }
+        }
+
+        [TestMethod]
+        public async Task AddUserProductAsync_NegativeCost_ThrowsException()
+        {
+            var userProduct = new UserProductItemDto
+            {
+                UserName = "John",
+                ProductName = "PlanX",
                 Cost = -1,
                 Duration = 30
             };
 
-            // Act & Assert
             try
             {
-                _userProductController!.AddUserProductAsync(userProduct).Wait();
-                Assert.Fail("Should have thrown ArgumentException.");
+                await _service!.AddUserProductAsync(userProduct);
+                Assert.Fail("Expected ArgumentException was not thrown.");
             }
-            catch (AggregateException ex)
+            catch (ArgumentException ex)
             {
-                Assert.IsInstanceOfType(ex.InnerException, typeof(ArgumentException), "Should throw ArgumentException.");
+                StringAssert.Contains(ex.Message, "Cost");
             }
         }
 
         [TestMethod]
-        public void AddUserProductAsync_NullUserProduct_ThrowsArgumentException()
+        public async Task UpdateUserProductAsync_ValidProduct_ReturnsRowsAffected()
         {
-            // Arrange
-            UserProductItemDto? userProduct = null;
-
-            // Act & Assert
-            try
-            {
-                _userProductController!.AddUserProductAsync(userProduct).Wait();
-                Assert.Fail("Should have thrown ArgumentNullException.");
-            }
-            catch (AggregateException ex)
-            {
-                Assert.IsInstanceOfType(ex.InnerException, typeof(ArgumentNullException), "Should throw ArgumentNullException.");
-            }
-        }
-
-        [TestMethod]
-        public void UpdateUserProductAsync_NegativeCost_ThrowsArgumentException()
-        {
-            // Arrange
             var userProduct = new UserProductItemDto
             {
                 UserName = "John",
                 ProductName = "Plan1",
-                Cost = -1
+                Cost = 15.99
             };
 
-            // Act & Assert
+            var rows = await _service!.UpdateUserProductAsync(userProduct);
+
+            Assert.AreEqual(1, rows);
+        }
+
+        [TestMethod]
+        public async Task UpdateUserProductAsync_NullUserProduct_ThrowsException()
+        {
             try
             {
-                _userProductController!.UpdateUserProductAsync(userProduct).Wait();
-                Assert.Fail("Should have thrown ArgumentException.");
+                await _service!.UpdateUserProductAsync(null!);
+                Assert.Fail("Expected ArgumentNullException was not thrown.");
             }
-            catch (AggregateException ex)
+            catch (ArgumentNullException ex)
             {
-                Assert.IsInstanceOfType(ex.InnerException, typeof(ArgumentException), "Should throw ArgumentException.");
+                StringAssert.Contains(ex.Message, "userProduct");
             }
         }
 
         [TestMethod]
-        public void UpdateUserProductAsync_NullUserProduct_ThrowsArgumentException()
+        public async Task UpdateUserProductAsync_NegativeCost_ThrowsException()
         {
-            // Arrange
-            UserProductItemDto? userProduct = null;
+            var userProduct = new UserProductItemDto
+            {
+                UserName = "John",
+                ProductName = "Plan1",
+                Cost = -5
+            };
 
-            // Act & Assert
             try
             {
-                _userProductController!.UpdateUserProductAsync(userProduct).Wait();
-                Assert.Fail("Should have thrown ArgumentNullException.");
+                await _service!.UpdateUserProductAsync(userProduct);
+                Assert.Fail("Expected ArgumentException was not thrown.");
             }
-            catch (AggregateException ex)
+            catch (ArgumentException ex)
             {
-                Assert.IsInstanceOfType(ex.InnerException, typeof(ArgumentNullException), "Should throw ArgumentNullException.");
+                StringAssert.Contains(ex.Message, "Cost");
             }
+        }
+
+        [TestMethod]
+        public async Task GetUserProductsByUserIdAsync_CallsRepositoryOnce_WhenCached()
+        {
+            // First call → repo called
+            var result1 = await _service!.GetUserProductsByUserIdAsync(1);
+
+            // Second call → should hit cache, not repo
+            var result2 = await _service!.GetUserProductsByUserIdAsync(1);
+
+            Assert.AreEqual(result1.Count(), result2.Count());
+
+            _mockRepo!.Verify(r => r.GetUserProductsByUserIdAsync(1), Times.Once,
+                "Repo should be called only once due to caching.");
         }
     }
 }
