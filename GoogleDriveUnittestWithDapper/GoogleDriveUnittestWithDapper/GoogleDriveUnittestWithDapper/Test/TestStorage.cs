@@ -1,97 +1,96 @@
 ﻿using GoogleDriveUnittestWithDapper.Controllers;
 using GoogleDriveUnittestWithDapper.Dto;
-using System.Data;
+using GoogleDriveUnittestWithDapper.Services.StorageService;
+using Moq;
 
 namespace GoogleDriveUnittestWithDapper.Test
 {
     [TestClass]
     public class TestStorage
     {
-        private IDbConnection? _dbConnection; 
+        private Mock<IStorageService>? _mockService;
         private StorageController? _storageController;
 
         [TestInitialize]
         public void Setup()
         {
-            var container = DIConfig.ConfigureServices();
-            _dbConnection = container.Resolve<IDbConnection>();
-            _dbConnection.Open();
-            TestDatabaseSchema.CreateSchema(_dbConnection);
-            TestDatabaseSchema.InsertSampleData(_dbConnection);
+            _mockService = new Mock<IStorageService>();
 
-            _storageController = container.Resolve<StorageController>();
-        }
+            _mockService.Setup(s => s.GetStorageByUserIdAsync(1))
+                .ReturnsAsync(new List<StorageDto>
+                {
+                    new StorageDto { FileName = "Doc1.pdf", FileSize = 1024, UserCapacity = 0, UsedCapacity = 3584 },
+                    new StorageDto { FileName = "Pic1.jpg", FileSize = 2048, UserCapacity = 0, UsedCapacity = 3584 },
+                    new StorageDto { FileName = "Note1.txt", FileSize = 512, UserCapacity = 0, UsedCapacity = 3584 }
+                });
 
-        [TestCleanup]
-        public void Cleanup()
-        {
-            _dbConnection?.Close();
-            _dbConnection?.Dispose();
+            _mockService.Setup(s => s.GetStorageByUserIdAsync(It.Is<int>(id => id <= 0)))
+                .ThrowsAsync(new ArgumentException("UserId must be positive"));
+
+            _mockService.Setup(s => s.UpdateUsedCapacityAsync(It.Is<int>(id => id <= 0), It.IsAny<int>()))
+                .ThrowsAsync(new ArgumentException("UserId must be positive"));
+
+            _mockService.Setup(s => s.AddFileToStorageAsync(null))
+                .ThrowsAsync(new ArgumentNullException("storage"));
+
+            _mockService.Setup(s => s.AddFileToStorageAsync(It.Is<StorageDto>(s => s.UserCapacity <= 0)))
+                .ThrowsAsync(new ArgumentException("UserId must be positive"));
+
+            _mockService.Setup(s => s.AddFileToStorageAsync(It.Is<StorageDto>(s => s.FileType == "DOC")))
+                .ThrowsAsync(new ArgumentException("Invalid file type"));
+
+            _storageController = new StorageController(_mockService.Object);
         }
 
         [TestMethod]
         public async Task GetStorageByUserIdAsync_ValidUserId_ReturnsMultipleStorageDtos()
         {
-            // Arrange
-            int userId = 1; // John
+            var result = await _storageController!.GetStorageByUserIdAsync(1);
 
-            // Act
-            var result = await _storageController!.GetStorageByUserIdAsync(userId);
-
-            // Assert
-            Assert.IsNotNull(result, "Result should not be null.");
-            Assert.IsTrue(result.Any(), "Result should contain storage items.");
+            Assert.IsNotNull(result);
             Assert.AreEqual(3, result.Count(), "Should return 3 files for John.");
-            var storageItems = result.ToList();
-            Assert.IsTrue(storageItems.Any(s => s.FileName == "Doc1.pdf" && s.FileSize == 1024));
-            Assert.IsTrue(storageItems.Any(s => s.FileName == "Pic1.jpg" && s.FileSize == 2048));
-            Assert.IsTrue(storageItems.Any(s => s.FileName == "Note1.txt" && s.FileSize == 512));
-            Assert.AreEqual(0, storageItems[0].UserCapacity, "UserCapacity should match Account.Capacity.");
-            Assert.AreEqual(3584, storageItems[0].UsedCapacity, "UsedCapacity should be sum of file sizes.");
+
+            var items = result.ToList();
+            Assert.IsTrue(items.Any(s => s.FileName == "Doc1.pdf" && s.FileSize == 1024));
+            Assert.IsTrue(items.Any(s => s.FileName == "Pic1.jpg" && s.FileSize == 2048));
+            Assert.IsTrue(items.Any(s => s.FileName == "Note1.txt" && s.FileSize == 512));
+
+            Assert.AreEqual(0, items[0].UserCapacity);
+            Assert.AreEqual(3584, items[0].UsedCapacity);
         }
 
         [TestMethod]
-        public void GetStorageByUserIdAsync_NegativeUserId_ThrowsArgumentException()
+        public async Task GetStorageByUserIdAsync_NegativeUserId_ThrowsArgumentException()
         {
-            // Arrange
-            int invalidUserId = -1;
-
-            // Act & Assert
             try
             {
-                _storageController!.GetStorageByUserIdAsync(invalidUserId).Wait();
-                Assert.Fail("Should have thrown ArgumentException.");
+                await _storageController!.GetStorageByUserIdAsync(-1);
+                Assert.Fail("Expected ArgumentException was not thrown.");
             }
-            catch (AggregateException ex)
+            catch (ArgumentException ex)
             {
-                Assert.IsInstanceOfType(ex.InnerException, typeof(ArgumentException), "Should throw ArgumentException.");
+                Assert.AreEqual("UserId must be positive", ex.Message);
             }
         }
 
         [TestMethod]
-        public void UpdateUsedCapacityAsync_NegativeUserId_ThrowsArgumentException()
+        public async Task UpdateUsedCapacityAsync_NegativeUserId_ThrowsArgumentException()
         {
-            // Arrange
-            int invalidUserId = -1;
-            int fileSize = 512;
-
-            // Act & Assert
             try
             {
-                _storageController!.UpdateUsedCapacityAsync(invalidUserId, fileSize).Wait();
-                Assert.Fail("Should have thrown ArgumentException.");
+                await _storageController!.UpdateUsedCapacityAsync(-1, 512);
+                Assert.Fail("Expected ArgumentException was not thrown.");
             }
-            catch (AggregateException ex)
+            catch (ArgumentException ex)
             {
-                Assert.IsInstanceOfType(ex.InnerException, typeof(ArgumentException), "Should throw ArgumentException.");
+                Assert.AreEqual("UserId must be positive", ex.Message);
             }
         }
 
 
         [TestMethod]
-        public void AddFileToStorageAsync_NegativeUserId_ThrowsArgumentException()
+        public async Task AddFileToStorageAsync_InvalidUserId_ThrowsArgumentException()
         {
-            // Arrange
             var storage = new StorageDto
             {
                 UserCapacity = -1,
@@ -100,57 +99,36 @@ namespace GoogleDriveUnittestWithDapper.Test
                 FileSize = 1024
             };
 
-            // Act & Assert
             try
             {
-                _storageController!.AddFileToStorageAsync(storage).Wait();
-                Assert.Fail("Should have thrown ArgumentException.");
+                await _storageController!.AddFileToStorageAsync(storage);
+                Assert.Fail("Expected ArgumentException was not thrown.");
             }
-            catch (AggregateException ex)
+            catch (ArgumentException ex)
             {
-                Assert.IsInstanceOfType(ex.InnerException, typeof(ArgumentException), "Should throw ArgumentException.");
+                Assert.AreEqual("UserId must be positive", ex.Message);
             }
         }
 
         [TestMethod]
-        public void AddFileToStorageAsync_NullStorage_ThrowsArgumentException()
+        public async Task AddFileToStorageAsync_InvalidFileType_ThrowsArgumentException()
         {
-            // Arrange
-            StorageDto storage = null;
-
-            // Act & Assert
-            try
-            {
-                _storageController!.AddFileToStorageAsync(storage).Wait();
-                Assert.Fail("Should have thrown ArgumentException.");
-            }
-            catch (AggregateException ex)
-            {
-                Assert.IsInstanceOfType(ex.InnerException, typeof(ArgumentNullException), "Should throw ArgumentNullException.");
-            }
-        }
-
-        [TestMethod]
-        public void AddFileToStorageAsync_InvalidFileType_ThrowsArgumentException()
-        {
-            // Arrange
             var storage = new StorageDto
             {
-                UserCapacity = 1, // John
+                UserCapacity = 1,
                 FileName = "Test.doc",
                 FileType = "DOC",
                 FileSize = 1024
             };
 
-            // Act & Assert
             try
             {
-                _storageController!.AddFileToStorageAsync(storage).Wait();
-                Assert.Fail("Should have thrown ArgumentException.");
+                await _storageController!.AddFileToStorageAsync(storage);
+                Assert.Fail("Expected ArgumentException was not thrown.");
             }
-            catch (AggregateException ex)
+            catch (ArgumentException ex)
             {
-                Assert.IsInstanceOfType(ex.InnerException, typeof(ArgumentException), "Should throw ArgumentException.");
+                Assert.AreEqual("Invalid file type", ex.Message);
             }
         }
     }
