@@ -1,9 +1,12 @@
 ﻿using GoogleDriveUnittestWithDapper.Dto;
 using GoogleDriveUnittestWithDapper.Services.StorageService;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GoogleDriveUnittestWithDapper.Controllers
 {
-    public class StorageController
+    [ApiController]
+    [Route("api/[controller]")]
+    public class StorageController : ControllerBase
     {
         private readonly IStorageService _storageService;
 
@@ -12,20 +15,47 @@ namespace GoogleDriveUnittestWithDapper.Controllers
             _storageService = storageService;
         }
 
-        public async Task<IEnumerable<StorageDto>> GetStorageByUserIdAsync(int userId)
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetStorageByUserIdAsync(int userId)
         {
-            var storage = await _storageService.GetStorageByUserIdAsync(userId);
-            return storage;
+            try
+            {
+                var storage = await _storageService.GetStorageByUserIdAsync(userId);
+                if (storage == null || !storage.Any())
+                    return NotFound(new { message = $"No storage records found for User ID {userId}" });
+
+                return Ok(storage);
+            }
+            catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
+            catch (Exception ex) { return StatusCode(500, new { error = ex.Message }); }
         }
 
-        public async Task<int> UpdateUsedCapacityAsync(int userId, int fileSize)
+        [HttpPut("{userId}/used-capacity")]
+        public async Task<IActionResult> UpdateUsedCapacityAsync(int userId, [FromQuery] int fileSize)
         {
-            return await _storageService.UpdateUsedCapacityAsync(userId, fileSize);
+            try
+            {
+                var result = await _storageService.UpdateUsedCapacityAsync(userId, fileSize);
+                return Ok(new { updated = result });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
-        public async Task<int> AddFileToStorageAsync(StorageDto storage)
+        [HttpPost("add-file")]
+        public async Task<IActionResult> AddFileToStorageAsync([FromBody] StorageDto storage)
         {
-            return await _storageService.AddFileToStorageAsync(storage);
+            try
+            {
+                var fileId = await _storageService.AddFileToStorageAsync(storage);
+                return Ok(new { fileId });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
     }
 }
