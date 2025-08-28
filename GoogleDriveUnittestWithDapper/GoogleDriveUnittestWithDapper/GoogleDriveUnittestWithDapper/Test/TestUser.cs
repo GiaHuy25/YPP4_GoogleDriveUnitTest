@@ -1,111 +1,82 @@
-﻿using GoogleDriveUnittestWithDapper.Dto;
+﻿using GoogleDriveUnittestWithDapper.Controllers;
+using GoogleDriveUnittestWithDapper.Dto;
+using GoogleDriveUnittestWithDapper.Repositories.AccountRepo;
 using GoogleDriveUnittestWithDapper.Services.AccountService;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 
 namespace GoogleDriveUnittestWithDapper.Test
 {
     [TestClass]
-    public class TestUser
+    public class TestAccount
     {
         private Mock<IAccountService>? _mockService;
+        private AccountController? _controller;
+
+        private Mock<IAccountRepository>? _mockRepo;
+        private AccountService? _service;
 
         [TestInitialize]
         public void Setup()
         {
+            // --- Mock Service cho Controller test ---
             _mockService = new Mock<IAccountService>();
+            _controller = new AccountController(_mockService.Object);
 
             _mockService.Setup(s => s.GetUserByIdAsync(1))
-                .ReturnsAsync(new AccountDto
-                {
-                    UserId = 1,
-                    UserName = "John",
-                    Email = "john@example.com",
-                    UserImg = "img1.jpg"
-                });
-
-            _mockService.Setup(s => s.GetUserByIdAsync(It.Is<int>(id => id == 999)))
+                .ReturnsAsync(new AccountDto { UserId = 1, UserName = "John" });
+            _mockService.Setup(s => s.GetUserByIdAsync(999))
                 .ReturnsAsync((AccountDto?)null);
 
-            _mockService.Setup(s => s.AddUserAsync(It.IsAny<CreateAccountDto>()))
-                .ReturnsAsync((CreateAccountDto dto) =>
+            // --- Mock Repository cho Service test ---
+            _mockRepo = new Mock<IAccountRepository>();
+            _service = new AccountService(_mockRepo.Object);
+
+            _mockRepo.Setup(r => r.GetUserByIdAsync(1))
+                .ReturnsAsync(new AccountDto { UserId = 1, UserName = "RepoJohn" });
+            _mockRepo.Setup(r => r.GetAllUsersAsync())
+                .ReturnsAsync(new List<AccountDto>
                 {
-                    dto.UserId = 10;
-                    return dto;
+                    new AccountDto { UserId = 1, UserName = "RepoJohn" },
+                    new AccountDto { UserId = 2, UserName = "RepoAlice" }
                 });
-
-            _mockService.Setup(s => s.DeleteUserAsync(999))
-                .ReturnsAsync(false);
-
-            _mockService.Setup(s => s.DeleteUserAsync(It.Is<int>(id => id == 1)))
-                .ReturnsAsync(true);
-
-            _mockService.Setup(s => s.UpdateUserAsync(It.IsAny<AccountDto>()))
-                .ReturnsAsync((AccountDto dto) => dto);
         }
 
+        // ---------- TEST CONTROLLER ----------
         [TestMethod]
-        public async Task UserService_GetUserById_ValidUserId_ReturnsCorrectUserDto()
+        public async Task Controller_GetUserById_Valid_ReturnsOk()
         {
-            var result = await _mockService!.Object.GetUserByIdAsync(1);
+            var result = await _controller!.GetUserByIdAsync(1) as OkObjectResult;
 
             Assert.IsNotNull(result);
-            Assert.AreEqual("John", result.UserName);
-            Assert.AreEqual("john@example.com", result.Email);
-            Assert.AreEqual("img1.jpg", result.UserImg);
+            var user = result.Value as AccountDto;
+            Assert.AreEqual("John", user!.UserName);
         }
 
         [TestMethod]
-        public async Task UserService_GetUserById_InvalidUserId_ReturnsNull()
+        public async Task Controller_GetUserById_Invalid_ReturnsNotFound()
         {
-            var result = await _mockService!.Object.GetUserByIdAsync(999);
-            Assert.IsNull(result);
+            var result = await _controller!.GetUserByIdAsync(999);
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult));
+        }
+
+        // ---------- TEST SERVICE ----------
+        [TestMethod]
+        public async Task Service_GetUserById_Valid_ReturnsUser()
+        {
+            var user = await _service!.GetUserByIdAsync(1);
+
+            Assert.IsNotNull(user);
+            Assert.AreEqual("RepoJohn", user.UserName);
         }
 
         [TestMethod]
-        public async Task UserService_AddUserAsync_ValidInput_ReturnsCreatedUserDto()
+        public async Task Service_GetAllUsers_ReturnsList()
         {
-            var newUser = new CreateAccountDto
-            {
-                UserName = "Alice",
-                Email = "alice@example.com",
-                UserImg = "alice.jpg",
-                PasswordHash = "hash999"
-            };
+            var users = await _service!.GetAllUsersAsync();
 
-            var result = await _mockService!.Object.AddUserAsync(newUser);
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual("Alice", result.UserName);
-            Assert.AreEqual("alice@example.com", result.Email);
-            Assert.AreEqual("alice.jpg", result.UserImg);
-            Assert.IsGreaterThan(0, result.UserId);
-        }
-
-        [TestMethod]
-        public async Task UserService_DeleteUserAsync_InvalidUserId_ReturnsFalse()
-        {
-            var result = await _mockService!.Object.DeleteUserAsync(999);
-            Assert.IsFalse(result);
-        }
-
-        [TestMethod]
-        public async Task UserService_UpdateUserAsync_ValidUserDto_ReturnsUpdatedUserDto()
-        {
-            var updatedUser = new AccountDto
-            {
-                UserId = 1,
-                UserName = "JohnUpdated",
-                Email = "john.updated@example.com",
-                UserImg = "updated.jpg"
-            };
-
-            var result = await _mockService!.Object.UpdateUserAsync(updatedUser);
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(updatedUser.UserId, result.UserId);
-            Assert.AreEqual(updatedUser.UserName, result.UserName);
-            Assert.AreEqual(updatedUser.Email, result.Email);
-            Assert.AreEqual(updatedUser.UserImg, result.UserImg);
+            Assert.AreEqual(2, users.Count());
+            Assert.IsTrue(users.Any(u => u.UserName == "RepoAlice"));
         }
     }
 }
