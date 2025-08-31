@@ -1,9 +1,12 @@
 ﻿using GoogleDriveUnittestWithDapper.Dto;
 using GoogleDriveUnittestWithDapper.Services.TrashService;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GoogleDriveUnittestWithDapper.Controllers
 {
-    public class TrashController
+    [ApiController]
+    [Route("api/[controller]")]
+    public class TrashController : ControllerBase
     {
         private readonly ITrashService _trashService;
 
@@ -11,33 +14,56 @@ namespace GoogleDriveUnittestWithDapper.Controllers
         {
             _trashService = trashService;
         }
-        public async Task<int> ClearTrashAsync(int userId)
+
+        // POST: api/trash/add
+        [HttpPost("add")]
+        public async Task<ActionResult<int>> AddToTrashAsync([FromBody] TrashDto trash)
         {
-            return await _trashService.ClearTrashAsync(userId);
+            if (trash == null)
+                return BadRequest("Trash data is required.");
+
+            var result = await _trashService.AddToTrashAsync(trash);
+            return Ok(result);
         }
 
-        public async Task<IEnumerable<TrashDto>> GetTrashByUserIdAsync(int userId)
+        // DELETE: api/trash/clear/{userId}
+        [HttpDelete("clear/{userId}")]
+        public async Task<ActionResult<int>> ClearTrashAsync(int userId)
         {
-            return await _trashService.GetTrashByUserIdAsync(userId);
-        }
-        public async Task<IEnumerable<TrashDto>> GetTrashByIdAsync(int trashId)
-        {
-            return await _trashService.GetTrashByIdAsync(trashId);
-        }
-        public async Task<int> AddToTrashAsync(TrashDto trash)
-        {
-           
-            return await _trashService.AddToTrashAsync(trash);
+            var result = await _trashService.ClearTrashAsync(userId);
+            return Ok(result);
         }
 
-        public async Task<int> PermanentlyDeleteFromTrashAsync(int trashId, int userId)
+        // GET: api/trash/user/{userId}
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<IEnumerable<TrashDto>>> GetTrashByUserIdAsync(int userId)
         {
-            return await _trashService.PermanentlyDeleteFromTrashAsync(trashId, userId);
+            var trashList = await _trashService.GetTrashByUserIdAsync(userId);
+            return Ok(trashList);
         }
 
-        public async Task<int> RestoreFromTrashAsync(int trashId, int userId)
+        // GET: api/trash/{trashId}
+        [HttpGet("{trashId}")]
+        public async Task<ActionResult<IEnumerable<TrashDto>>> GetTrashByIdAsync(int trashId)
         {
-            return await _trashService.RestoreFromTrashAsync(trashId, userId);
+            var trash = await _trashService.GetTrashByIdAsync(trashId);
+            return Ok(trash);
+        }
+
+        // PUT: api/trash/delete/{trashId}/user/{userId}
+        [HttpPut("delete/{trashId}/user/{userId}")]
+        public async Task<ActionResult<int>> PermanentlyDeleteFromTrashAsync(int trashId, int userId)
+        {
+            var result = await _trashService.PermanentlyDeleteFromTrashAsync(trashId, userId);
+            return Ok(result);
+        }
+
+        // PUT: api/trash/restore/{trashId}/user/{userId}
+        [HttpPut("restore/{trashId}/user/{userId}")]
+        public async Task<ActionResult<int>> RestoreFromTrashAsync(int trashId, int userId)
+        {
+            var result = await _trashService.RestoreFromTrashAsync(trashId, userId);
+            return Ok(result);
         }
     }
 }
