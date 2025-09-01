@@ -1,32 +1,62 @@
 ﻿using GoogleDriveUnittestWithDapper.Dto;
 using GoogleDriveUnittestWithDapper.Services.UserFileFolderService;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GoogleDriveUnittestWithDapper.Controllers
 {
-    public class UserFileFolderController
+    [ApiController]
+    [Route("api/[controller]")]
+    public class UserFileFolderController : ControllerBase
     {
         private readonly IUserFileFolderService _userFileAndFolderService;
 
         public UserFileFolderController(IUserFileFolderService userFileAndFolderService)
         {
-                _userFileAndFolderService = userFileAndFolderService;
+            _userFileAndFolderService = userFileAndFolderService;
         }
 
-        public IEnumerable<UserFileAndFolderDto> GetFilesAndFoldersByUserId(int userId)
+        // GET: api/UserFileFolder/files-folders/{userId}
+        [HttpGet("files-folders/{userId}")]
+        public ActionResult<IEnumerable<UserFileAndFolderDto>> GetFilesAndFoldersByUserId(int userId)
         {
-            return _userFileAndFolderService.GetFilesAndFoldersByUserId(userId) ?? new List<UserFileAndFolderDto>();
+            var result = _userFileAndFolderService.GetFilesAndFoldersByUserId(userId)?.ToList();
+            if (result == null || !result.Any())
+                return NotFound($"No files or folders found for userId {userId}.");
+
+            return Ok(result);
         }
-        public IEnumerable<FileDto> GetFilesByUserId(int userId)
+
+        // GET: api/UserFileFolder/files/{userId}
+        [HttpGet("files/{userId}")]
+        public ActionResult<IEnumerable<FileDto>> GetFilesByUserId(int userId)
         {
-            return _userFileAndFolderService.GetFilesByUserId(userId);
+            var result = _userFileAndFolderService.GetFilesByUserId(userId)?.ToList();
+            if (result == null || !result.Any())
+                return NotFound($"No files found for userId {userId}.");
+
+            return Ok(result);
         }
-        public IEnumerable<FolderDto> GetFolderById(int folderId)
+
+        // GET: api/UserFileFolder/folder/{folderId}
+        [HttpGet("folder/{folderId}")]
+        public ActionResult<IEnumerable<FolderDto>> GetFolderById(int folderId)
         {
-            return _userFileAndFolderService.GetFolderById(folderId);
+            var result = _userFileAndFolderService.GetFolderById(folderId)?.ToList();
+            if (result == null || !result.Any())
+                return NotFound($"No folder found with id {folderId}.");
+
+            return Ok(result);
         }
-        public IEnumerable<FavoriteObjectOfUserDto> GetFavoritesByUserId(int userId)
+
+        // GET: api/UserFileFolder/favorites/{userId}
+        [HttpGet("favorites/{userId}")]
+        public ActionResult<IEnumerable<FavoriteObjectOfUserDto>> GetFavoritesByUserId(int userId)
         {
-            return _userFileAndFolderService.GetFavoritesByUserId(userId);
+            var result = _userFileAndFolderService.GetFavoritesByUserId(userId)?.ToList();
+            if (result == null || !result.Any())
+                return NotFound($"No favorites found for userId {userId}.");
+
+            return Ok(result);
         }
     }
 }

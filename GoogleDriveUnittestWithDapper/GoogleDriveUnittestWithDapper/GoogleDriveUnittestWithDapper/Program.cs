@@ -4,12 +4,14 @@ using GoogleDriveUnittestWithDapper.Repositories.SearchRepo;
 using GoogleDriveUnittestWithDapper.Repositories.ShareObjectRepo;
 using GoogleDriveUnittestWithDapper.Repositories.StorageRepo;
 using GoogleDriveUnittestWithDapper.Repositories.TrashRepo;
+using GoogleDriveUnittestWithDapper.Repositories.UserFileFolderRepo;
 using GoogleDriveUnittestWithDapper.Services.AccountService;
 using GoogleDriveUnittestWithDapper.Services.BannedUserService;
 using GoogleDriveUnittestWithDapper.Services.SearchService;
 using GoogleDriveUnittestWithDapper.Services.ShareObjectService;
 using GoogleDriveUnittestWithDapper.Services.StorageService;
 using GoogleDriveUnittestWithDapper.Services.TrashService;
+using GoogleDriveUnittestWithDapper.Services.UserFileFolderService;
 using Microsoft.Data.Sqlite;
 using System.Data;
 
@@ -37,6 +39,7 @@ namespace GoogleDriveUnittestWithDapper
             builder.Services.AddScoped<IShareRepository, ShareRepository>();
             builder.Services.AddScoped<IStorageRepository, StorageRepository>();
             builder.Services.AddScoped<ITrashRepository, TrashRepository>();
+            builder.Services.AddScoped<IUserFileFolderRepository, UserFileFolderRepository>();
 
             // Service
             builder.Services.AddScoped<IAccountService, AccountService>();
@@ -45,6 +48,7 @@ namespace GoogleDriveUnittestWithDapper
             builder.Services.AddScoped<IShareService,ShareService>();
             builder.Services.AddScoped<IStorageService, StorageService>();
             builder.Services.AddScoped<ITrashService, TrashService>();
+            builder.Services.AddScoped<IUserFileFolderService, UserFileFolderService>();
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
