@@ -1,31 +1,69 @@
 ﻿using GoogleDriveUnittestWithDapper.Dto;
 using GoogleDriveUnittestWithDapper.Services.UserProductService;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GoogleDriveUnittestWithDapper.Controllers
 {
-    public class UserProductController
+    [ApiController]
+    [Route("api/[controller]")]
+    public class UserProductController : ControllerBase
     {
         private readonly IUserProductService _userProductService;
 
         public UserProductController(IUserProductService userProductService)
         {
-            _userProductService = userProductService ;
+            _userProductService = userProductService;
         }
 
-        public async Task<IEnumerable<UserProductItemDto>> GetUserProductsByUserIdAsync(int userId)
+        // GET: api/UserProduct/{userId}
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<IEnumerable<UserProductItemDto>>> GetUserProductsByUserIdAsync(int userId)
         {
-            var products = await _userProductService.GetUserProductsByUserIdAsync(userId);
-            return products;
+            try
+            {
+                var products = await _userProductService.GetUserProductsByUserIdAsync(userId);
+                return Ok(products);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
-        public async Task<int> AddUserProductAsync(UserProductItemDto? userProduct)
+        // POST: api/UserProduct
+        [HttpPost]
+        public async Task<ActionResult<int>> AddUserProductAsync([FromBody] UserProductItemDto userProduct)
         {
-            return await _userProductService.AddUserProductAsync(userProduct);
+            if (userProduct == null)
+                return BadRequest("UserProduct data is required.");
+
+            try
+            {
+                var id = await _userProductService.AddUserProductAsync(userProduct);
+                return Ok(id);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
-        public async Task<int> UpdateUserProductAsync(UserProductItemDto? userProduct)
+        // PUT: api/UserProduct
+        [HttpPut]
+        public async Task<ActionResult<int>> UpdateUserProductAsync([FromBody] UserProductItemDto userProduct)
         {
-            return await _userProductService.UpdateUserProductAsync(userProduct);
+            if (userProduct == null)
+                return BadRequest("UserProduct data is required.");
+
+            try
+            {
+                var result = await _userProductService.UpdateUserProductAsync(userProduct);
+                return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }
